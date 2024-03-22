@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -23,7 +24,8 @@ class AuthController extends Controller
             'mobile_number' => $request['mobile_number'],
             'age' => $request['age'],
             'address' => $request['address'],
-            'nationality' => $request['nationality']
+            'nationality' => $request['nationality'],
+            'role' => $request['role']
         ]);
         $token = $user->createToken('myapptoken')->plainTextToken;
         $response = [
@@ -61,6 +63,17 @@ class AuthController extends Controller
     {
         auth()->user()->tokens()->delete();
         return ResponseHelper::success('logged out');
+    }
+
+    public function refresh()
+    {
+        $user = Auth::user();
+        $token = $user->createToken('access_token', ['*'], now()->addMinutes(config('sanctum.ac_expiration')));
+        $response = [
+            'user' => $user,
+            'token' => $token->plainTextToken
+        ];
+        return ResponseHelper::success($response);
     }
 
 }

@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->integer('age');
             $table->string('address');
             $table->string('nationality');
+            $table->string('role')->default('user');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -31,6 +31,7 @@ class StoreUserRequest extends FormRequest
             'age' => 'required|integer',
             'address' => 'required|string',
             'nationality' => 'required|string',
+            'role' => 'required|string',
         ];
     }
 
