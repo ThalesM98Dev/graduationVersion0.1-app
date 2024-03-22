@@ -34,7 +34,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Login User
+     * Login user
      */
     public function login(Request $request)
     {
@@ -54,52 +54,13 @@ class AuthController extends Controller
         return ResponseHelper::success($response);
     }
 
-
     /**
-     * Show the form for creating a new resource.
+     * Logout user.
      */
-    public function create()
+    public function logout()
     {
-        //
+        auth()->user()->tokens()->delete();
+        return ResponseHelper::success('logged out');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRequest $request, User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
-    }
 }
