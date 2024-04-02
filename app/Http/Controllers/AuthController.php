@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -65,6 +64,9 @@ class AuthController extends Controller
         return ResponseHelper::success('logged out');
     }
 
+    /**
+     * Refresh Token.
+     */
     public function refresh()
     {
         $user = Auth::user();

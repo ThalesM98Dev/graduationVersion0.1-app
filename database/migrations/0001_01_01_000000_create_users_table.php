@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->integer('age');
             $table->string('address');
             $table->string('nationality');
-            $table->string('role')->default('user');
+            $table->enum('role', ['User', 'Driver', 'Shipment Employee', 'Travel Trips Employee', 'University trips Employee', 'Admin']);
             $table->rememberToken();
             $table->timestamps();
         });

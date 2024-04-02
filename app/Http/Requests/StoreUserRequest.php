@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -24,14 +25,14 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'email' => 'required|string|unique:users,email',
-            'mobile_number' => 'required|integer|unique:users,mobile_number',
-            'password' => 'required|string',
-            'age' => 'required|integer',
-            'address' => 'required|string',
-            'nationality' => 'required|string',
-            'role' => 'required|string',
+            'name' => ['required', 'string'],
+            'email' => ['required', 'unique:users,email'],
+            'mobile_number' => ['required', 'integer', 'unique:users,mobile_number'],
+            'password' => ['required', 'string'],
+            'age' => ['required', 'integer'],
+            'address' => ['required', 'string'],
+            'nationality' => ['required', 'string'],
+            'role' => ['required', Rule::in(['User', 'Driver', 'Shipment Employee', 'Travel Trips Employee', 'University trips Employee', 'Admin'])],
         ];
     }
 
