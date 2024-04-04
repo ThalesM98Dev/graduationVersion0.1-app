@@ -31,7 +31,7 @@ Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
     Route::get('/all_destinations', [DestController::class, 'all_destinations']);
     Route::get('/showWithTrips/{id}', [DestController::class, 'showWithTrips']);
-    
+
 });
 Route::prefix('orders')->group(function () {
     Route::post('/add_order', [OrderController::class, 'add_order']);

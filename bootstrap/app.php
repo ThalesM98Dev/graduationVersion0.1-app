@@ -1,6 +1,12 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\DriverMiddleware;
 use App\Http\Middleware\ExceptionsHandler;
+use App\Http\Middleware\ShipmentEmployeeMiddleware;
+use App\Http\Middleware\TravelTripsEmployeeMiddleware;
+use App\Http\Middleware\UniversityTripsEmployeeMiddleware;
+use App\Http\Middleware\UserMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'exception.handler' => ExceptionsHandler::class,
+            'user' => UserMiddleware::class,
+            'driver' => DriverMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'shipment.employee' => ShipmentEmployeeMiddleware::class,
+            'travel.employee' => TravelTripsEmployeeMiddleware::class,
+            'university.trips.employee' => UniversityTripsEmployeeMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
