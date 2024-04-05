@@ -22,6 +22,8 @@ return new class extends Migration
             $table->integer('price')->nullable();
             $table->unsignedBigInteger('destination_id');
             $table->foreign('destination_id')->references('id')->on('destinations')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('bus_id');
+            $table->foreign('bus_id')->references('id')->on('buses')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }

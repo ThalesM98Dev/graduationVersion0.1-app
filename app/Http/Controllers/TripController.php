@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Destination;
 use App\Models\Trip;
+use App\Models\Bus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -29,7 +30,8 @@ class TripController extends Controller
             'back_hour' => 'required|date_format:H:i',
             'trip_type' => 'required|string',
             'starting_place' => 'required|string',
-            'destination_id' => 'required|exists:destinations,id'
+            'destination_id' => 'required|exists:destinations,id',
+            'bus_id' => 'required|exists:buses,id'
         ]);
 
         if ($validator->fails()) {
@@ -46,6 +48,7 @@ class TripController extends Controller
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
         $trip->destination_id = $request->destination_id;
+        $trip->bus_id = $request->bus_id;
         $trip->save();
 
         // Return a response indicating success
@@ -55,7 +58,7 @@ class TripController extends Controller
 
     public function show_trip_details($id)
     {
-        $trip = Trip::find($id);
+        $trip = Trip::with('bus', 'destination')->findOrFail($id);
         if (!$trip) {
             return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
         }

@@ -13,4 +13,14 @@ class Trip extends Model
 
         return $this->belongsTo(Destination::class);
     }
+
+    public function orders(){
+
+        return $this->belongsToMany(Order::class ,'reservations' , 'trip_id' , 'order_id')->withTimestamps();
+    }
+
+    public function bus(){
+
+        return $this->belongsTo(Bus::class);
+    }
 }
