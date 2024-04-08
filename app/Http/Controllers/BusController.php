@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use App\Helpers\ResponseHelper;
 use App\Models\Bus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -34,6 +35,9 @@ class BusController extends Controller
         $bus->number_of_seats = $request->number_of_seats;
         $bus->seats = array_fill(1, $bus->number_of_seats, true);
         $bus->save();
-        return response()->json($bus, Response::HTTP_OK);
+        $response = [
+            'bus' => $bus
+        ];
+        return ResponseHelper::success($response);
     }
 }

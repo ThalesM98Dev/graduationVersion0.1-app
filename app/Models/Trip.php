@@ -23,4 +23,9 @@ class Trip extends Model
 
         return $this->belongsTo(Bus::class);
     }
+
+     public function driver()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

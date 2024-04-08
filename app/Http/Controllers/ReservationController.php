@@ -40,11 +40,11 @@ class ReservationController extends Controller
        $reserv = new Reservation();
         $reserv->seat_number = $seatNumber;
            $file_name = rand() . time() . '.' . $request->image_of_ID->getClientOriginalExtension();
-          $request->image_of_ID->move('uploads/id', $file_name);
-        $reserv->image_of_ID = '/' . 'uploads/id' . '/' . $file_name;
+          $request->image_of_ID->move('uploads/ID', $file_name);
+        $reserv->image_of_ID = '/' . 'uploads/ID' . '/' . $file_name;
           $file_name = rand() . time() . '.' . $request->image_of_passport->getClientOriginalExtension();
-          $request->image_of_passport->move('uploads/passport', $file_name);
-        $reserv->image_of_passport = '/' . 'uploads/passport' . '/' . $file_name;
+          $request->image_of_passport->move('uploads/pass', $file_name);
+        $reserv->image_of_passport = '/' . 'uploads/pass' . '/' . $file_name;
         $file_name = rand() . time() . '.' . $request->image_of_security_clearance->getClientOriginalExtension();
           $request->image_of_security_clearance->move('uploads/secur', $file_name);
         $reserv->image_of_security_clearance = '/' . 'uploads/secur' . '/' . $file_name;
@@ -55,8 +55,14 @@ class ReservationController extends Controller
         $reserv->trip_id = $tripId;
      $this->updateSeatAvailability($trip->bus, $seatNumber, false);
         $reserv->save();
+      $trip = Trip::find($tripId);
+     $trip->available_seats -= 1; 
+     $trip->save();  
        // Return a response indicating success
-        return response()->json($reserv, Response::HTTP_OK); 
+        $response = [
+            'reserv' => $reserv
+        ];
+        return ResponseHelper::success($response);
     }else{
         return response()->json(['message' => 'Seat not available'], 422);
     }
@@ -69,7 +75,7 @@ class ReservationController extends Controller
         ->exists();
     }
 
-private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
+    private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
    {
     $seatsB = $bus->seats;
     $seatsB[$seatNumber] = $isAvailable;
@@ -91,31 +97,19 @@ private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
         return response()->json($reserv, Response::HTTP_OK);
     }
 
-    public function rejectTripRequest(Request $request, $id)
+    public function rejectDeleteTripRequest(Request $request, $id)
     {
          $reservation = Reservation::find($id);
         
-        if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], 404);
-        }
-        
-        $reservation->delete();
-        
-        return response()->json(['message' => 'Reservation deleted'], 200);
-    }
-
-
-public function delete_reservation(Request $request , $id)
-{
-    $reservation = Reservation::find($id);
-
-    if ($reservation) {
+        if ($reservation) {
         $seatNumber = $reservation->seat_number;
         $tripId = $reservation->trip_id;
         $trip = Trip::find($tripId);
 
         if ($trip) {
             $this->updateSeatAvailability($trip->bus, $seatNumber, true);
+            $trip->available_seats += 1; 
+            $trip->save(); 
         }
 
         $reservation->delete();
@@ -125,4 +119,22 @@ public function delete_reservation(Request $request , $id)
         return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
     }
   }
+
+  public function confirmReservation(Request $request , $id)
+{
+    $reservation = Reservation::find($id);
+
+    // Check if the reservation exists and is not already confirmed
+    if ($reservation && $reservation->status != 'confirmed') {
+        $reservation->status = 'confirmed';
+        $reservation->save();
+
+        // Return a response indicating success
+        return response()->json(['message' => 'Reservation confirmed'], 200);
+    }
+
+    // Return a response indicating an error if the reservation doesn't exist or is already confirmed
+    return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
+}
+
 }

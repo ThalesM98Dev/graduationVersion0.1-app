@@ -24,6 +24,10 @@ return new class extends Migration
             $table->foreign('destination_id')->references('id')->on('destinations')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('bus_id');
             $table->foreign('bus_id')->references('id')->on('buses')->onUpdate('cascade')->onDelete('cascade');
+            $table->integer('available_seats')->nullable();
+            $table->unsignedBigInteger('driver_id')->nullable();
+            $table->foreign('driver_id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }
