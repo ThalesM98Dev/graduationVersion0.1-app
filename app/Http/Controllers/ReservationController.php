@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use App\Helpers\ImageUploadHelper;
 
 class ReservationController extends Controller
 {
@@ -37,22 +38,14 @@ class ReservationController extends Controller
         $trip = Trip::find($tripId);
 
     if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber)){
-       $reserv = new Reservation();
-        $reserv->seat_number = $seatNumber;
-           $file_name = rand() . time() . '.' . $request->image_of_ID->getClientOriginalExtension();
-          $request->image_of_ID->move('uploads/ID', $file_name);
-        $reserv->image_of_ID = '/' . 'uploads/ID' . '/' . $file_name;
-          $file_name = rand() . time() . '.' . $request->image_of_passport->getClientOriginalExtension();
-          $request->image_of_passport->move('uploads/pass', $file_name);
-        $reserv->image_of_passport = '/' . 'uploads/pass' . '/' . $file_name;
-        $file_name = rand() . time() . '.' . $request->image_of_security_clearance->getClientOriginalExtension();
-          $request->image_of_security_clearance->move('uploads/secur', $file_name);
-        $reserv->image_of_security_clearance = '/' . 'uploads/secur' . '/' . $file_name;
-        $file_name = rand() . time() . '.' . $request->image_of_visa->getClientOriginalExtension();
-          $request->image_of_visa->move('uploads/visa', $file_name);
-        $reserv->image_of_visa = '/' . 'uploads/visa' . '/' . $file_name;
-        $reserv->order_id = $request->order_id;
-        $reserv->trip_id = $tripId;
+    $reserv = new Reservation();
+    $reserv->seat_number = $seatNumber;
+    $reserv->image_of_ID = ImageUploadHelper::upload($request->file('image_of_ID'));
+    $reserv->image_of_passport = ImageUploadHelper::upload($request->file('image_of_passport'));
+    $reserv->image_of_security_clearance = ImageUploadHelper::upload($request->file('image_of_security_clearance'));
+    $reserv->image_of_visa = ImageUploadHelper::upload($request->file('image_of_visa'));
+    $reserv->order_id = $request->order_id;
+    $reserv->trip_id = $tripId;
      $this->updateSeatAvailability($trip->bus, $seatNumber, false);
         $reserv->save();
       $trip = Trip::find($tripId);
