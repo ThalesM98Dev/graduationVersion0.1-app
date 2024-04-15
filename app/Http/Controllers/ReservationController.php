@@ -37,7 +37,7 @@ class ReservationController extends Controller
         $tripId = $request->trip_id;
         $trip = Trip::find($tripId);
 
-    if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber)){
+    if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber) && ($trip->status =='pending')){
     $reserv = new Reservation();
     $reserv->seat_number = $seatNumber;
     $reserv->image_of_ID = ImageUploadHelper::upload($request->file('image_of_ID'));
@@ -57,7 +57,7 @@ class ReservationController extends Controller
         ];
         return ResponseHelper::success($response);
     }else{
-        return response()->json(['message' => 'Seat not available'], 422);
+        return response()->json(['message' => 'Seat not available OR the trip not available'], 422);
     }
 }
 

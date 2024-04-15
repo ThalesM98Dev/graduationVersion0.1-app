@@ -27,7 +27,8 @@ Route::prefix('trip')->group(function () {
     Route::get('/all_trip', [TripController::class, 'all_trip']);
     Route::get('/getTripsByDestination/{destination}', [TripController::class, 'getTripsByDestination']);
     Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details']);
-    Route::get('/getTripsByUserId/{userId}', [TripController::class, 'getTripsByUserId']);
+    Route::get('/getPendingTripsByUser/{userId}', [TripController::class, 'getPendingTripsByUser']);
+    Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser']);
     Route::get('/getTripsByDriver/{driverId}', [TripController::class, 'getTripsByDriver']);
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
 });
