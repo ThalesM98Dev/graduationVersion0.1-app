@@ -148,4 +148,22 @@ class TripController extends Controller
         ];
         return ResponseHelper::success($response);
         }
+
+        public function getArchivedTripsWithReservations()
+  {
+    $trips = Trip::onlyTrashed()->get();
+
+    $result = [];
+
+    foreach ($trips as $trip) {
+        $reservations = Reservation::where('trip_id', $trip->id)->get();
+
+        $result[] = [
+            'trip' => $trip,
+            'reservations' => $reservations,
+        ];
+    }
+
+    return $result;
+  }
 }

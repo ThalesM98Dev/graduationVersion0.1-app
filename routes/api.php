@@ -6,6 +6,8 @@ use App\Http\Controllers\DestController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\ArchiveController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +33,7 @@ Route::prefix('trip')->group(function () {
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser']);
     Route::get('/getTripsByDriver/{driverId}', [TripController::class, 'getTripsByDriver']);
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
+    Route::get('/show_archive', [ArchiveController::class, 'show_archive']);
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
@@ -54,4 +57,8 @@ Route::prefix('reserv')->group(function () {
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest']);
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest']);
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation']);
+});
+
+Route::prefix('statistic')->group(function () {
+    Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation']);
 });
