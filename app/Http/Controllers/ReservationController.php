@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use App\Helpers\ImageUploadHelper;
 
 class ReservationController extends Controller
 {
@@ -36,29 +37,27 @@ class ReservationController extends Controller
         $tripId = $request->trip_id;
         $trip = Trip::find($tripId);
 
-    if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber)){
-       $reserv = new Reservation();
-        $reserv->seat_number = $seatNumber;
-           $file_name = rand() . time() . '.' . $request->image_of_ID->getClientOriginalExtension();
-          $request->image_of_ID->move('uploads/id', $file_name);
-        $reserv->image_of_ID = '/' . 'uploads/id' . '/' . $file_name;
-          $file_name = rand() . time() . '.' . $request->image_of_passport->getClientOriginalExtension();
-          $request->image_of_passport->move('uploads/passport', $file_name);
-        $reserv->image_of_passport = '/' . 'uploads/passport' . '/' . $file_name;
-        $file_name = rand() . time() . '.' . $request->image_of_security_clearance->getClientOriginalExtension();
-          $request->image_of_security_clearance->move('uploads/secur', $file_name);
-        $reserv->image_of_security_clearance = '/' . 'uploads/secur' . '/' . $file_name;
-        $file_name = rand() . time() . '.' . $request->image_of_visa->getClientOriginalExtension();
-          $request->image_of_visa->move('uploads/visa', $file_name);
-        $reserv->image_of_visa = '/' . 'uploads/visa' . '/' . $file_name;
-        $reserv->order_id = $request->order_id;
-        $reserv->trip_id = $tripId;
+    if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber) && ($trip->status =='pending')){
+    $reserv = new Reservation();
+    $reserv->seat_number = $seatNumber;
+    $reserv->image_of_ID = ImageUploadHelper::upload($request->file('image_of_ID'));
+    $reserv->image_of_passport = ImageUploadHelper::upload($request->file('image_of_passport'));
+    $reserv->image_of_security_clearance = ImageUploadHelper::upload($request->file('image_of_security_clearance'));
+    $reserv->image_of_visa = ImageUploadHelper::upload($request->file('image_of_visa'));
+    $reserv->order_id = $request->order_id;
+    $reserv->trip_id = $tripId;
      $this->updateSeatAvailability($trip->bus, $seatNumber, false);
         $reserv->save();
+      $trip = Trip::find($tripId);
+     $trip->available_seats -= 1; 
+     $trip->save();  
        // Return a response indicating success
-        return response()->json($reserv, Response::HTTP_OK); 
+        $response = [
+            'reserv' => $reserv
+        ];
+        return ResponseHelper::success($response);
     }else{
-        return response()->json(['message' => 'Seat not available'], 422);
+        return response()->json(['message' => 'Seat not available OR the trip not available'], 422);
     }
 }
 
@@ -69,7 +68,7 @@ class ReservationController extends Controller
         ->exists();
     }
 
-private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
+    private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
    {
     $seatsB = $bus->seats;
     $seatsB[$seatNumber] = $isAvailable;
@@ -91,31 +90,19 @@ private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
         return response()->json($reserv, Response::HTTP_OK);
     }
 
-    public function rejectTripRequest(Request $request, $id)
+    public function rejectDeleteTripRequest(Request $request, $id)
     {
          $reservation = Reservation::find($id);
         
-        if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], 404);
-        }
-        
-        $reservation->delete();
-        
-        return response()->json(['message' => 'Reservation deleted'], 200);
-    }
-
-
-public function delete_reservation(Request $request , $id)
-{
-    $reservation = Reservation::find($id);
-
-    if ($reservation) {
+        if ($reservation) {
         $seatNumber = $reservation->seat_number;
         $tripId = $reservation->trip_id;
         $trip = Trip::find($tripId);
 
         if ($trip) {
             $this->updateSeatAvailability($trip->bus, $seatNumber, true);
+            $trip->available_seats += 1; 
+            $trip->save(); 
         }
 
         $reservation->delete();
@@ -125,4 +112,115 @@ public function delete_reservation(Request $request , $id)
         return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
     }
   }
+
+  public function confirmReservation(Request $request , $id)
+{
+    $reservation = Reservation::find($id);
+
+    // Check if the reservation exists and is not already confirmed
+    if ($reservation && $reservation->status != 'confirmed') {
+        $reservation->status = 'confirmed';
+        $reservation->save();
+
+        // Return a response indicating success
+        return response()->json(['message' => 'Reservation confirmed'], 200);
+    }
+
+    // Return a response indicating an error if the reservation doesn't exist or is already confirmed
+    return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
+}
+
+public function getReservationsByTripId($tripId)
+{
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.trip_id', $tripId)
+        ->first();
+
+    $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+}
+public function getAllReservation()
+{
+    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->get();
+    $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+}
+
+public function showReservationDetails($id)
+    {
+        $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.id', $id)
+        ->first();
+        if (!$reservation) {
+            return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+        }
+        $response = [
+            'reservation' => $reservation
+        ];
+        return ResponseHelper::success($response);
+    }
+
+    public function allAcceptedReservations(){
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.status', 'accept')
+        ->get();
+         if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No accepted reservations found'], 404);
+        }
+        $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+
+    }
+    public function allConfirmedReservations(){
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.status', 'confirmed')
+        ->get();
+         if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No accepted reservations found'], 404);
+        }
+        $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+
+    }
+
+    public function searchByUserName(Request $request)
+   {
+    $userName = $request->input('userName');
+
+    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('orders.name', 'LIKE', "%$userName%")
+        ->get();
+
+    if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No reservations found'], 404);
+    }
+
+    $response = [
+        'reservations' => $reservations
+    ];
+
+    return response()->json($response, 200);
+   }
+
 }
