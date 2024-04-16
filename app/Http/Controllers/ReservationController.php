@@ -130,4 +130,97 @@ class ReservationController extends Controller
     return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
 }
 
+public function getReservationsByTripId($tripId)
+{
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.trip_id', $tripId)
+        ->first();
+
+    $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+}
+public function getAllReservation()
+{
+    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->get();
+    $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+}
+
+public function showReservationDetails($id)
+    {
+        $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.id', $id)
+        ->first();
+        if (!$reservation) {
+            return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+        }
+        $response = [
+            'reservation' => $reservation
+        ];
+        return ResponseHelper::success($response);
+    }
+
+    public function allAcceptedReservations(){
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.status', 'accept')
+        ->get();
+         if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No accepted reservations found'], 404);
+        }
+        $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+
+    }
+    public function allConfirmedReservations(){
+     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.status', 'confirmed')
+        ->get();
+         if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No accepted reservations found'], 404);
+        }
+        $response = [
+            'reservations' => $reservations
+        ];
+        return ResponseHelper::success($response);
+
+    }
+
+    public function searchByUserName(Request $request)
+   {
+    $userName = $request->input('userName');
+
+    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+        ->join('orders', 'reservations.order_id', '=', 'orders.id')
+        ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('orders.name', 'LIKE', "%$userName%")
+        ->get();
+
+    if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No reservations found'], 404);
+    }
+
+    $response = [
+        'reservations' => $reservations
+    ];
+
+    return response()->json($response, 200);
+   }
+
 }

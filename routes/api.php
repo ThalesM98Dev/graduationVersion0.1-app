@@ -57,8 +57,18 @@ Route::prefix('reserv')->group(function () {
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest']);
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest']);
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation']);
+    Route::get('/getReservationsByTripId/{tripId}', [ReservationController::class, 'getReservationsByTripId']);
+    Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation']);
+    Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails']);
+    Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations']);
+    Route::get('/allConfirmedReservations', [ReservationController::class, 'allConfirmedReservations']);
+    Route::post('/searchByUserName', [ReservationController::class, 'searchByUserName']);
 });
 
 Route::prefix('statistic')->group(function () {
     Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation']);
+});
+
+Route::prefix('driver')->group(function () {
+    Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
 });

@@ -18,9 +18,7 @@ use Illuminate\Http\Response;
 class ArchiveController extends Controller
 {
     public function show_archive(){
-        $archiveTrips = Archive::all();
-
-    $tripsData = $archiveTrips->map(function ($archive) {
+       $tripsData = $archiveTrips->map(function ($archive) {
         $trip = Trip::find($archive->trip_id);
         return [
             'archive' => $archive->toArray(),
@@ -28,13 +26,7 @@ class ArchiveController extends Controller
         ];
     });
 
-    return response()->json([
-        'success' => true,
-        'message' => 'success',
-        'data' => [
-            'trips' => $tripsData,
-        ],
-    ]);
+    return ResponseHelper::success('success', ['trips' => $tripsData]);
 
     }
 }
