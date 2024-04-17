@@ -67,6 +67,8 @@ Route::prefix('reserv')->group(function () {
 
 Route::prefix('statistic')->group(function () {
     Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation']);
+    Route::get('/tripsCountPerDatePeriod', [StatisticsController::class, 'tripsCountPerDatePeriod']);
+
 });
 
 Route::prefix('driver')->group(function () {

@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Trip;
 use App\Models\Reservation;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
@@ -25,7 +26,7 @@ class StatisticsController extends Controller
         'group_by' => 'required|in:year,month',
     ]);
 
-   
+
    $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
     $destinationId = $request->input('destination_id');
@@ -52,4 +53,43 @@ class StatisticsController extends Controller
     ];
     return ResponseHelper::success($response);
   }
+
+
+
+
+    /*
+       * Statistics
+      */
+
+    public function tripsCountPerDatePeriod(Request $request)
+    {
+        $startDate = Carbon::createFromDate($request->start_date);
+        $endDate = Carbon::createFromDate($request->end_date);
+        $resultsMap = [];
+        if ($request->type == 'monthly') {
+            foreach ($startDate->monthsUntil($endDate) as $date) {
+                $result = Reservation::query()
+                    ->whereHas('trip', function ($query) use ($date) {
+                        $query->where('date', $date);
+                    })
+                    ->whereDate('date', $date)
+                    ->count();
+                $resultsMap[$date->format('Y-m')] = $result;
+            }
+        }
+        if ($request->type == 'yearly') {
+            foreach ($startDate->yearsUntil($endDate) as $date) {
+                $result = Reservation::query()
+                    ->whereHas('trip', function ($query) use ($date) {
+                        $query->where('date', $date);
+                    })
+                    ->whereDate('date', $date)
+                    ->count();
+                $resultsMap[$date->format('Y')] = $result;
+            }
+        }
+
+        return ResponseHelper::success($resultsMap);
+    }
+
 }
