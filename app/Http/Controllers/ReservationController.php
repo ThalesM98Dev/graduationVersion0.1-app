@@ -129,25 +129,13 @@ class ReservationController extends Controller
     // Return a response indicating an error if the reservation doesn't exist or is already confirmed
     return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
 }
-
-public function getReservationsByTripId($tripId)
-{
-     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
-        ->where('reservations.trip_id', $tripId)
-        ->first();
-
-    $response = [
-            'reservations' => $reservations
-        ];
-        return ResponseHelper::success($response);
-}
 public function getAllReservation()
 {
     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
         ->join('orders', 'reservations.order_id', '=', 'orders.id')
         ->select('reservations.*', 'trips.*', 'orders.*')
+        ->where('reservations.status', 'pending')
+        ->orderBy('reservations.id')
         ->get();
     $response = [
             'reservations' => $reservations
@@ -210,6 +198,7 @@ public function showReservationDetails($id)
         ->join('orders', 'reservations.order_id', '=', 'orders.id')
         ->select('reservations.*', 'trips.*', 'orders.*')
         ->where('orders.name', 'LIKE', "%$userName%")
+        ->where('reservations.status', 'accept')
         ->get();
 
     if ($reservations->isEmpty()) {
