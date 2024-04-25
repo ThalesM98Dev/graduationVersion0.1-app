@@ -70,4 +70,6 @@ Route::prefix('statistic')->group(function () {
 
 Route::prefix('driver')->group(function () {
     Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
+    Route::put('/updateDriver/{id}', [AuthController::class, 'updateDriver']);
+    Route::delete('/deleteDriver/{id}', [AuthController::class, 'deleteDriver']);
 });
