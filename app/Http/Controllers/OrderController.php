@@ -16,9 +16,13 @@ class OrderController extends Controller
 
     public function all_orders(){
      $allOrder = Order::all();
-        return response()->json($allOrder);
+        $response = [
+            'allOrder' => $allOrder
+        ];
+        return ResponseHelper::success($response);
+         }
 
-    }
+    
     public function add_order(Request $request)
     
     {
@@ -53,6 +57,10 @@ class OrderController extends Controller
     {
         $orders = Order::where('user_id', $userId)->get();
 
-        return response()->json($orders);
+        $response = [
+            'orders' => $orders
+        ];
+        return ResponseHelper::success($response);
+        
     }
 }

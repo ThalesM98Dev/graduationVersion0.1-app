@@ -34,7 +34,7 @@ Route::prefix('trip')->group(function () {
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser']);
     Route::get('/getTripsByDriver/{driverId}', [TripController::class, 'getTripsByDriver']);
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
-    Route::get('/show_archive', [ArchiveController::class, 'show_archive']);
+    Route::get('/showArchive', [ArchiveController::class, 'showArchive']);
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
@@ -58,7 +58,6 @@ Route::prefix('reserv')->group(function () {
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest']);
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest']);
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation']);
-    Route::get('/getReservationsByTripId/{tripId}', [ReservationController::class, 'getReservationsByTripId']);
     Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation']);
     Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails']);
     Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations']);
@@ -75,6 +74,8 @@ Route::prefix('statistic')->group(function () {
 
 Route::prefix('driver')->group(function () {
     Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
+    Route::put('/updateDriver/{id}', [AuthController::class, 'updateDriver']);
+    Route::delete('/deleteDriver/{id}', [AuthController::class, 'deleteDriver']);
 });
 
 Route::prefix('collage_trips')->group(function () {

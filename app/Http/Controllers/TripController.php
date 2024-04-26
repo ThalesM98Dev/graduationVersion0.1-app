@@ -31,7 +31,7 @@ class TripController extends Controller
     public function all_trip()
     {
         $trips = Trip::where('status', 'pending')
-            ->with('destination')
+            ->with('destination','bus','driver')
             ->get();
         $response = [
             'trips' => $trips
@@ -88,12 +88,17 @@ class TripController extends Controller
 
     public function show_trip_details($id)
     {
-        $trip = Trip::with('bus', 'destination', 'driver')->findOrFail($id);
+        $trip = Trip::with('bus', 'destination','driver','orders')->findOrFail($id);
+         $reservations = Reservation::where('trip_id', $id)
+         ->where('status', 'confirmed')
+         ->orderBy('order_id')
+         ->get();
         if (!$trip) {
             return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
         }
         $response = [
-            'trip' => $trip
+            'trip' => $trip,
+            'reservations' => $reservations
         ];
         return ResponseHelper::success($response);
     }
@@ -116,11 +121,13 @@ class TripController extends Controller
         return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
 
-    public function getTripsByDestination($destination)
-    {
-        $trips = Trip::whereHas('destination', function ($query) use ($destination) {
-            $query->where('name', $destination);
-        })->where('status', 'pending')->get();
+      public function getTripsByDestination($destination)
+         {
+            $trips = Trip::whereHas('destination', function ($query) use ($destination) {
+        $query->where('name', $destination);
+        })->where('status', 'pending')
+            ->with('destination','bus','driver')
+            ->get();
 
         $response = [
             'trips' => $trips
@@ -130,11 +137,12 @@ class TripController extends Controller
 
     public function getPendingTripsByUser($userId)
     {
-        $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-            ->join('orders', 'orders.id', '=', 'reservations.order_id')
-            ->where('orders.user_id', $userId)
-            ->where('trips.status', 'pending')
-            ->get();
+    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
+                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
+                 ->where('orders.user_id', $userId)
+                 ->where('trips.status', 'pending')
+                 ->with('destination','bus','driver')
+                 ->get();
 
         $response = [
             'trips' => $trips
@@ -144,20 +152,24 @@ class TripController extends Controller
 
     public function getEndingTripsByUser($userId)
     {
-        $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-            ->join('orders', 'orders.id', '=', 'reservations.order_id')
-            ->where('orders.user_id', $userId)
-            ->where('trips.status', 'done')
-            ->get();
-        $response = [
-            'trips' => $trips
-        ];
-        return ResponseHelper::success($response);
+    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
+                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
+                 ->where('orders.user_id', $userId)
+                 ->where('trips.status', 'done')
+                 ->with('destination','bus','driver')
+                 ->get();
+    $response = [
+        'trips' => $trips
+    ];
+    return ResponseHelper::success($response);
     }
 
-    public function getTripsByDriver($driverId)
-    {
-        $trips = Trip::where('driver_id', $driverId)->where('status', 'pending')->get();
+        public function getTripsByDriver($driverId)
+        {
+        $trips = Trip::where('driver_id', $driverId)
+        ->where('status', 'pending')
+        ->with('destination','bus','driver')
+        ->get();
 
         $response = [
             'trips' => $trips
