@@ -17,44 +17,42 @@ use Illuminate\Support\Facades\DB;
 class StatisticsController extends Controller
 {
     public function byDateAndDestenation(Request $request)
- {
+    {
 
-   $request->validate([
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after_or_equal:start_date',
-        'destination_id' => 'required|exists:destinations,id',
-        'group_by' => 'required|in:year,month',
-    ]);
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'destination_id' => 'required|exists:destinations,id',
+            'group_by' => 'required|in:year,month',
+        ]);
 
 
-   $startDate = $request->input('start_date');
-    $endDate = $request->input('end_date');
-    $destinationId = $request->input('destination_id');
-    $groupBy = $request->input('group_by'); // 'year' or 'month'
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $destinationId = $request->input('destination_id');
+        $groupBy = $request->input('group_by'); // 'year' or 'month'
 
-       $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
-        ->whereBetween('trips.date', [$startDate, $endDate])
-        ->where('trips.destination_id', $destinationId);
+        $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
+            ->whereBetween('trips.date', [$startDate, $endDate])
+            ->where('trips.destination_id', $destinationId);
 
-    if ($groupBy === 'year') {
-        $query->groupBy(DB::raw('YEAR(trips.date)'))
-            ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
-            ->orderBy('period', 'asc');
-    } elseif ($groupBy === 'month') {
-        $query->groupBy(DB::raw('MONTH(trips.date)'))
-            ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
-            ->orderBy('period', 'asc');
+        if ($groupBy === 'year') {
+            $query->groupBy(DB::raw('YEAR(trips.date)'))
+                ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
+        } elseif ($groupBy === 'month') {
+            $query->groupBy(DB::raw('MONTH(trips.date)'))
+                ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
+        }
+
+        $statistics = $query->get();
+
+        $response = [
+            'statistics' => $statistics
+        ];
+        return ResponseHelper::success($response);
     }
-
-    $statistics = $query->get();
-
-    $response = [
-        'statistics' => $statistics
-    ];
-    return ResponseHelper::success($response);
-  }
-
-
 
 
     /*
@@ -65,31 +63,43 @@ class StatisticsController extends Controller
     {
         $startDate = Carbon::createFromDate($request->start_date);
         $endDate = Carbon::createFromDate($request->end_date);
-        $resultsMap = [];
-        if ($request->type == 'monthly') {
-            foreach ($startDate->monthsUntil($endDate) as $date) {
-                $result = Reservation::query()
-                    ->whereHas('trip', function ($query) use ($date) {
-                        $query->where('date', $date);
-                    })
-                    ->whereDate('date', $date)
-                    ->count();
-                $resultsMap[$date->format('Y-m')] = $result;
-            }
+        $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
+            ->whereBetween('trips.date', [$startDate, $endDate]);
+        if ($request->type === 'year') {
+            $query->groupBy(DB::raw('YEAR(trips.date)'))
+                ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
+        } elseif ($request->type === 'month') {
+            $query->groupBy(DB::raw('MONTH(trips.date)'))
+                ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
         }
-        if ($request->type == 'yearly') {
-            foreach ($startDate->yearsUntil($endDate) as $date) {
-                $result = Reservation::query()
-                    ->whereHas('trip', function ($query) use ($date) {
-                        $query->where('date', $date);
-                    })
-                    ->whereDate('date', $date)
-                    ->count();
-                $resultsMap[$date->format('Y')] = $result;
-            }
-        }
+        $statistics = $query->get();
+        $response = [
+            'statistics' => $statistics
+        ];
+        return ResponseHelper::success($response);
+    }
 
-        return ResponseHelper::success($resultsMap);
+    public function tripsCountDestinationPeriod(Request $request)
+    {
+        $dest_id = $request->input('destination_id');
+        $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
+            ->where('trips.destination_id', $dest_id);
+        if ($request->type === 'year') {
+            $query->groupBy(DB::raw('YEAR(trips.date)'))
+                ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
+        } elseif ($request->type === 'month') {
+            $query->groupBy(DB::raw('MONTH(trips.date)'))
+                ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
+                ->orderBy('period', 'asc');
+        }
+        $statistics = $query->get();
+        $response = [
+            'statistics' => $statistics
+        ];
+        return ResponseHelper::success($response);
     }
 
 }

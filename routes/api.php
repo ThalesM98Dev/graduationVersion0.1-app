@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\DestController;
 use App\Http\Controllers\OrderController;
@@ -68,9 +69,20 @@ Route::prefix('reserv')->group(function () {
 Route::prefix('statistic')->group(function () {
     Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation']);
     Route::get('/tripsCountPerDatePeriod', [StatisticsController::class, 'tripsCountPerDatePeriod']);
+    Route::get('/tripsCountDestinationPeriod', [StatisticsController::class, 'tripsCountDestinationPeriod']);
 
 });
 
 Route::prefix('driver')->group(function () {
     Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
+});
+
+Route::prefix('collage_trips')->group(function () {
+    Route::get('/all', [TripController::class, 'collageTrips']);
+    Route::get('/details', [TripController::class, 'collageTripDetails']);
+    Route::post('/create', [TripController::class, 'createCollageTrip']);
+    Route::post('/book', [TripController::class, 'bookDailyCollageTrip']);
+    Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
+    Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
+    Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
 });

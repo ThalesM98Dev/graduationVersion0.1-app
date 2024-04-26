@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -19,11 +18,11 @@ return new class extends Migration
             $table->foreign('trip_id')->references('id')->on('trips')->onUpdate('cascade')->onDelete('cascade');
             //$table->string('ticket_type');
             //$table->integer('ticket_number');
-            $table->integer('seat_number');
-            $table->string('image_of_ID');
-            $table->string('image_of_passport');
-            $table->string('image_of_security_clearance');
-            $table->string('image_of_visa');
+            $table->integer('seat_number')->nullable();
+            $table->string('image_of_ID')->nullable();
+            $table->string('image_of_passport')->nullable();
+            $table->string('image_of_security_clearance')->nullable();
+            $table->string('image_of_visa')->nullable();
             $table->string('status')->default('pending');
             $table->timestamps();
         });
