@@ -127,7 +127,7 @@ class AuthController extends Controller
     }
 
     public function deleteDriver(Request $request, $id){
-     $user = User::findOrFail($id);
+     $user = User::find($id);
 
     if (!$user || $user->role !== 'Driver') {
         return response()->json(['message' => 'The User must be a driver or not found'], Response::HTTP_NOT_FOUND);
