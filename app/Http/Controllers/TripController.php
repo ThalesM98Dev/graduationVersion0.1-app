@@ -50,6 +50,21 @@ class TripController extends Controller
         if (!$driver || $driver->role !== 'Driver') {
         return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
+        $existingTrip = Trip::where('date',$request->date)
+        ->where('bus_id', $request->bus_id)
+        ->where(function ($query) use ($request) {
+        $query->where(function ($query) use ($request) {
+            $query->where('depature_hour', '>=', $request->depature_hour)
+                ->where('depature_hour', '<=', $request->back_hour);
+        })->orWhere(function ($query) use ($request) {
+            $query->where('back_hour', '>=', $request->depature_hour)
+                ->where('back_hour', '<=', $request->back_hour);
+        });
+    })
+    ->first();
+        if ($existingTrip) {
+        return response()->json(['message' => 'The Bus You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
+        }
         // Create a new trip instance
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;

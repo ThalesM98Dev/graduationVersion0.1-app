@@ -91,9 +91,9 @@ class AuthController extends Controller
 
     public function updateDriver(Request $request, $id)
     {
-        $user = User::findOrFail($id);
-        if ($user->role !== 'Driver') {
-        return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
+        $user = User::find($id);
+        if (!$user || $user->role !== 'Driver') {
+        return response()->json(['message' => 'The User must be a driver Or not found'], Response::HTTP_NOT_FOUND);
         }
         
         $validatedData = $request->validate([
@@ -115,7 +115,10 @@ class AuthController extends Controller
         // Save the changes
         $user->save();
 
-        return response()->json($user);
+        $response = [
+            'user' => $user
+        ];
+        return ResponseHelper::success($response);
     }
 
     public function deleteDriver(Request $request, $id){

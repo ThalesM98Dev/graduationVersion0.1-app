@@ -50,6 +50,7 @@ Route::prefix('orders')->group(function () {
 Route::prefix('bus')->group(function () {
     Route::post('/add_bus', [BusController::class, 'add_bus']);
     Route::get('/all_buses', [BusController::class, 'all_buses']);
+    Route::delete('/deleteBus/{id}', [BusController::class, 'deleteBus']);
 });
 
 Route::prefix('reserv')->group(function () {

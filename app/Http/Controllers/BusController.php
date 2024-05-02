@@ -40,4 +40,16 @@ class BusController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+
+    public function deleteBus(Request $request, $id){
+     $bus = Bus::find($id);
+
+    if (!$bus) {
+        return response()->json(['message' => 'The bus not found'], Response::HTTP_NOT_FOUND);
+    }
+
+    $bus->delete();
+    return response()->json(['message' => 'Bus deleted successfully']);
+
+    }
 }
