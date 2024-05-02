@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Response;
 
@@ -18,22 +19,25 @@ class AuthController extends Controller
      */
     public function register(StoreUserRequest $request)
     {
-        $user = User::create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => bcrypt($request['password']),
-            'mobile_number' => $request['mobile_number'],
-            'age' => $request['age'],
-            'address' => $request['address'],
-            'nationality' => $request['nationality'],
-            'role' => $request['role']
-        ]);
-        $token = $user->createToken('myapptoken')->plainTextToken;
-        $response = [
-            'user' => $user,
-            'token' => $token
-        ];
-        return ResponseHelper::success($response);
+        return DB::transaction(function () use ($request) {
+            $user = User::create([
+                'name' => $request['name'],
+                'email' => $request['email'],
+                'password' => bcrypt($request['password']),
+                'mobile_number' => $request['mobile_number'],
+                'age' => $request['age'],
+                'address' => $request['address'],
+                'nationality' => $request['nationality'],
+                'role' => $request['role']
+            ]);
+            $token = $user->createToken('myapptoken')->plainTextToken;
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
+            return ResponseHelper::success($response);
+        });
+
     }
 
     /**
@@ -42,7 +46,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $fields = $request->validate([
-            'mobile_number' => 'required|integer',
+            'mobile_number' => 'required',
             'password' => 'required|string'
         ]);
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
@@ -80,8 +84,9 @@ class AuthController extends Controller
         return ResponseHelper::success($response);
     }
 
-    public function getDrivers(){
-     $drivers = User::where('role', 'Driver')->get();
+    public function getDrivers()
+    {
+        $drivers = User::where('role', 'Driver')->get();
         $response = [
             'drivers' => $drivers
         ];

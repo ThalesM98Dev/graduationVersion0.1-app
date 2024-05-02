@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('trip_type');
             $table->string('starting_place');
             $table->integer('price')->nullable();
+            $table->bigInteger('semester_price')->nullable();
+            $table->bigInteger('daily_points')->nullable();
+            $table->bigInteger('semester_points')->nullable();
             $table->unsignedBigInteger('destination_id');
             $table->foreign('destination_id')->references('id')->on('destinations')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('bus_id');

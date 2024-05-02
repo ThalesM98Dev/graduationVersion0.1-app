@@ -12,7 +12,12 @@ class Destination extends Model
     protected $guarded = ['id'];
 
     public function trips()
-   {
-    return $this->hasMany(Trip::class);
-   }
+    {
+        return $this->hasMany(Trip::class);
+    }
+
+    public function collageTrips()
+    {
+        return $this->belongsToMany(Trip::class);
+    }
 }

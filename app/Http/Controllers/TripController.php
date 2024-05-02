@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CollageTripRequest;
+use App\Services\TripService;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Destination;
@@ -18,21 +20,31 @@ use Illuminate\Http\Response;
 class TripController extends Controller
 {
 
-    public function all_trip(){
-     $trips = Trip::where('status', 'pending')
-     ->with('destination','bus','driver')
-     ->get();
+    public $tripService;
+
+    public function __construct(TripService $tripService)
+    {
+        $this->tripService = $tripService;
+    }
+
+
+    public function all_trip()
+    {
+        $trips = Trip::where('status', 'pending')
+            ->with('destination','bus','driver')
+            ->get();
         $response = [
             'trips' => $trips
         ];
         return ResponseHelper::success($response);
 
     }
+
     public function add_trip(Request $request)
-    
+
     {
         $validator = Validator::make($request->all(), [
-             'trip_number' => 'required|integer|unique:trips',
+            'trip_number' => 'required|integer|unique:trips',
             'date' => 'required|date',
             'depature_hour' => 'required|date_format:H:i',
             'back_hour' => 'required|date_format:H:i',
@@ -48,7 +60,7 @@ class TripController extends Controller
         }
         $driver = User::find($request->driver_id);
         if (!$driver || $driver->role !== 'Driver') {
-        return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
+            return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
         $existingTrip = Trip::where('date',$request->date)
         ->where('bus_id', $request->bus_id)
@@ -87,7 +99,7 @@ class TripController extends Controller
         ];
         return ResponseHelper::success($response);
     }
-    
+
 
     public function show_trip_details($id)
     {
@@ -105,23 +117,24 @@ class TripController extends Controller
         ];
         return ResponseHelper::success($response);
     }
-    public function endTrip(Request $request , $id)
-{
-    $trip = Trip::find($id);
 
-    // Check if the reservation exists and is not already confirmed
-    if ($trip && $trip->status != 'done') {
-        $trip->status = 'done';
-        $trip->save();
-        $archive = new Archive();
-        $archive->fill($trip->toArray());
-        $archive->save();
+    public function endTrip(Request $request, $id)
+    {
+        $trip = Trip::find($id);
 
-        // Return a response indicating success
-        return response()->json(['message' => 'Trip is done'], 200);
+        // Check if the reservation exists and is not already confirmed
+        if ($trip && $trip->status != 'done') {
+            $trip->status = 'done';
+            $trip->save();
+            $archive = new Archive();
+            $archive->fill($trip->toArray());
+            $archive->save();
+
+            // Return a response indicating success
+            return response()->json(['message' => 'Trip is done'], 200);
+        }
+        return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
-    return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
-}
 
       public function getTripsByDestination($destination)
          {
@@ -131,11 +144,11 @@ class TripController extends Controller
             ->with('destination','bus','driver')
             ->get();
 
-             $response = [
+        $response = [
             'trips' => $trips
         ];
         return ResponseHelper::success($response);
-         }
+    }
 
     public function getPendingTripsByUser($userId)
     {
@@ -146,11 +159,12 @@ class TripController extends Controller
                  ->with('destination','bus','driver')
                  ->get();
 
-    $response = [
-        'trips' => $trips
-    ];
-    return ResponseHelper::success($response);
+        $response = [
+            'trips' => $trips
+        ];
+        return ResponseHelper::success($response);
     }
+
     public function getEndingTripsByUser($userId)
     {
     $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
@@ -176,6 +190,42 @@ class TripController extends Controller
             'trips' => $trips
         ];
         return ResponseHelper::success($response);
-        }
+    }
+
+
+    /*
+    Collage Trips
+    */
+
+    public function createCollageTrip(CollageTripRequest $request)
+    {
+        $result = $this->tripService->createCollageTrip($request);
+        return ResponseHelper::success($result);
+    }
+
+    public function updateCollageTrip(CollageTripRequest $request)//TODO
+    {
+        $result = $this->tripService->updateCollageTrip($request);
+        return ResponseHelper::success($result);
+    }
+
+    public function collageTrips(Request $request)
+    {
+        $result = $this->tripService->listCollageTrips($request);
+        return ResponseHelper::success($result);
+    }
+
+    public function collageTripDetails(Request $request)
+    {
+        $result = $this->tripService->collageTripDetails($request->trip_id);
+        return ResponseHelper::success($result);
+    }
+
+    public function bookDailyCollageTrip(Request $request)
+    {
+        $result = $this->tripService->bookDailyCollageTrip($request);
+        return ResponseHelper::success($result);
+    }
+
 
 }

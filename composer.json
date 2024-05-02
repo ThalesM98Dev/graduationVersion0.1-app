@@ -19,7 +19,7 @@
         "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^10.5",
         "spatie/laravel-ignition": "^2.4",
-        "kreait/laravel-firebase": "^4.0"
+        "kreait/laravel-firebase": "^5.8.0"
     },
     "autoload": {
         "psr-4": {
