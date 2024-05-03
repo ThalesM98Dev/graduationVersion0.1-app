@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\DestController;
@@ -86,4 +87,13 @@ Route::prefix('collage_trips')->group(function () {
     Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
     Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
+});
+
+
+Route::prefix('feedback')->group(function () {
+    Route::get('/all', [FeedbackController::class, 'index']);
+    Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
+    Route::get('/show/{id}', [FeedbackController::class, 'show']);
+    Route::post('/create', [FeedbackController::class, 'store']);
+    Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
