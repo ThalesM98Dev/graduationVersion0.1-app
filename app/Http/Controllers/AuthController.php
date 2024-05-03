@@ -37,7 +37,6 @@ class AuthController extends Controller
             ];
             return ResponseHelper::success($response);
         });
-
     }
 
     /**
@@ -67,7 +66,7 @@ class AuthController extends Controller
     public function logout()
     {
         $user = auth('sanctum')->user();
-        if (!$user){
+        if (!$user) {
             return ResponseHelper::error('User not found');
         }
         $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
@@ -80,8 +79,11 @@ class AuthController extends Controller
     public function refresh()
     {
         $user = auth('sanctum')->user();
-        $token = $user->createToken('access_token', ['*'],
-            now()->addMinutes(config('sanctum.ac_expiration')));
+        $token = $user->createToken(
+            'access_token',
+            ['*'],
+            now()->addMinutes(config('sanctum.ac_expiration'))
+        );
         $response = [
             'user' => $user,
             'token' => $token->plainTextToken
@@ -96,7 +98,6 @@ class AuthController extends Controller
             'drivers' => $drivers
         ];
         return ResponseHelper::success($response);
-
     }
 
     public function updateDriver(Request $request, $id)
@@ -138,7 +139,5 @@ class AuthController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'Driver deleted successfully']);
-
     }
-
 }
