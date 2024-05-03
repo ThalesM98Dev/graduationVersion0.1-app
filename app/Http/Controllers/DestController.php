@@ -8,6 +8,7 @@ use App\Models\Destination;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
 
 class DestController extends Controller
 {
@@ -28,7 +29,10 @@ class DestController extends Controller
         $dest = new Destination();
         $dest->name = $request->name;
         $dest->save();
-        return response()->json($dest, Response::HTTP_OK);
+        $response = [
+            'dest' => $dest
+        ];
+        return ResponseHelper::success($response);
     }
 
     public function showWithTrips($id)
@@ -39,6 +43,9 @@ class DestController extends Controller
         return response()->json(['error' => 'Destination not found'], 404);
     }
 
-    return response()->json($destination);
+    $response = [
+            'destination' => $destination
+        ];
+        return ResponseHelper::success($response);
     }
 }

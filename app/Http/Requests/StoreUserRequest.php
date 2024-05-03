@@ -26,12 +26,14 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string'],
+            'email' => ['unique:users,email'],
+            'mobile_number' => ['required', 'numeric', 'unique:users,mobile_number'],
             'email' => ['required', 'unique:users,email'],
             'mobile_number' => ['required', 'unique:users,mobile_number'],
             'password' => ['required', 'string'],
             'age' => ['required', 'integer'],
             'address' => ['required', 'string'],
-            'nationality' => ['required', 'string'],
+            'nationality' => ['nullable','string'],
             'role' => ['required', Rule::in(['User', 'Driver', 'Shipment Employee', 'Travel Trips Employee', 'University trips Employee', 'Admin'])],
         ];
     }

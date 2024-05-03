@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('bus_number');
             $table->string('type');
+            $table->string('image');
             $table->unsignedInteger('number_of_seats');
             $table->json('seats');
             $table->timestamps();
