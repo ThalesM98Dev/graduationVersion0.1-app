@@ -37,7 +37,6 @@ class AuthController extends Controller
             ];
             return ResponseHelper::success($response);
         });
-
     }
 
     /**
@@ -66,7 +65,11 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->user()->tokens()->delete();
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return ResponseHelper::error('User not found');
+        }
+        $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
         return ResponseHelper::success('logged out');
     }
 
@@ -75,8 +78,12 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        $user = Auth::user();
-        $token = $user->createToken('access_token', ['*'], now()->addMinutes(config('sanctum.ac_expiration')));
+        $user = auth('sanctum')->user();
+        $token = $user->createToken(
+            'access_token',
+            ['*'],
+            now()->addMinutes(config('sanctum.ac_expiration'))
+        );
         $response = [
             'user' => $user,
             'token' => $token->plainTextToken
@@ -91,22 +98,21 @@ class AuthController extends Controller
             'drivers' => $drivers
         ];
         return ResponseHelper::success($response);
-
     }
 
     public function updateDriver(Request $request, $id)
     {
-        $user = User::find($id);
-        if (!$user || $user->role !== 'Driver') {
-        return response()->json(['message' => 'The User must be a driver Or not found'], Response::HTTP_NOT_FOUND);
+        $user = User::findOrFail($id);
+        if ($user->role !== 'Driver') {
+            return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
-        
+
         $validatedData = $request->validate([
             'name' => 'required|string',
             'mobile_number' => 'required|string',
-        'age' => 'required|integer',
-        'address' => 'required|string',
-        'nationality' => 'required|string',
+            'age' => 'required|integer',
+            'address' => 'required|string',
+            'nationality' => 'required|string',
         ]);
 
         // Update the user fields
@@ -116,26 +122,22 @@ class AuthController extends Controller
         $user->address = $validatedData['address'];
         $user->nationality = $validatedData['nationality'];
         // Update other fields as needed
-        
+
         // Save the changes
         $user->save();
 
-        $response = [
-            'user' => $user
-        ];
-        return ResponseHelper::success($response);
+        return response()->json($user);
     }
 
-    public function deleteDriver(Request $request, $id){
-     $user = User::find($id);
+    public function deleteDriver(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
 
-    if (!$user || $user->role !== 'Driver') {
-        return response()->json(['message' => 'The User must be a driver or not found'], Response::HTTP_NOT_FOUND);
+        if (!$user || $user->role !== 'Driver') {
+            return response()->json(['message' => 'The User must be a driver or not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $user->delete();
+        return response()->json(['message' => 'Driver deleted successfully']);
     }
-
-    $user->delete();
-    return response()->json(['message' => 'Driver deleted successfully']);
-
-    }
-
 }

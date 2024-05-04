@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class TripService
 {
 
-    public function createCollageTrip($request)//TODO needs test
+    public function createCollageTrip($request)
     {
         return DB::transaction(function () use ($request) {
             $bus = Bus::query()->findOrFail($request->bus_id);
