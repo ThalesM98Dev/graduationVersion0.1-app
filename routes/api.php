@@ -10,6 +10,7 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,12 +19,22 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
+
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return response()->json('Email verified!');
+})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
+
+
+
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout'])
         ->middleware('auth:sanctum');
     Route::post('/refresh', [AuthController::class, 'refresh'])
+        ->middleware('auth:sanctum');
+    Route::post('/verifyEmail', [AuthController::class, 'verifyEmail'])
         ->middleware('auth:sanctum');
 });
 Route::prefix('trip')->group(function () {
