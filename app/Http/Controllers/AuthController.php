@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
+use Nette\Utils\Random;
 
 
 class AuthController extends Controller
@@ -31,12 +33,33 @@ class AuthController extends Controller
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
+            $code = Random::generate(4, '0-9');
+            $user->verification_code = $code;
+            $user->save();
+            $user->sendVerficationEmail($code);
             $response = [
                 'user' => $user,
                 'token' => $token
             ];
             return ResponseHelper::success($response);
         });
+    }
+
+    /**
+     * Verify eMail
+     */
+    public function verifyEmail(Request $request)
+    {
+        $user = auth('sanctum')->user();
+        if ($user->isVerified) {
+            return ResponseHelper::error('Your account is already verified.');
+        }
+        if ($request->verification_code == $user->verification_code) {
+            $user->isVerified = true;
+            $user->save();
+            return ResponseHelper::success('Your account is verified');
+        }
+        return ResponseHelper::error('Wrong verification code');
     }
 
     /**
