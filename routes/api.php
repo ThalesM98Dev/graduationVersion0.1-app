@@ -75,7 +75,8 @@ Route::prefix('reserv')->group(function () {
     Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails']);
     Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations']);
     Route::get('/allConfirmedReservations', [ReservationController::class, 'allConfirmedReservations']);
-    Route::post('/searchByUserName', [ReservationController::class, 'searchByUserName']);
+    Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation']);
+    Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);
 });
 
 Route::prefix('statistic')->group(function () {

@@ -45,6 +45,7 @@ class TripController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'trip_number' => 'required|integer|unique:trips',
+            'price' => 'required|integer',
             'date' => 'required|date',
             'depature_hour' => 'required|date_format:H:i',
             'back_hour' => 'required|date_format:H:i',

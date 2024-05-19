@@ -131,14 +131,15 @@ class ReservationController extends Controller
 }
 public function getAllReservation()
 {
-    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
+    $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
         ->where('reservations.status', 'pending')
         ->orderBy('reservations.id')
         ->get();
     $response = [
-            'reservations' => $reservations
+            'reservation' => $reservation
         ];
         return ResponseHelper::success($response);
 }
@@ -146,10 +147,11 @@ public function getAllReservation()
 public function showReservationDetails($id)
     {
         $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
-        ->where('reservations.id', $id)
-        ->first();
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
+            ->where('reservations.id', $id)
+            ->first();
         if (!$reservation) {
             return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
         }
@@ -160,43 +162,68 @@ public function showReservationDetails($id)
     }
 
     public function allAcceptedReservations(){
-     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
+     $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
         ->where('reservations.status', 'accept')
         ->get();
-         if ($reservations->isEmpty()) {
+         if ($reservation->isEmpty()) {
         return response()->json(['message' => 'No accepted reservations found'], 404);
         }
         $response = [
-            'reservations' => $reservations
+            'reservation' => $reservation
         ];
         return ResponseHelper::success($response);
 
     }
     public function allConfirmedReservations(){
-     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
+     $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
         ->where('reservations.status', 'confirmed')
         ->get();
-         if ($reservations->isEmpty()) {
-        return response()->json(['message' => 'No accepted reservations found'], 404);
+         if ($reservation->isEmpty()) {
+        return response()->json(['message' => 'No confirmed reservations found'], 404);
         }
         $response = [
-            'reservations' => $reservations
+            'reservation' => $reservation
         ];
         return ResponseHelper::success($response);
 
     }
 
-    public function searchByUserName(Request $request)
+    public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
 
     $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
-        ->join('orders', 'reservations.order_id', '=', 'orders.id')
-        ->select('reservations.*', 'trips.*', 'orders.*')
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
+        ->where('orders.name', 'LIKE', "%$userName%")
+        ->where('reservations.status', 'pending')
+        ->get();
+
+    if ($reservations->isEmpty()) {
+        return response()->json(['message' => 'No reservations found'], 404);
+    }
+
+    $response = [
+        'reservations' => $reservations
+    ];
+
+    return response()->json($response, 200);
+   }
+   public function searchInAllAcceptReserv(Request $request)
+   {
+    $userName = $request->input('userName');
+
+    $reservations = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'reservations.order_id', '=', 'orders.id')
+             ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
+            ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
         ->where('orders.name', 'LIKE', "%$userName%")
         ->where('reservations.status', 'accept')
         ->get();
