@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('mobile_number')->unique();
+            $table->string('mobile_number');
             $table->integer('age');
             $table->string('address');
             $table->string('nationality');
-            $table->unsignedBigInteger('user_id');
+            $table->string('image_of_ID');
+            $table->string('image_of_passport')->nullable();
+            $table->string('image_of_security_clearance')->nullable();
+            $table->string('image_of_visa')->nullable();
+            $table->unsignedBigInteger('user_id')->default();
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });

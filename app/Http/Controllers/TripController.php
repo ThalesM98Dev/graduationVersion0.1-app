@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use Carbon\Carbon;
 
 class TripController extends Controller
 {
@@ -47,8 +48,7 @@ class TripController extends Controller
             'trip_number' => 'required|integer|unique:trips',
             'price' => 'required|integer',
             'date' => 'required|date',
-            'depature_hour' => 'required|date_format:H:i',
-            'back_hour' => 'required|date_format:H:i',
+            'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
             'trip_type' => 'required|string',
             'starting_place' => 'required|string',
             'destination_id' => 'required|exists:destinations,id',
@@ -93,12 +93,14 @@ class TripController extends Controller
         if ($existingTripDriver) {
         return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
         }
+        $depatureHour = date('H:i', strtotime($request->depature_hour));
+        $backHour = date('H:i', strtotime($request->back_hour));
         // Create a new trip instance
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
         $trip->date = $request->date;
-        $trip->depature_hour = $request->depature_hour;
-        $trip->back_hour = $request->back_hour;
+        $trip->depature_hour = $depatureHour;
+        $trip->back_hour = $backHour;
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;

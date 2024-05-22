@@ -67,7 +67,7 @@ Route::prefix('bus')->group(function () {
 });
 
 Route::prefix('reserv')->group(function () {
-    Route::post('/creat_reservation', [ReservationController::class, 'creat_reservation']);
+    Route::post('/creatReservation', [ReservationController::class, 'creatReservation']);
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest']);
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest']);
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation']);

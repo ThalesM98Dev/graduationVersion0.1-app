@@ -10,71 +10,96 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use App\Models\Order;
 use App\Helpers\ImageUploadHelper;
 
 class ReservationController extends Controller
 {
-    public function creat_reservation(Request $request)
-    
-    {
-        $validator = Validator::make($request->all(), [
-             //'ticket_type' => 'required|string',
-           // 'ticket_number' => 'required|integer',
-            'seat_number' => 'required|integer',
-            'image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_of_passport' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_of_security_clearance' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_of_visa' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'order_id' => 'required|exists:orders,id',
-            'trip_id' => 'required|exists:trips,id'
-        ]);
+   public function creatReservation(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'orders' => 'required|array',
+        'orders.*.name' => 'required|string',
+        'orders.*.address' => 'required|string',
+      // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'seat_numbers' => 'required|array',
+        'seat_numbers.*' => 'required|integer',
+        'trip_id' => 'required|exists:trips,id',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    $tripId = $request->input('trip_id');
+    $trip = Trip::find($tripId);
+    $seatNumbers = $request->input('seat_numbers');
+    $reservations = [];
+    $orders = [];
+    $unavailableSeats = [];
+
+    foreach ($seatNumbers as $seatNumber) {
+        if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
+            $unavailableSeats[] = $seatNumber;
         }
+    }
 
-        $seatNumber = $request->seat_number;
-        $tripId = $request->trip_id;
-        $trip = Trip::find($tripId);
+    if (!empty($unavailableSeats)) {
+        $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
+        return response()->json(['message' => $message], 422);
+    }
+dd($request->input('orders'));
+    foreach ($request->input('orders') as $index => $orderData) {
+        $order = new Order([
+            'name' => $orderData['name'],
+            'mobile_number' => $orderData['mobile_number'],
+            'age' => $orderData['age'],
+            'address' => $orderData['address'],
+            'nationality' => $orderData['nationality'],
+            'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
+            'user_id' => $orderData['user_id'],
+        ]);
+        $order->save();
+        dd();
+        $orders[] = $order;
+     
+        foreach ($seatNumbers as $seatNumber) {
+            $reservation = new Reservation([
+                'seat_number' => intval($seatNumber),
+                'trip_id' => $tripId,
+                'order_id' => $order->id,
+            ]);
+            $reservation->save();
+            $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+            $reservations[] = $reservation;
+        }
+    }
+    $trip->available_seats -= count($seatNumbers);
+    $trip->save();
 
-    if (in_array($seatNumber, $trip->bus->seats) && !$this->isSeatTaken($trip, $seatNumber) && ($trip->status =='pending')){
-    $reserv = new Reservation();
-    $reserv->seat_number = $seatNumber;
-    $reserv->image_of_ID = ImageUploadHelper::upload($request->file('image_of_ID'));
-    $reserv->image_of_passport = ImageUploadHelper::upload($request->file('image_of_passport'));
-    $reserv->image_of_security_clearance = ImageUploadHelper::upload($request->file('image_of_security_clearance'));
-    $reserv->image_of_visa = ImageUploadHelper::upload($request->file('image_of_visa'));
-    $reserv->order_id = $request->order_id;
-    $reserv->trip_id = $tripId;
-     $this->updateSeatAvailability($trip->bus, $seatNumber, false);
-        $reserv->save();
-      $trip = Trip::find($tripId);
-     $trip->available_seats -= 1; 
-     $trip->save();  
-       // Return a response indicating success
+    if (count($reservations) > 0) {
         $response = [
-            'reserv' => $reserv
+            'reservations' => $reservations,
+            'orders' => $orders,
         ];
         return ResponseHelper::success($response);
-    }else{
-        return response()->json(['message' => 'Seat not available OR the trip not available'], 422);
     }
+    
 }
-
-    private function isSeatTaken($trip, $seatNumber)
-    {
+private function isSeatTaken($trip, $seatNumber)
+{
     return Reservation::where('trip_id', $trip->id)
         ->where('seat_number', $seatNumber)
         ->exists();
-    }
+}
 
-    private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
-   {
+private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
+{
     $seatsB = $bus->seats;
     $seatsB[$seatNumber] = $isAvailable;
     $bus->seats = $seatsB;
     $bus->save();
-    }
+}
 
     public function acceptTripRequest(Request $request, $id)
     {

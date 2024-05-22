@@ -16,5 +16,8 @@ class Reservation extends Model
         'trip_id',
         'seat_number',
     ];
+    protected $casts = [
+        'seat_number' => 'array',
+    ];
 
 }

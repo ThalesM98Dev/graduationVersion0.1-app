@@ -19,10 +19,6 @@ return new class extends Migration {
             //$table->string('ticket_type');
             //$table->integer('ticket_number');
             $table->integer('seat_number')->nullable();
-            $table->string('image_of_ID')->nullable();
-            $table->string('image_of_passport')->nullable();
-            $table->string('image_of_security_clearance')->nullable();
-            $table->string('image_of_visa')->nullable();
             $table->string('status')->default('pending');
             $table->timestamps();
         });
