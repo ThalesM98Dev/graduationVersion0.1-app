@@ -56,6 +56,7 @@ class AuthController extends Controller
         }
         if ($request->verification_code == $user->verification_code) {
             $user->isVerified = true;
+            $user->verification_code = null;
             $user->save();
             return ResponseHelper::success('Your account is verified');
         }
@@ -75,12 +76,15 @@ class AuthController extends Controller
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Invalid credentials');
         }
-        $token = $user->createToken('myapptoken')->plainTextToken;
-        $response = [
-            'user' => $user,
-            'token' => $token
-        ];
-        return ResponseHelper::success($response);
+        if ($user->isVerified) {
+            $token = $user->createToken('myapptoken')->plainTextToken;
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
+            return ResponseHelper::success($response);
+        }
+        return ResponseHelper::error('Your account is not verified');
     }
 
     /**
