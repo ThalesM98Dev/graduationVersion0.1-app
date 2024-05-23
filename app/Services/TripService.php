@@ -59,9 +59,9 @@ class TripService
     {
         return Trip::query()->where('status', $request->status)
             ->where('trip_type', 'collage trip')
-            ->where('starting_place', $request->starting_place)
-            ->select('id', 'starting_place', 'date', 'price')
-            ->groupBy('id', 'starting_place', 'date', 'price')
+            //->where('starting_place', $request->starting_place)
+            //->select('id', 'starting_place', 'date', 'price')
+            //->groupBy('id', 'starting_place', 'date', 'price')
             ->get();
     }
 
