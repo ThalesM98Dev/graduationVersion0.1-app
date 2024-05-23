@@ -21,6 +21,9 @@ class ReservationController extends Controller
         'orders' => 'required|array',
         'orders.*.name' => 'required|string',
         'orders.*.address' => 'required|string',
+        'orders.*.mobile_number' => 'required|numeric',
+        'orders.*.age' => 'required|numeric',
+        'orders.*.nationality' => 'required|string',
       // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'seat_numbers' => 'required|array',
         'seat_numbers.*' => 'required|integer',
@@ -48,7 +51,6 @@ class ReservationController extends Controller
         $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
         return response()->json(['message' => $message], 422);
     }
-dd($request->input('orders'));
     foreach ($request->input('orders') as $index => $orderData) {
         $order = new Order([
             'name' => $orderData['name'],
@@ -56,7 +58,7 @@ dd($request->input('orders'));
             'age' => $orderData['age'],
             'address' => $orderData['address'],
             'nationality' => $orderData['nationality'],
-            'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
+           // 'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
             'user_id' => $orderData['user_id'],
         ]);
         $order->save();

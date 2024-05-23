@@ -29,17 +29,19 @@ class TripController extends Controller
     }
 
 
-    public function all_trip()
-    {
-        $trips = Trip::where('status', 'pending')
-            ->with('destination','bus','driver')
-            ->get();
-        $response = [
-            'trips' => $trips
-        ];
-        return ResponseHelper::success($response);
+   public function all_trip()
+{
+    $trips = Trip::where('status', 'pending')
+        ->where('trip_type', 'External')
+        ->with('destination', 'bus', 'driver')
+        ->get();
 
-    }
+    $response = [
+        'trips' => $trips
+    ];
+
+    return ResponseHelper::success($response);
+}
 
     public function add_trip(Request $request)
 
@@ -49,7 +51,7 @@ class TripController extends Controller
             'price' => 'required|integer',
             'date' => 'required|date',
             'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
-            'trip_type' => 'required|string',
+            'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
             'destination_id' => 'required|exists:destinations,id',
             'bus_id' => 'required|exists:buses,id',
@@ -93,14 +95,12 @@ class TripController extends Controller
         if ($existingTripDriver) {
         return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
         }
-        $depatureHour = date('H:i', strtotime($request->depature_hour));
-        $backHour = date('H:i', strtotime($request->back_hour));
         // Create a new trip instance
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
         $trip->date = $request->date;
-        $trip->depature_hour = $depatureHour;
-        $trip->back_hour = $backHour;
+        $trip->depature_hour = Carbon::createFromFormat('h:i A', $request->depature_hour)->format('H:i');
+        $trip->back_hour = Carbon::createFromFormat('h:i A', $request->back_hour)->format('H:i');
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
@@ -209,6 +209,36 @@ class TripController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+    public function deleteTrip($id)
+    {
+    $trip = Trip::find($id);
+
+    if ($trip) {
+        $trip->delete();
+        return response()->json(['message' => 'Trip deleted successfully'], Response::HTTP_OK);
+    } else {
+        return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+    }
+   }
+   public function searchByTripNumber(Request $request)
+   {
+    $tripNumber = $request->input('tripNumber');
+
+    $trips = Trip::where('status', 'done')
+        ->where('trip_number', 'LIKE', "%$tripNumber%")
+        ->with('destination', 'bus', 'driver')
+        ->get();
+
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+    }
+
+    $response = [
+        'trips' => $trips
+    ];
+
+    return response()->json($response, 200);
+   }
 
 
     /*

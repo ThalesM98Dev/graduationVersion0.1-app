@@ -47,6 +47,8 @@ Route::prefix('trip')->group(function () {
     Route::get('/getTripsByDriver/{driverId}', [TripController::class, 'getTripsByDriver']);
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
     Route::get('/showArchive', [ArchiveController::class, 'showArchive']);
+    Route::delete('/deleteTrip/{id}', [TripController::class, 'deleteTrip']);
+    Route::post('/searchByTripNumber', [TripController::class, 'searchByTripNumber']);
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
@@ -90,6 +92,9 @@ Route::prefix('driver')->group(function () {
     Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
     Route::put('/updateDriver/{id}', [AuthController::class, 'updateDriver']);
     Route::delete('/deleteDriver/{id}', [AuthController::class, 'deleteDriver']);
+});
+Route::prefix('user')->group(function () {
+    Route::get('/all_Users', [AuthController::class, 'all_Users']);
 });
 
 Route::prefix('collage_trips')->group(function () {
