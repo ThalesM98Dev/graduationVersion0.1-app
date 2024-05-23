@@ -69,10 +69,10 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $fields = $request->validate([
-            'mobile_number' => 'required',
+            'email' => 'required|exists:users,email',
             'password' => 'required|string'
         ]);
-        $user = User::where('mobile_number', $fields['mobile_number'])->first();
+        $user = User::where('email', $fields['email'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Invalid credentials');
         }
