@@ -31,9 +31,9 @@ public function creatReservation(Request $request)
         'trip_id' => 'required|exists:trips,id',
     ]);
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-    }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
     // Start the transaction
     DB::beginTransaction();
@@ -110,67 +110,69 @@ private function isSeatTaken($trip, $seatNumber)
         ->exists();
 }
 
-private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
-{
-    $seatsB = $bus->seats;
-    $seatsB[$seatNumber] = $isAvailable;
-    $bus->seats = $seatsB;
-    $bus->save();
-}
+    private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
+    {
+        $seatsB = $bus->seats;
+        $seatsB[$seatNumber] = $isAvailable;
+        $bus->seats = $seatsB;
+        $bus->save();
+    }
 
     public function acceptTripRequest(Request $request, $id)
     {
-         $reserv = Reservation::find($id);
-        
+        $reserv = Reservation::find($id);
+
         if (!$reserv) {
             return response()->json(['message' => 'Reservation not found'], 404);
         }
-        
+
         $reserv->status = 'accept';
         $reserv->save();
-        
+
         return response()->json($reserv, Response::HTTP_OK);
     }
 
     public function rejectDeleteTripRequest(Request $request, $id)
     {
-         $reservation = Reservation::find($id);
-        
-        if ($reservation) {
-        $seatNumber = $reservation->seat_number;
-        $tripId = $reservation->trip_id;
-        $trip = Trip::find($tripId);
+        $reservation = Reservation::find($id);
 
-        if ($trip) {
-            $this->updateSeatAvailability($trip->bus, $seatNumber, true);
-            $trip->available_seats += 1; 
-            $trip->save(); 
+        if ($reservation) {
+            $seatNumber = $reservation->seat_number;
+            $tripId = $reservation->trip_id;
+            $trip = Trip::find($tripId);
+
+            if ($trip) {
+                $this->updateSeatAvailability($trip->bus, $seatNumber, true);
+                $trip->available_seats += 1;
+                $trip->save();
+            }
+
+            $reservation->delete();
+
+            return response()->json(['message' => 'Reservation deleted successfully'], Response::HTTP_OK);
+        } else {
+            return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function confirmReservation(Request $request, $id)
+    {
+        $reservation = Reservation::find($id);
+
+        // Check if the reservation exists and is not already confirmed
+        if ($reservation && $reservation->status != 'confirmed') {
+            $reservation->status = 'confirmed';
+            $reservation->save();
+
+            // Return a response indicating success
+            return response()->json(['message' => 'Reservation confirmed'], 200);
         }
 
-        $reservation->delete();
-
-        return response()->json(['message' => 'Reservation deleted successfully'], Response::HTTP_OK);
-    } else {
-        return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+        // Return a response indicating an error if the reservation doesn't exist or is already confirmed
+        return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
+      // Return a response indicating an error if the reservation doesn't exist or is already confirmed
+    return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);  
     }
-  }
-
-  public function confirmReservation(Request $request , $id)
-{
-    $reservation = Reservation::find($id);
-
-    // Check if the reservation exists and is not already confirmed
-    if ($reservation && $reservation->status != 'confirmed') {
-        $reservation->status = 'confirmed';
-        $reservation->save();
-
-        // Return a response indicating success
-        return response()->json(['message' => 'Reservation confirmed'], 200);
-    }
-
-    // Return a response indicating an error if the reservation doesn't exist or is already confirmed
-    return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
-}
 public function getAllReservation()
 {
     $reservation = Reservation::with(['trip.destination', 'order'])
@@ -181,8 +183,7 @@ public function getAllReservation()
         }
         return ResponseHelper::success($reservation);
 }
-
-public function showReservationDetails($id)
+    public function showReservationDetails($id)
     {
         $reservation = Reservation::with(['trip.destination', 'order'])
             ->where('reservations.id', $id)
@@ -190,10 +191,7 @@ public function showReservationDetails($id)
         if (!$reservation) {
             return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
         }
-        $response = [
-            'reservation' => $reservation
-        ];
-        return ResponseHelper::success($response);
+         return ResponseHelper::success($reservation);
     }
 
     public function allAcceptedReservations(){
@@ -212,11 +210,10 @@ public function showReservationDetails($id)
             ->get();
     if (!$reservation) {
             return response()->json(['message' => 'No Reservations Found'], Response::HTTP_NOT_FOUND);
-        }
-        return ResponseHelper::success($reservation);
+      }
+     return ResponseHelper::success($reservation);
 
     }
-
     public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
