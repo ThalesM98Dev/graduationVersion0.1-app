@@ -64,7 +64,7 @@ class ReservationController extends Controller
         $order->save();
         dd();
         $orders[] = $order;
-     
+
         foreach ($seatNumbers as $seatNumber) {
             $reservation = new Reservation([
                 'seat_number' => intval($seatNumber),
@@ -207,8 +207,7 @@ class ReservationController extends Controller
 //        return ResponseHelper::success($response);
         $reservation = Reservation::with(['trip.destination', 'order'])
             ->where('status', 'accept')
-            ->get();
-
+            ->get()->toArray();
         return ResponseHelper::success($reservation);
 
 
