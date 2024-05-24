@@ -21,7 +21,7 @@ class BusController extends Controller
     public function add_bus(Request $request){
 
         $validator = Validator::make($request->all(), [
-            'bus_number' => 'required|integer|unique:buses',
+            'bus_number' => 'required|integer|digits:6|unique:buses',
             'type' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'image_of_seats' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',

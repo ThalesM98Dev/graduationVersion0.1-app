@@ -15,17 +15,20 @@ use App\Helpers\ImageUploadHelper;
 
 class ReservationController extends Controller
 {
-    public function creatReservation(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'orders' => 'required|array',
-            'orders.*.name' => 'required|string',
-            'orders.*.address' => 'required|string',
-            // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'seat_numbers' => 'required|array',
-            'seat_numbers.*' => 'required|integer',
-            'trip_id' => 'required|exists:trips,id',
-        ]);
+   public function creatReservation(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'orders' => 'required|array',
+        'orders.*.name' => 'required|string',
+        'orders.*.address' => 'required|string',
+        'orders.*.mobile_number' => 'required|numeric',
+        'orders.*.age' => 'required|numeric',
+        'orders.*.nationality' => 'required|string',
+      // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'seat_numbers' => 'required|array',
+        'seat_numbers.*' => 'required|integer',
+        'trip_id' => 'required|exists:trips,id',
+    ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -44,38 +47,37 @@ class ReservationController extends Controller
             }
         }
 
-        if (!empty($unavailableSeats)) {
-            $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
-            return response()->json(['message' => $message], 422);
-        }
-        dd($request->input('orders'));
-        foreach ($request->input('orders') as $index => $orderData) {
-            $order = new Order([
-                'name' => $orderData['name'],
-                'mobile_number' => $orderData['mobile_number'],
-                'age' => $orderData['age'],
-                'address' => $orderData['address'],
-                'nationality' => $orderData['nationality'],
-                'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
-                'user_id' => $orderData['user_id'],
+    if (!empty($unavailableSeats)) {
+        $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
+        return response()->json(['message' => $message], 422);
+    }
+    foreach ($request->input('orders') as $index => $orderData) {
+        $order = new Order([
+            'name' => $orderData['name'],
+            'mobile_number' => $orderData['mobile_number'],
+            'age' => $orderData['age'],
+            'address' => $orderData['address'],
+            'nationality' => $orderData['nationality'],
+           // 'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
+            'user_id' => $orderData['user_id'],
+        ]);
+        $order->save();
+        dd();
+        $orders[] = $order;
+     
+        foreach ($seatNumbers as $seatNumber) {
+            $reservation = new Reservation([
+                'seat_number' => intval($seatNumber),
+                'trip_id' => $tripId,
+                'order_id' => $order->id,
             ]);
-            $order->save();
-            dd();
-            $orders[] = $order;
-
-            foreach ($seatNumbers as $seatNumber) {
-                $reservation = new Reservation([
-                    'seat_number' => intval($seatNumber),
-                    'trip_id' => $tripId,
-                    'order_id' => $order->id,
-                ]);
-                $reservation->save();
-                $this->updateSeatAvailability($trip->bus, $seatNumber, false);
-                $reservations[] = $reservation;
-            }
+            $reservation->save();
+            $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+            $reservations[] = $reservation;
         }
-        $trip->available_seats -= count($seatNumbers);
-        $trip->save();
+    }
+    $trip->available_seats -= count($seatNumbers);
+    $trip->save();
 
         if (count($reservations) > 0) {
             $response = [

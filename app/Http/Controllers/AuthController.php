@@ -118,6 +118,17 @@ class AuthController extends Controller
         return ResponseHelper::success($response);
     }
 
+    public function all_Users()
+   {
+    $users = User::all();
+
+    $response = [
+        'users' => $users
+    ];
+
+    return ResponseHelper::success($response);
+  }
+
     public function getDrivers()
     {
         $drivers = User::where('role', 'Driver')->get();
