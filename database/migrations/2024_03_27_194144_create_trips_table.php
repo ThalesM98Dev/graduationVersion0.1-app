@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('trip_number');
             $table->date('date');
             $table->time('depature_hour');
-            $table->time('back_hour')->nullable();
+            $table->time('arrival_hour')->nullable();
             $table->string('trip_type');
             $table->string('starting_place');
             $table->integer('price')->nullable();

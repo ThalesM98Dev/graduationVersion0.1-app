@@ -162,33 +162,40 @@ class AuthController extends Controller
     }
 
     public function updateDriver(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-        if ($user->role !== 'Driver') {
-            return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
-        }
-
-        $validatedData = $request->validate([
-            'name' => 'required|string',
-            'mobile_number' => 'required|string',
-            'age' => 'required|integer',
-            'address' => 'required|string',
-            'nationality' => 'required|string',
-        ]);
-
-        // Update the user fields
-        $user->name = $validatedData['name'];
-        $user->mobile_number = $validatedData['mobile_number'];
-        $user->age = $validatedData['age'];
-        $user->address = $validatedData['address'];
-        $user->nationality = $validatedData['nationality'];
-        // Update other fields as needed
-
-        // Save the changes
-        $user->save();
-
-        return response()->json($user);
+{
+    $user = User::findOrFail($id);
+    if ($user->role !== 'Driver') {
+        return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
     }
+
+    // Update the user fields if they are present in the request
+    if ($request->has('name')) {
+        $user->name = $request->input('name');
+    }
+
+    if ($request->has('mobile_number')) {
+        $user->mobile_number = $request->input('mobile_number');
+    }
+
+    if ($request->has('age')) {
+        $user->age = $request->input('age');
+    }
+
+    if ($request->has('address')) {
+        $user->address = $request->input('address');
+    }
+
+    if ($request->has('nationality')) {
+        $user->nationality = $request->input('nationality');
+    }
+
+    // Update other fields as needed
+
+    // Save the changes
+    $user->save();
+
+    return response()->json($user);
+}
 
     public function deleteDriver(Request $request, $id)
     {

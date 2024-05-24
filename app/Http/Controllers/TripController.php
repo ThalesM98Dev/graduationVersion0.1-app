@@ -50,7 +50,7 @@ class TripController extends Controller
             'trip_number' => 'required|integer|unique:trips',
             'price' => 'required|integer',
             'date' => 'required|date',
-            'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
+            'depature_hour' => 'required|date_format:H:i',
             'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
             'destination_id' => 'required|exists:destinations,id',
@@ -70,10 +70,10 @@ class TripController extends Controller
         ->where(function ($query) use ($request) {
         $query->where(function ($query) use ($request) {
             $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->back_hour);
+                ->where('depature_hour', '<=', $request->arrival_hour);
         })->orWhere(function ($query) use ($request) {
-            $query->where('back_hour', '>=', $request->depature_hour)
-                ->where('back_hour', '<=', $request->back_hour);
+            $query->where('arrival_hour', '>=', $request->depature_hour)
+                ->where('arrival_hour', '<=', $request->arrival_hour);
         });
     })
     ->first();
@@ -85,10 +85,10 @@ class TripController extends Controller
         ->where(function ($query) use ($request) {
         $query->where(function ($query) use ($request) {
             $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->back_hour);
+                ->where('depature_hour', '<=', $request->arrival_hour);
         })->orWhere(function ($query) use ($request) {
-            $query->where('back_hour', '>=', $request->depature_hour)
-                ->where('back_hour', '<=', $request->back_hour);
+            $query->where('arrival_hour', '>=', $request->depature_hour)
+                ->where('arrival_hour', '<=', $request->arrival_hour);
         });
     })
     ->first();
@@ -99,8 +99,8 @@ class TripController extends Controller
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
         $trip->date = $request->date;
-        $trip->depature_hour = Carbon::createFromFormat('h:i A', $request->depature_hour)->format('H:i');
-        $trip->back_hour = Carbon::createFromFormat('h:i A', $request->back_hour)->format('H:i');
+        $trip->depature_hour = $request->depature_hour;
+        $trip->arrival_hour = $request->arrival_hour;
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
