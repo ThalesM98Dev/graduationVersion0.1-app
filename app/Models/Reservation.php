@@ -9,6 +9,8 @@ class Reservation extends Model
 {
     use HasFactory;
 
+
+     protected $guarded = ['id'];
     protected $fillable = [
         'order_id',
         'trip_id',
@@ -17,14 +19,6 @@ class Reservation extends Model
     protected $casts = [
         'seat_number' => 'array',
     ];
-    public function trip()
-    {
-        return $this->belongsTo(Trip::class);
-    }
 
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
 
 }
