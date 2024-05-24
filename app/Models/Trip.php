@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Trip extends Model
 {
     use HasFactory;
-
     protected $guarded = [];
 
     public function destination()
@@ -21,6 +20,10 @@ class Trip extends Model
     {
 
         return $this->belongsToMany(Order::class, 'reservations', 'trip_id', 'order_id')->withTimestamps();
+    }
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
     }
 
     public function bus()

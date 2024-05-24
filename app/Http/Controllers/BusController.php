@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use App\Helpers\ResponseHelper;
 use App\Models\Bus;
+use App\Models\ImageOfBus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
@@ -24,8 +25,8 @@ class BusController extends Controller
             'bus_number' => 'required|integer|digits:6|unique:buses',
             'type' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image_of_seats' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'number_of_seats' => 'required|integer|min:1',
+            'image_of_buse_id' => 'required|exists:image_of_buses,id',
         ]);
 
         if ($validator->fails()) {
@@ -35,8 +36,8 @@ class BusController extends Controller
         $bus = new Bus();
         $bus->bus_number = $request->bus_number;
         $bus->type = $request->type;
+        $bus->image_of_buse_id = $request->image_of_buse_id;
         $bus->image = ImageUploadHelper::upload($request->file('image'));
-        $bus->image_of_seats = ImageUploadHelper::upload($request->file('image_of_seats'));
         $bus->number_of_seats = $request->number_of_seats;
         $bus->seats = array_fill(1, $bus->number_of_seats, true);
         $bus->save();
@@ -56,5 +57,23 @@ class BusController extends Controller
     $bus->delete();
     return response()->json(['message' => 'Bus deleted successfully']);
 
+    }
+    public function add_imageOfBus(Request $request){
+
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $imageBus = new ImageOfBus();
+        $imageBus->image = ImageUploadHelper::upload($request->file('image'));
+        $imageBus->save();
+        $response = [
+            'imageBus' => $imageBus
+        ];
+        return ResponseHelper::success($response);
     }
 }

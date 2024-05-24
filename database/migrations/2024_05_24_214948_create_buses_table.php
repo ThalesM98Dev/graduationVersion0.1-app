@@ -16,9 +16,10 @@ return new class extends Migration
             $table->integer('bus_number');
             $table->string('type');
             $table->string('image');
-            $table->string('image_of_seats');
             $table->unsignedInteger('number_of_seats');
             $table->json('seats');
+            $table->unsignedBigInteger('image_of_buse_id');
+            $table->foreign('image_of_buse_id')->references('id')->on('image_of_buses')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }

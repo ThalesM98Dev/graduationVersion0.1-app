@@ -120,7 +120,7 @@ class AuthController extends Controller
 
     public function all_Users()
    {
-    $users = User::all();
+    $users = User::where('role' , 'User')->get();
 
     $response = [
         'users' => $users

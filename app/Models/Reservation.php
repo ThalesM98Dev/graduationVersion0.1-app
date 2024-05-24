@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Reservation extends Model
 {
     use HasFactory;
-
-
-     protected $guarded = ['id'];
+    protected $guarded = ['id'];
     protected $fillable = [
         'order_id',
         'trip_id',
@@ -28,5 +26,4 @@ class Reservation extends Model
     {
         return $this->belongsTo(Order::class);
     }
-
 }

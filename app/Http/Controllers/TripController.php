@@ -121,17 +121,17 @@ class TripController extends Controller
 
     public function show_trip_details($id)
     {
-        $trip = Trip::with('bus', 'destination','driver','orders')->findOrFail($id);
-         $reservations = Reservation::where('trip_id', $id)
-         ->where('status', 'confirmed')
-         ->orderBy('order_id')
-         ->get();
+          $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
+        $query->where('status', 'confirmed');
+    }, 'reservations.order'])
+        ->where('status', 'pending')
+        ->find($id);
+        //dd($trip);
         if (!$trip) {
             return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
         }
         $response = [
             'trip' => $trip,
-            'reservations' => $reservations
         ];
         return ResponseHelper::success($response);
     }

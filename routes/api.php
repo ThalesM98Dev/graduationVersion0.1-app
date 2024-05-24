@@ -66,6 +66,7 @@ Route::prefix('bus')->group(function () {
     Route::post('/add_bus', [BusController::class, 'add_bus']);
     Route::get('/all_buses', [BusController::class, 'all_buses']);
     Route::delete('/deleteBus/{id}', [BusController::class, 'deleteBus']);
+    Route::post('/add_imageOfBus', [BusController::class, 'add_imageOfBus']);
 });
 
 Route::prefix('reserv')->group(function () {
