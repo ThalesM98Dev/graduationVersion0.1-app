@@ -9,22 +9,7 @@ class Trip extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'trip_number',
-        'date',
-        'depature_hour',
-        'back_hour',
-        'trip_type',
-        'starting_place',
-        'destination_id',
-        'bus_id',
-        'driver_id',
-        'price',
-        'semester_price',
-        'daily_points',
-        'semester_points',
-        'available_seats'
-    ];
+    protected $guarded = [];
 
     public function destination()
     {
