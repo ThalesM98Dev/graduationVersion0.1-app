@@ -225,7 +225,6 @@ class ReservationController extends Controller
         $reservation = Reservation::with(['trip.destination', 'order'])
             ->where('status', 'accept')
             ->get();
-        
         return ResponseHelper::success($reservation);
 
     }
