@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use App\Models\Order;
 use App\Helpers\ImageUploadHelper;
+use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
 {
-   public function creatReservation(Request $request)
+public function creatReservation(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'orders' => 'required|array',
@@ -24,7 +25,7 @@ class ReservationController extends Controller
         'orders.*.mobile_number' => 'required|numeric',
         'orders.*.age' => 'required|numeric',
         'orders.*.nationality' => 'required|string',
-      // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'seat_numbers' => 'required|array',
         'seat_numbers.*' => 'required|integer',
         'trip_id' => 'required|exists:trips,id',
@@ -34,59 +35,73 @@ class ReservationController extends Controller
         return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
-    $tripId = $request->input('trip_id');
-    $trip = Trip::find($tripId);
-    $seatNumbers = $request->input('seat_numbers');
-    $reservations = [];
-    $orders = [];
-    $unavailableSeats = [];
+    // Start the transaction
+    DB::beginTransaction();
 
-    foreach ($seatNumbers as $seatNumber) {
-        if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
-            $unavailableSeats[] = $seatNumber;
-        }
-    }
+    try {
+        $tripId = $request->input('trip_id');
+        $trip = Trip::find($tripId);
+        $seatNumbers = $request->input('seat_numbers');
+        $reservations = [];
+        $orders = [];
+        $unavailableSeats = [];
 
-    if (!empty($unavailableSeats)) {
-        $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
-        return response()->json(['message' => $message], 422);
-    }
-    foreach ($request->input('orders') as $index => $orderData) {
-        $order = new Order([
-            'name' => $orderData['name'],
-            'mobile_number' => $orderData['mobile_number'],
-            'age' => $orderData['age'],
-            'address' => $orderData['address'],
-            'nationality' => $orderData['nationality'],
-           // 'image_of_ID' => ImageUploadHelper::upload($orderData['image_of_ID']),
-            'user_id' => $orderData['user_id'],
-        ]);
-        $order->save();
-        dd();
-        $orders[] = $order;
-     
+        // Check seat availability and trip status
         foreach ($seatNumbers as $seatNumber) {
-            $reservation = new Reservation([
-                'seat_number' => intval($seatNumber),
-                'trip_id' => $tripId,
-                'order_id' => $order->id,
-            ]);
-            $reservation->save();
-            $this->updateSeatAvailability($trip->bus, $seatNumber, false);
-            $reservations[] = $reservation;
+            if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
+                $unavailableSeats[] = $seatNumber;
+            }
         }
-    }
-    $trip->available_seats -= count($seatNumbers);
-    $trip->save();
 
-    if (count($reservations) > 0) {
-        $response = [
-            'reservations' => $reservations,
-            'orders' => $orders,
-        ];
-        return ResponseHelper::success($response);
+        if (!empty($unavailableSeats)) {
+            $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
+            return response()->json(['message' => $message], 422);
+        } else {
+            foreach ($request->input('orders') as $index => $orderData) {
+                $order = new Order([
+                    'name' => $orderData['name'],
+                    'mobile_number' => $orderData['mobile_number'],
+                    'age' => $orderData['age'],
+                    'address' => $orderData['address'],
+                    'nationality' => $orderData['nationality'],
+                    'image_of_ID' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_ID'], "images"),
+                    'image_of_passport' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_passport'], "images"),
+                    'image_of_security_clearance' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_security_clearance'], "images"),
+                    'image_of_visa' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_visa'], "images"),
+                    'user_id' => $orderData['user_id'],
+                ]);
+                $order->save();
+                $orders[] = $order;
+
+                $reservation = new Reservation([
+                    'seat_number' => intval($seatNumbers[$index]),
+                    'trip_id' => $tripId,
+                    'order_id' => $order->id,
+                ]);
+                $reservation->save();
+                $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+                $reservations[] = $reservation;
+            }
+        }
+
+        $trip->available_seats -= count($seatNumbers);
+        $trip->save();
+
+        // Commit the transaction
+        DB::commit();
+
+        if (count($reservations) > 0) {
+            $response = [
+                'reservations' => $reservations,
+                'orders' => $orders,
+            ];
+            return ResponseHelper::success($response);
+        }
+    } catch (\Exception $e) {
+        // Rollback the transaction in case of an exception
+        DB::rollBack();
+        throw $e;
     }
-    
 }
 private function isSeatTaken($trip, $seatNumber)
 {
@@ -189,15 +204,18 @@ public function showReservationDetails($id)
     }
 
     public function allAcceptedReservations(){
+
      $reservation = Reservation::join('trips', 'reservations.trip_id', '=', 'trips.id')
             ->join('orders', 'reservations.order_id', '=', 'orders.id')
              ->join('destinations', 'trips.destination_id', '=', 'destinations.id')
             ->select('reservations.*', 'trips.*', 'orders.*', 'destinations.name as destination_name', 'trips.destination_id as destination_id')
         ->where('reservations.status', 'accept')
         ->get();
+dd($reservation);
          if ($reservation->isEmpty()) {
         return response()->json(['message' => 'No accepted reservations found'], 404);
         }
+
         $response = [
             'reservation' => $reservation
         ];

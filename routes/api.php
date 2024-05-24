@@ -92,6 +92,7 @@ Route::prefix('driver')->group(function () {
     Route::get('/getDrivers', [AuthController::class, 'getDrivers']);
     Route::put('/updateDriver/{id}', [AuthController::class, 'updateDriver']);
     Route::delete('/deleteDriver/{id}', [AuthController::class, 'deleteDriver']);
+    Route::post('/searchDriver', [AuthController::class, 'searchDriver']);
 });
 Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users']);
