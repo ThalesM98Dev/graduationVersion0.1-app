@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\RulesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
@@ -33,10 +34,13 @@ class AuthController extends Controller
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
-            $code = Random::generate(4, '0-9');
-            $user->verification_code = $code;
-            $user->save();
-            $user->sendVerficationEmail($code);
+            if ($request['role'] == RulesEnum::USER->value) {
+                $code = Random::generate(4, '0-9');
+                $user->verification_code = $code;
+                $user->save();
+                $user->sendVerficationEmail($code);
+            }
+            $user->isVerified = true;
             $response = [
                 'user' => $user,
                 'token' => $token
@@ -121,32 +125,32 @@ class AuthController extends Controller
     public function all_Users()
    {
     $users = User::where('role' , 'User')->get();
+    {
+        $response = [
+            'users' => $users
+        ];
 
-    $response = [
-        'users' => $users
-    ];
-
-    return ResponseHelper::success($response);
-  }
-
-    public function searchDriver(Request $request)
-   {
-    $driverName = $request->input('driverName');
-
-    $driver = User::where('name', 'LIKE', "%$driverName%")
-        ->where('role', 'Driver')
-        ->get();
-
-    if ($driver->isEmpty()) {
-        return response()->json(['message' => 'No driver found'], 404);
+        return ResponseHelper::success($response);
     }
 
-    $response = [
-        'driver' => $driver
-    ];
+    public function searchDriver(Request $request)
+    {
+        $driverName = $request->input('driverName');
 
-    return response()->json($response, 200);
-   }
+        $driver = User::where('name', 'LIKE', "%$driverName%")
+            ->where('role', 'Driver')
+            ->get();
+
+        if ($driver->isEmpty()) {
+            return response()->json(['message' => 'No driver found'], 404);
+        }
+
+        $response = [
+            'driver' => $driver
+        ];
+
+        return response()->json($response, 200);
+    }
 
     public function getDrivers()
     {
