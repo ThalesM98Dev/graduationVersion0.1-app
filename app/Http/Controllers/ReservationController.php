@@ -133,7 +133,10 @@ private function isSeatTaken($trip, $seatNumber)
     }
 
     public function rejectDeleteTripRequest(Request $request, $id)
-    {
+{
+    DB::beginTransaction();
+
+    try {
         $reservation = Reservation::find($id);
 
         if ($reservation) {
@@ -147,14 +150,36 @@ private function isSeatTaken($trip, $seatNumber)
                 $trip->save();
             }
 
+            // Get the associated order ID
+            $orderId = $reservation->order_id;
+
+            // Verify that the order ID is valid
+            if ($orderId) {
+                // Delete the associated order
+                $order = Order::find($orderId);
+                if ($order) {
+                    $order->delete();
+                }
+            }
+
             $reservation->delete();
 
-            return response()->json(['message' => 'Reservation deleted successfully'], Response::HTTP_OK);
+            DB::commit();
+
+            return response()->json(['message' => 'Reservation and associated order deleted successfully'], Response::HTTP_OK);
         } else {
+            DB::rollBack();
+
             return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
         }
-    }
+    } catch (\Exception $e) {
+        DB::rollBack();
 
+        // Handle the exception or log the error
+
+        return response()->json(['message' => 'Failed to delete reservation and associated order'], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
     public function confirmReservation(Request $request, $id)
     {
         $reservation = Reservation::find($id);
@@ -244,5 +269,84 @@ public function getAllReservation()
 
     return ResponseHelper::success($reservations);
    }
+
+
+  public function addPersonFromDash(Request $request, Trip $trip)
+  {
+
+     // Define the validation rules
+    $rules = [
+        'name' => 'required|string',
+        'mobile_number' => 'required|string',
+        'age' => 'required|integer',
+        'address' => 'required|string',
+        'nationality' => 'required|string',
+        'seat_number' => 'required|integer',
+    ];
+
+    // Validate the request data
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
+        // Return a response with validation errors
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+    
+    try {
+        // Start the transaction
+        DB::beginTransaction();
+
+        // Access the trip ID using the $trip parameter
+        $tripId = $trip->id;
+        $trip = Trip::find($tripId);
+
+        if (!$trip) {
+            return response()->json(['message' => 'Trip not found'], 404);
+        }
+
+        $seatNumber = $request->input('seat_number');
+
+        if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
+            $message = 'Seat is not available or the trip is not available';
+            return response()->json(['message' => $message], 422);
+        } else {
+            // Create the order
+            $order = new Order([
+                'name' => $request->input('name'),
+                'mobile_number' => $request->input('mobile_number'),
+                'age' => $request->input('age'),
+                'address' => $request->input('address'),
+                'nationality' => $request->input('nationality'),
+            ]);
+            $order->save();
+
+            $reservation = new Reservation([
+                'seat_number' => intval($seatNumber),
+                'trip_id' => $tripId,
+                'order_id' => $order->id,
+            ]);
+            $reservation->save();
+
+            $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+        }
+
+        $trip->available_seats--;
+        $trip->save();
+
+        // Commit the transaction
+        DB::commit();
+
+        // Return a response indicating success
+        $response = [
+            'reservation' => $reservation,
+            'order' => $order,
+        ];
+        return ResponseHelper::success($response);
+    } catch (\Exception $e) {
+        // Something went wrong, rollback the transaction
+        DB::rollback();
+        return response()->json(['message' => 'An error occurred while processing the request'], 500);
+    }
+  }
 
 }

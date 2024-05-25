@@ -132,6 +132,7 @@ class AuthController extends Controller
 
         return ResponseHelper::success($response);
     }
+   }
 
     public function searchDriver(Request $request)
     {

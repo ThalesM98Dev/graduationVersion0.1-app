@@ -80,6 +80,7 @@ Route::prefix('reserv')->group(function () {
     Route::get('/allConfirmedReservations', [ReservationController::class, 'allConfirmedReservations']);
     Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation']);
     Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);
+    Route::post('/addPersonFromDash/{trip}', [ReservationController::class, 'addPersonFromDash']);
 });
 
 Route::prefix('statistic')->group(function () {
