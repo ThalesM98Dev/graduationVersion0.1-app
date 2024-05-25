@@ -26,6 +26,7 @@ class AddTripRequest extends FormRequest
             'price' => 'required|integer',
             'date' => 'required|date',
             'depature_hour' => 'required|date_format:H:i',
+            'arrival_hour' => 'required|date_format:H:i',
             'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
             'destination_id' => 'required|exists:destinations,id',
