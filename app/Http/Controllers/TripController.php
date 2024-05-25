@@ -122,7 +122,7 @@ class TripController extends Controller
 
     public function add_trip(AddTripRequest $request)
     {
-        $driver = $request->user()->driver;
+        $driver = User::findOrFail($request->driver_id);
         if (!$driver) {
             return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
