@@ -6,6 +6,7 @@ use App\Http\Requests\CollageTripRequest;
 use App\Services\TripService;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\AddTripRequest;
 use App\Models\Destination;
 use App\Models\User;
 use App\Models\Trip;
@@ -29,103 +30,142 @@ class TripController extends Controller
     }
 
 
-   public function all_trip()
-{
-    $trips = Trip::where('status', 'pending')
-        ->where('trip_type', 'External')
-        ->with('destination', 'bus', 'driver')
-        ->get();
-
-    $response = [
-        'trips' => $trips
-    ];
-
-    return ResponseHelper::success($response);
-}
-
-    public function add_trip(Request $request)
-
+    public function all_trip()
     {
-        $validator = Validator::make($request->all(), [
-            'trip_number' => 'required|integer|unique:trips',
-            'price' => 'required|integer',
-            'date' => 'required|date',
-            'depature_hour' => 'required|date_format:H:i',
-            'trip_type' => 'required|in:External,Universities',
-            'starting_place' => 'required|string',
-            'destination_id' => 'required|exists:destinations,id',
-            'bus_id' => 'required|exists:buses,id',
-            'driver_id' => 'required|exists:users,id'
-        ]);
+        $trips = Trip::where('status', 'pending')
+            ->where('trip_type', 'External')
+            ->with('destination', 'bus', 'driver')
+            ->get();
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        $driver = User::find($request->driver_id);
-        if (!$driver || $driver->role !== 'Driver') {
+        $response = [
+            'trips' => $trips
+        ];
+
+        return ResponseHelper::success($response);
+    }
+
+    // public function add_trip(Request $request)
+
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'trip_number' => 'required|integer|unique:trips',
+    //         'price' => 'required|integer',
+    //         'date' => 'required|date',
+    //         'depature_hour' => 'required|date_format:H:i',
+    //         'trip_type' => 'required|in:External,Universities',
+    //         'starting_place' => 'required|string',
+    //         'destination_id' => 'required|exists:destinations,id',
+    //         'bus_id' => 'required|exists:buses,id',
+    //         'driver_id' => 'required|exists:users,id'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    //     }
+    //     $driver = User::find($request->driver_id);
+    //     if (!$driver || $driver->role !== 'Driver') {
+    //         return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
+    //     }
+    //     $existingTripBus = Trip::where('date', $request->date)
+    //         ->where('bus_id', $request->bus_id)
+    //         ->where(function ($query) use ($request) {
+    //             $query->where(function ($query) use ($request) {
+    //                 $query->where('depature_hour', '>=', $request->depature_hour)
+    //                     ->where('depature_hour', '<=', $request->arrival_hour);
+    //             })->orWhere(function ($query) use ($request) {
+    //                 $query->where('arrival_hour', '>=', $request->depature_hour)
+    //                     ->where('arrival_hour', '<=', $request->arrival_hour);
+    //             });
+    //         })
+    //         ->first();
+    //     if ($existingTripBus) {
+    //         return response()->json(['message' => 'The Bus You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
+    //     }
+    //     $existingTripDriver = Trip::where('date', $request->date)
+    //         ->where('driver_id', $request->driver_id)
+    //         ->where(function ($query) use ($request) {
+    //             $query->where(function ($query) use ($request) {
+    //                 $query->where('depature_hour', '>=', $request->depature_hour)
+    //                     ->where('depature_hour', '<=', $request->arrival_hour);
+    //             })->orWhere(function ($query) use ($request) {
+    //                 $query->where('arrival_hour', '>=', $request->depature_hour)
+    //                     ->where('arrival_hour', '<=', $request->arrival_hour);
+    //             });
+    //         })
+    //         ->first();
+    //     if ($existingTripDriver) {
+    //         return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
+    //     }
+    //     // Create a new trip instance
+    //     $trip = new Trip();
+    //     $trip->trip_number = $request->trip_number;
+    //     $trip->date = $request->date;
+    //     $trip->depature_hour = $request->depature_hour;
+    //     $trip->arrival_hour = $request->arrival_hour;
+    //     $trip->trip_type = $request->trip_type;
+    //     $trip->starting_place = $request->starting_place;
+    //     $trip->price = $request->price;
+    //     $trip->destination_id = $request->destination_id;
+    //     $trip->bus_id = $request->bus_id;
+    //     $trip->driver_id = $request->driver_id;
+    //     $bus = Bus::find($request->bus_id);
+    //     $trip->available_seats = $bus->number_of_seats;
+    //     $trip->save();
+
+    //     // Return a response indicating success
+    //     $response = [
+    //         'trip' => $trip
+    //     ];
+    //     return ResponseHelper::success($response);
+    // }
+
+
+    public function add_trip(AddTripRequest $request)
+    {
+        $driver = $request->user()->driver;
+        if (!$driver) {
             return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
-        $existingTripBus = Trip::where('date',$request->date)
-        ->where('bus_id', $request->bus_id)
-        ->where(function ($query) use ($request) {
-        $query->where(function ($query) use ($request) {
-            $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->arrival_hour);
-        })->orWhere(function ($query) use ($request) {
-            $query->where('arrival_hour', '>=', $request->depature_hour)
-                ->where('arrival_hour', '<=', $request->arrival_hour);
-        });
-    })
-    ->first();
-        if ($existingTripBus) {
-        return response()->json(['message' => 'The Bus You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
+
+        if ($this->isUnavailable($request, 'bus_id')) {
+            return response()->json(['message' => 'The Bus You Entered Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
         }
-        $existingTripDriver = Trip::where('date',$request->date)
-        ->where('driver_id', $request->driver_id)
-        ->where(function ($query) use ($request) {
-        $query->where(function ($query) use ($request) {
-            $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->arrival_hour);
-        })->orWhere(function ($query) use ($request) {
-            $query->where('arrival_hour', '>=', $request->depature_hour)
-                ->where('arrival_hour', '<=', $request->arrival_hour);
-        });
-    })
-    ->first();
-        if ($existingTripDriver) {
-        return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
+
+        if ($this->isUnavailable($request, 'driver_id')) {
+            return response()->json(['message' => 'The Driver You Entered Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
         }
-        // Create a new trip instance
-        $trip = new Trip();
-        $trip->trip_number = $request->trip_number;
-        $trip->date = $request->date;
-        $trip->depature_hour = $request->depature_hour;
-        $trip->arrival_hour = $request->arrival_hour;
-        $trip->trip_type = $request->trip_type;
-        $trip->starting_place = $request->starting_place;
-        $trip->price = $request->price;
-        $trip->destination_id = $request->destination_id;
-        $trip->bus_id = $request->bus_id;
-        $trip->driver_id = $request->driver_id;
-        $bus = Bus::find($request->bus_id);
-        $trip->available_seats = $bus->number_of_seats;
+
+        $trip = new Trip($request->validated());
+        $trip->available_seats = $request->bus->number_of_seats;
         $trip->save();
 
-        // Return a response indicating success
-        $response = [
-            'trip' => $trip
-        ];
-        return ResponseHelper::success($response);
+        return ResponseHelper::success(['trip' => $trip]);
+    }
+
+    private function isUnavailable($request, $field)
+    {
+        return Trip::where('date', $request->date)
+            ->where($field, $request->$field)
+            ->where(function ($query) use ($request) {
+                $query->where(function ($query) use ($request) {
+                    $query->where('depature_hour', '>=', $request->depature_hour)
+                        ->where('depature_hour', '<=', $request->arrival_hour);
+                })->orWhere(function ($query) use ($request) {
+                    $query->where('arrival_hour', '>=', $request->depature_hour)
+                        ->where('arrival_hour', '<=', $request->arrival_hour);
+                });
+            })
+            ->exists();
     }
 
 
     public function show_trip_details($id)
     {
-          $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
-        $query->where('status', 'confirmed');
-    }, 'reservations.order'])
-        ->where('status', 'pending')
-        ->find($id);
+        $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
+            $query->where('status', 'confirmed');
+        }, 'reservations.order'])
+            ->where('status', 'pending')
+            ->find($id);
         //dd($trip);
         if (!$trip) {
             return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
@@ -154,12 +194,12 @@ class TripController extends Controller
         return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
 
-      public function getTripsByDestination($destination)
-         {
-            $trips = Trip::whereHas('destination', function ($query) use ($destination) {
-        $query->where('name', $destination);
+    public function getTripsByDestination($destination)
+    {
+        $trips = Trip::whereHas('destination', function ($query) use ($destination) {
+            $query->where('name', $destination);
         })->where('status', 'pending')
-            ->with('destination','bus','driver')
+            ->with('destination', 'bus', 'driver')
             ->get();
 
         $response = [
@@ -170,12 +210,12 @@ class TripController extends Controller
 
     public function getPendingTripsByUser($userId)
     {
-    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
-                 ->where('orders.user_id', $userId)
-                 ->where('trips.status', 'pending')
-                 ->with('destination','bus','driver')
-                 ->get();
+        $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'orders.id', '=', 'reservations.order_id')
+            ->where('orders.user_id', $userId)
+            ->where('trips.status', 'pending')
+            ->with('destination', 'bus', 'driver')
+            ->get();
 
         $response = [
             'trips' => $trips
@@ -185,24 +225,24 @@ class TripController extends Controller
 
     public function getEndingTripsByUser($userId)
     {
-    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
-                 ->where('orders.user_id', $userId)
-                 ->where('trips.status', 'done')
-                 ->with('destination','bus','driver')
-                 ->get();
-    $response = [
-        'trips' => $trips
-    ];
-    return ResponseHelper::success($response);
+        $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
+            ->join('orders', 'orders.id', '=', 'reservations.order_id')
+            ->where('orders.user_id', $userId)
+            ->where('trips.status', 'done')
+            ->with('destination', 'bus', 'driver')
+            ->get();
+        $response = [
+            'trips' => $trips
+        ];
+        return ResponseHelper::success($response);
     }
 
-        public function getTripsByDriver($driverId)
-        {
+    public function getTripsByDriver($driverId)
+    {
         $trips = Trip::where('driver_id', $driverId)
-        ->where('status', 'pending')
-        ->with('destination','bus','driver')
-        ->get();
+            ->where('status', 'pending')
+            ->with('destination', 'bus', 'driver')
+            ->get();
 
         $response = [
             'trips' => $trips
@@ -211,34 +251,34 @@ class TripController extends Controller
     }
     public function deleteTrip($id)
     {
-    $trip = Trip::find($id);
+        $trip = Trip::find($id);
 
-    if ($trip) {
-        $trip->delete();
-        return response()->json(['message' => 'Trip deleted successfully'], Response::HTTP_OK);
-    } else {
-        return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+        if ($trip) {
+            $trip->delete();
+            return response()->json(['message' => 'Trip deleted successfully'], Response::HTTP_OK);
+        } else {
+            return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+        }
     }
-   }
-   public function searchByTripNumber(Request $request)
-   {
-    $tripNumber = $request->input('tripNumber');
+    public function searchByTripNumber(Request $request)
+    {
+        $tripNumber = $request->input('tripNumber');
 
-    $trips = Trip::where('status', 'done')
-        ->where('trip_number', 'LIKE', "%$tripNumber%")
-        ->with('destination', 'bus', 'driver')
-        ->get();
+        $trips = Trip::where('status', 'done')
+            ->where('trip_number', 'LIKE', "%$tripNumber%")
+            ->with('destination', 'bus', 'driver')
+            ->get();
 
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trip found'], 404);
+        if ($trips->isEmpty()) {
+            return response()->json(['message' => 'No trip found'], 404);
+        }
+
+        $response = [
+            'trips' => $trips
+        ];
+
+        return response()->json($response, 200);
     }
-
-    $response = [
-        'trips' => $trips
-    ];
-
-    return response()->json($response, 200);
-   }
 
 
     /*
@@ -251,7 +291,7 @@ class TripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function updateCollageTrip(CollageTripRequest $request)//TODO
+    public function updateCollageTrip(CollageTripRequest $request) //TODO
     {
         $result = $this->tripService->updateCollageTrip($request);
         return ResponseHelper::success($result);
@@ -274,6 +314,4 @@ class TripController extends Controller
         $result = $this->tripService->bookDailyCollageTrip($request);
         return ResponseHelper::success($result);
     }
-
-
 }
