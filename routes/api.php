@@ -81,6 +81,8 @@ Route::prefix('reserv')->group(function () {
     Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation']);
     Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);
     Route::post('/addPersonFromDash/{trip}', [ReservationController::class, 'addPersonFromDash']);
+    Route::put('/updateReservationFromDash/{id}', [ReservationController::class, 'updateReservationFromDash']);
+
 });
 
 Route::prefix('statistic')->group(function () {

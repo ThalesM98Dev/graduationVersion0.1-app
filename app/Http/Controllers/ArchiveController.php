@@ -17,14 +17,20 @@ use Illuminate\Http\Response;
 
 class ArchiveController extends Controller
 {
-   public function showArchive(){
-     $trips = Trip::where('status', 'done')
-     ->with('destination','bus','driver')
-     ->get();
-        $response = [
-            'trips' => $trips
-        ];
-        return ResponseHelper::success($response);
+   public function showArchive()
+{
+    $trips = Trip::where('status', 'done')
+        ->with('destination', 'bus', 'driver')
+        ->get();
 
+    if ($trips->isEmpty()) {
+        $message = 'No trips found';
+        return response()->json(['message' => $message], 200);
     }
+
+    $response = [
+        'trips' => $trips
+    ];
+    return ResponseHelper::success($response);
+}
 }

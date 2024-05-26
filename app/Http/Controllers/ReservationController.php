@@ -25,6 +25,7 @@ public function creatReservation(Request $request)
         'orders.*.mobile_number' => 'required|numeric',
         'orders.*.age' => 'required|numeric',
         'orders.*.nationality' => 'required|string',
+        'orders.*.user_id' => 'required|exists:users,id',
         // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'seat_numbers' => 'required|array',
         'seat_numbers.*' => 'required|integer',
@@ -72,16 +73,17 @@ public function creatReservation(Request $request)
                 ]);
                 $order->save();
                 $orders[] = $order;
-
-                $reservation = new Reservation([
+              }
+        $reservation = new Reservation([
                     'seat_number' => intval($seatNumbers[$index]),
                     'trip_id' => $tripId,
                     'order_id' => $order->id,
-                ]);
-                $reservation->save();
-                $this->updateSeatAvailability($trip->bus, $seatNumber, false);
-                $reservations[] = $reservation;
-            }
+        ]);
+
+        $reservation->save();
+       $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+    $reservations[] = $reservation;
+            
         }
 
         $trip->available_seats -= count($seatNumbers);
@@ -271,7 +273,7 @@ public function getAllReservation()
    }
 
 
-  public function addPersonFromDash(Request $request, Trip $trip)
+  public function addPersonFromDash(Request $request, $id)
   {
 
      // Define the validation rules
@@ -282,6 +284,7 @@ public function getAllReservation()
         'address' => 'required|string',
         'nationality' => 'required|string',
         'seat_number' => 'required|integer',
+        'user_id' => 'required|exists:users,id',
     ];
 
     // Validate the request data
@@ -292,16 +295,15 @@ public function getAllReservation()
         return response()->json(['errors' => $validator->errors()], 422);
     }
     
-    try {
+    //try {
         // Start the transaction
-        DB::beginTransaction();
+        //DB::beginTransaction();
+        
+        $trip = Trip::find($id);
 
-        // Access the trip ID using the $trip parameter
-        $tripId = $trip->id;
-        $trip = Trip::find($tripId);
-
-        if (!$trip) {
-            return response()->json(['message' => 'Trip not found'], 404);
+         if (!$trip) {
+            $message = 'Trip not found';
+             return response()->json(['message' => $message], 404);
         }
 
         $seatNumber = $request->input('seat_number');
@@ -317,12 +319,13 @@ public function getAllReservation()
                 'age' => $request->input('age'),
                 'address' => $request->input('address'),
                 'nationality' => $request->input('nationality'),
+                'user_id' => $request->input('user_id'),
             ]);
             $order->save();
 
             $reservation = new Reservation([
                 'seat_number' => intval($seatNumber),
-                'trip_id' => $tripId,
+                'trip_id' => $trip->id,
                 'order_id' => $order->id,
             ]);
             $reservation->save();
@@ -334,7 +337,7 @@ public function getAllReservation()
         $trip->save();
 
         // Commit the transaction
-        DB::commit();
+       // DB::commit();
 
         // Return a response indicating success
         $response = [
@@ -342,11 +345,70 @@ public function getAllReservation()
             'order' => $order,
         ];
         return ResponseHelper::success($response);
+   // } catch (\Exception $e) {
+        // Something went wrong, rollback the transaction
+    //    DB::rollback();
+     //   return response()->json(['message' => 'An error occurred while processing the request'], 500);
+    }
+  //}
+
+  public function updateReservationFromDash(Request $request, $id)
+{
+    try {
+        // Start the transaction
+        DB::beginTransaction();
+
+        $reservation = Reservation::find($id);
+        if (!$reservation) {
+            $message = 'Reservation not found';
+            return response()->json(['message' => $message], 404);
+        }
+        $tripId = $reservation->trip_id;
+        $trip = Trip::find($tripId);
+        
+        if ($request->has('seat_number')) {
+        $reservation->seat_number = (int)$request->input('seat_number');
+        }
+        if (!in_array($reservation->seat_number, $trip->bus->seats) || $this->isSeatTaken($trip, $reservation->seat_number) || $trip->status !== 'pending') {
+            $message = 'Seat is not available or the trip is not available';
+            return response()->json(['message' => $message], 422);
+        }
+
+        
+        $order = $reservation->order;
+            if ($request->has('name')) {
+               $order->name = $request->input('name');
+              }
+            if ($request->has('mobile_number')) {
+               $order->mobile_number = $request->input('mobile_number');
+              }
+
+            if ($request->has('age')) {
+               $order->age = $request->input('age');
+              }
+     
+            if ($request->has('address')) {
+               $order->address = $request->input('address');
+             }
+
+            if ($request->has('nationality')) {
+              $order->nationality = $request->input('nationality');
+              }
+            $order->save();
+
+        // Save the updated reservation
+        $reservation->save();
+
+        // Commit the transaction
+        DB::commit();
+
+        // Return a response indicating success
+        return response()->json(['message' => 'Reservation updated successfully']);
     } catch (\Exception $e) {
         // Something went wrong, rollback the transaction
-        DB::rollback();
+        DB::rollBack();
         return response()->json(['message' => 'An error occurred while processing the request'], 500);
     }
-  }
+}
 
 }

@@ -50,7 +50,7 @@ class TripController extends Controller
             'trip_number' => 'required|integer|unique:trips',
             'price' => 'required|integer',
             'date' => 'required|date',
-            'depature_hour' => 'required|date_format:H:i',
+            'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
             'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
             'destination_id' => 'required|exists:destinations,id',
@@ -99,8 +99,8 @@ class TripController extends Controller
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
         $trip->date = $request->date;
-        $trip->depature_hour = $request->depature_hour;
-        $trip->arrival_hour = $request->arrival_hour;
+        $trip->depature_hour = Carbon::createFromFormat('h:i A', $request->depature_hour)->format('H:i:s');
+        $trip->arrival_hour = Carbon::createFromFormat('h:i A', $request->arrival_hour)->format('H:i:s');
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
@@ -124,7 +124,6 @@ class TripController extends Controller
           $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
         $query->where('status', 'confirmed');
     }, 'reservations.order'])
-        ->where('status', 'pending')
         ->find($id);
         //dd($trip);
         if (!$trip) {
@@ -161,6 +160,9 @@ class TripController extends Controller
         })->where('status', 'pending')
             ->with('destination','bus','driver')
             ->get();
+        if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+    }
 
         $response = [
             'trips' => $trips
@@ -176,6 +178,9 @@ class TripController extends Controller
                  ->where('trips.status', 'pending')
                  ->with('destination','bus','driver')
                  ->get();
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+    }
 
         $response = [
             'trips' => $trips
@@ -191,18 +196,25 @@ class TripController extends Controller
                  ->where('trips.status', 'done')
                  ->with('destination','bus','driver')
                  ->get();
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+    }
+
     $response = [
         'trips' => $trips
     ];
     return ResponseHelper::success($response);
     }
 
-        public function getTripsByDriver($driverId)
-        {
+    public function getTripsByDriver($driverId) {
+
         $trips = Trip::where('driver_id', $driverId)
         ->where('status', 'pending')
         ->with('destination','bus','driver')
         ->get();
+        if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+        }
 
         $response = [
             'trips' => $trips
@@ -222,10 +234,10 @@ class TripController extends Controller
    }
    public function searchByTripNumber(Request $request)
    {
-    $tripNumber = $request->input('tripNumber');
+    $tripNumber = $request->input('trip_number');
 
     $trips = Trip::where('status', 'done')
-        ->where('trip_number', 'LIKE', "%$tripNumber%")
+        ->where('trip_number', $tripNumber)
         ->with('destination', 'bus', 'driver')
         ->get();
 
