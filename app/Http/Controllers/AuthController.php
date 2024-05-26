@@ -34,12 +34,12 @@ class AuthController extends Controller
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
-            if ($request['role'] == RulesEnum::USER->value) {
-                $code = Random::generate(4, '0-9');
-                $user->verification_code = $code;
-                $user->save();
-                $user->sendVerficationEmail($code);
-            }
+//            if ($request['role'] == RulesEnum::USER->value) {
+//                $code = Random::generate(4, '0-9');
+//                $user->verification_code = $code;
+//                $user->save();
+//                $user->sendVerficationEmail($code);
+//            }
             $user->isVerified = true;
             $response = [
                 'user' => $user,
