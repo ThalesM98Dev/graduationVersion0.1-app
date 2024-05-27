@@ -27,6 +27,10 @@ public function creatReservation(Request $request)
         'orders.*.age' => 'required|numeric',
         'orders.*.nationality' => 'required|string',
         'orders.*.user_id' => 'required|exists:users,id',
+        'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'orders.*.image_of_passport' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'orders.*.image_of_security_clearance' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'orders.*.image_of_visa' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'seat_numbers' => 'required|array',
         'seat_numbers.*' => 'required|integer',
         'trip_id' => 'required|exists:trips,id',
@@ -159,33 +163,26 @@ private function isSeatTaken($trip, $seatNumber)
         $reservation = Reservation::find($id);
 
         if ($reservation) {
-            $seatNumber = $reservation->seat_number;
             $tripId = $reservation->trip_id;
             $trip = Trip::find($tripId);
 
             if ($trip) {
-                $this->updateSeatAvailability($trip->bus, $seatNumber, true);
-                $trip->available_seats += 1;
+                $orderSeatNumbers = $reservation->orders->pluck('seat_number');
+
+                foreach ($orderSeatNumbers as $seatNumber) {
+                    $this->updateSeatAvailability($trip->bus, $seatNumber, true);
+                }
+
+                $trip->available_seats += $reservation->orders->count();
                 $trip->save();
             }
 
-            // Get the associated order ID
-            $orderId = $reservation->order_id;
-
-            // Verify that the order ID is valid
-            if ($orderId) {
-                // Delete the associated order
-                $order = Order::find($orderId);
-                if ($order) {
-                    $order->delete();
-                }
-            }
-
+            $reservation->orders()->delete();
             $reservation->delete();
 
             DB::commit();
 
-            return response()->json(['message' => 'Reservation and associated order deleted successfully'], Response::HTTP_OK);
+            return response()->json(['message' => 'Reservation and associated orders deleted successfully'], Response::HTTP_OK);
         } else {
             DB::rollBack();
 
@@ -196,7 +193,7 @@ private function isSeatTaken($trip, $seatNumber)
 
         // Handle the exception or log the error
 
-        return response()->json(['message' => 'Failed to delete reservation and associated order'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        return response()->json(['message' => 'Failed to delete reservation and associated orders'], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
     public function confirmReservation(Request $request, $id)
@@ -389,68 +386,81 @@ public function getAllReservation()
     public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
-    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
-        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
-        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
         ->select(
             'reservations.id as reservation_id',
             'reservations.total_price',
             'trips.id as trip_id',
-            'destinations.name as destination_name',
-            'orders.id as order_id',
-            'orders.name as order_name',
-            'orders.address as order_address',
-            'orders.mobile_number as order_mobile_number',
-            'orders.nationality as order_nationality',
-            'orders.age as order_age',
-            'reservation_orders.seat_number'
+            'destinations.name as destination_name'
         )
         ->where('reservations.status', 'pending')
-        ->where('orders.name', $userName)
+        ->whereHas('orders.user', function ($query) use ($userName) {
+            $query->where('name', 'LIKE', "%{$userName}%");
+        })
         ->get();
 
-    $response = [];
-
+    // Retrieve the user information for the first order of each reservation
     foreach ($reservations as $reservation) {
-        $reservationData = [
-            'reservation_id' => $reservation->reservation_id,
-            'total_price' => $reservation->total_price,
-            'trip' => [
-                'trip_id' => $reservation->trip_id,
-                'destination_name' => $reservation->destination_name,
-            ],
-            'orders' => [],
-        ];
+        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
+            ->orderBy('id')
+            ->first();
 
-        if (!isset($response[$reservation->reservation_id])) {
-            $response[$reservation->reservation_id] = $reservationData;
+        if ($firstOrder) {
+            $user = Order::find($firstOrder->order_id)->user;
+            
+            if ($user) {
+                $reservation->user = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'mobile_number' => $user->mobile_number,
+                    'age' => $user->age,
+                    'address' => $user->address,
+                    'nationality' => $user->nationality,
+                ];
+            }
         }
-
-        $response[$reservation->reservation_id]['orders'][] = [
-            'order_id' => $reservation->order_id,
-            'order_name' => $reservation->order_name,
-            'order_address' => $reservation->order_address,
-            'order_mobile_number' => $reservation->order_mobile_number,
-            'order_nationality' => $reservation->order_nationality,
-            'order_age' => $reservation->order_age,
-            'seat_number' => $reservation->seat_number,
-        ];
     }
 
-    return ResponseHelper::success(array_values($response));
+    return ResponseHelper::success($reservations);
    }
    public function searchInAllAcceptReserv(Request $request)
    {
     $userName = $request->input('userName');
-    $reservations = Reservation::with(['trip.destination', 'order'])
-        ->where('status', 'accept')
-        ->whereHas('order', function ($query) use ($userName) {
-            $query->where('name', 'LIKE', "%$userName%");
+    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'trips.id as trip_id',
+            'destinations.name as destination_name'
+        )
+        ->where('reservations.status', 'accept')
+        ->whereHas('orders.user', function ($query) use ($userName) {
+            $query->where('name', 'LIKE', "%{$userName}%");
         })
         ->get();
-    if ($reservations->isEmpty()) {
-        return response()->json(['message' => 'No reservations found'], 404);
+
+    // Retrieve the user information for the first order of each reservation
+    foreach ($reservations as $reservation) {
+        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
+            ->orderBy('id')
+            ->first();
+
+        if ($firstOrder) {
+            $user = Order::find($firstOrder->order_id)->user;
+            
+            if ($user) {
+                $reservation->user = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'mobile_number' => $user->mobile_number,
+                    'age' => $user->age,
+                    'address' => $user->address,
+                    'nationality' => $user->nationality,
+                ];
+            }
+        }
     }
 
     return ResponseHelper::success($reservations);
@@ -506,13 +516,20 @@ public function getAllReservation()
                 'user_id' => $request->input('user_id'),
             ]);
             $order->save();
-
             $reservation = new Reservation([
-                'seat_number' => intval($seatNumber),
                 'trip_id' => $trip->id,
-                'order_id' => $order->id,
+                'total_price' => $trip->price,
+                'count_of_persons' => 1,
             ]);
             $reservation->save();
+
+            $reservationOrder = new ReservationOrder([
+                    'reservation_id' => $reservation->id,
+                    'order_id' => $order->id,
+                    'seat_number' => intval($seatNumber),
+                ]);
+            $reservationOrder->save();
+            
 
             $this->updateSeatAvailability($trip->bus, $seatNumber, false);
         }
@@ -536,52 +553,63 @@ public function getAllReservation()
     }
   //}
 
-  public function updateReservationFromDash(Request $request, $id)
+ public function updateReservationFromDash(Request $request, $orderId)
 {
     try {
         // Start the transaction
         DB::beginTransaction();
 
-        $reservation = Reservation::find($id);
-        if (!$reservation) {
-            $message = 'Reservation not found';
+        $order = Order::find($orderId);
+        if (!$order) {
+            $message = 'Order not found';
             return response()->json(['message' => $message], 404);
         }
-        $tripId = $reservation->trip_id;
-        $trip = Trip::find($tripId);
-        
-        if ($request->has('seat_number')) {
-        $reservation->seat_number = (int)$request->input('seat_number');
+
+        $reservationOrder = ReservationOrder::where('order_id', $order->id)->first();
+        if (!$reservationOrder) {
+            $message = 'Reservation order not found';
+            return response()->json(['message' => $message], 404);
         }
-        if (!in_array($reservation->seat_number, $trip->bus->seats) || $this->isSeatTaken($trip, $reservation->seat_number) || $trip->status !== 'pending') {
-            $message = 'Seat is not available or the trip is not available';
+
+        $reservation = $reservationOrder->reservation;
+        $trip = $reservation->trip;
+
+        if ($request->has('seat_number')) {
+            $reservationOrder->seat_number = (int)$request->input('seat_number');
+        }
+
+        if (
+            !in_array($reservationOrder->seat_number, $trip->bus->seats) ||
+            $this->isSeatTaken($trip, $reservationOrder->seat_number) ||
+            $trip->status !== 'pending'
+        ) {
+            $message = 'Seat is not available';
             return response()->json(['message' => $message], 422);
         }
 
-        
-        $order = $reservation->order;
-            if ($request->has('name')) {
-               $order->name = $request->input('name');
-              }
-            if ($request->has('mobile_number')) {
-               $order->mobile_number = $request->input('mobile_number');
-              }
+        if ($request->has('name')) {
+            $order->name = $request->input('name');
+        }
 
-            if ($request->has('age')) {
-               $order->age = $request->input('age');
-              }
-     
-            if ($request->has('address')) {
-               $order->address = $request->input('address');
-             }
+        if ($request->has('mobile_number')) {
+            $order->mobile_number = $request->input('mobile_number');
+        }
 
-            if ($request->has('nationality')) {
-              $order->nationality = $request->input('nationality');
-              }
-            $order->save();
+        if ($request->has('age')) {
+            $order->age = $request->input('age');
+        }
 
-        // Save the updated reservation
-        $reservation->save();
+        if ($request->has('address')) {
+            $order->address = $request->input('address');
+        }
+
+        if ($request->has('nationality')) {
+            $order->nationality = $request->input('nationality');
+        }
+
+        // Save the updated order and reservation order
+        $order->save();
+        $reservationOrder->save();
 
         // Commit the transaction
         DB::commit();
