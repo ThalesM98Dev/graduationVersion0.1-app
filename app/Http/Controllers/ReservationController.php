@@ -219,56 +219,39 @@ private function isSeatTaken($trip, $seatNumber)
     }
 public function getAllReservation()
 {
-    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
-        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
-        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
         ->select(
             'reservations.id as reservation_id',
             'reservations.total_price',
             'trips.id as trip_id',
-            'destinations.name as destination_name',
-            'orders.id as order_id',
-            'orders.name as order_name',
-            'orders.address as order_address',
-            'orders.mobile_number as order_mobile_number',
-            'orders.nationality as order_nationality',
-            'orders.age as order_age',
-            'reservation_orders.seat_number'
+            'destinations.name as destination_name'
         )
         ->where('reservations.status', 'pending')
         ->get();
 
-    $response = [];
-
+    // Retrieve the user information for the first order of each reservation
     foreach ($reservations as $reservation) {
-        $reservationData = [
-            'reservation_id' => $reservation->reservation_id,
-            'total_price' => $reservation->total_price,
-            'trip' => [
-                'trip_id' => $reservation->trip_id,
-                'destination_name' => $reservation->destination_name,
-            ],
-            'orders' => [],
-        ];
+        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
+            ->orderBy('id')
+            ->first();
 
-        if (!isset($response[$reservation->reservation_id])) {
-            $response[$reservation->reservation_id] = $reservationData;
+        if ($firstOrder) {
+            $user = Order::find($firstOrder->order_id)->user;
+            
+            if ($user) {
+                $reservation->user = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'mobile_number' => $user->mobile_number,
+                ];
+            }
         }
-
-        $response[$reservation->reservation_id]['orders'][] = [
-            'order_id' => $reservation->order_id,
-            'order_name' => $reservation->order_name,
-            'order_address' => $reservation->order_address,
-            'order_mobile_number' => $reservation->order_mobile_number,
-            'order_nationality' => $reservation->order_nationality,
-            'order_age' => $reservation->order_age,
-            'seat_number' => $reservation->seat_number,
-        ];
     }
 
-    return ResponseHelper::success(array_values($response));
+    return ResponseHelper::success($reservations);
 }
+
     public function showReservationDetails($id)
 {
     $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
@@ -287,6 +270,10 @@ public function getAllReservation()
             'orders.mobile_number as order_mobile_number',
             'orders.nationality as order_nationality',
             'orders.age as order_age',
+            'orders.image_of_ID as order_image_of_ID',
+            'orders.image_of_passport as order_image_of_passport',
+            'orders.image_of_security_clearance as order_image_of_security_clearance',
+            'orders.image_of_visa as order_image_of_visa',
             'reservation_orders.seat_number'
         )
         ->where('reservations.id',$id)
@@ -317,6 +304,10 @@ public function getAllReservation()
             'order_mobile_number' => $reservation->order_mobile_number,
             'order_nationality' => $reservation->order_nationality,
             'order_age' => $reservation->order_age,
+            'order_image_of_ID' => $reservation->order_image_of_ID,
+            'order_image_of_passport' => $reservation->order_image_of_passport,
+            'order_image_of_security_clearance' => $reservation->order_image_of_security_clearance,
+            'order_image_of_visa' => $reservation->order_image_of_visa,
             'seat_number' => $reservation->seat_number,
         ];
     }
@@ -325,108 +316,75 @@ public function getAllReservation()
 }
 
     public function allAcceptedReservations(){
-        $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
-        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
-        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
         ->select(
             'reservations.id as reservation_id',
             'reservations.total_price',
             'trips.id as trip_id',
-            'destinations.name as destination_name',
-            'orders.id as order_id',
-            'orders.name as order_name',
-            'orders.address as order_address',
-            'orders.mobile_number as order_mobile_number',
-            'orders.nationality as order_nationality',
-            'orders.age as order_age',
-            'reservation_orders.seat_number'
+            'destinations.name as destination_name'
         )
         ->where('reservations.status', 'accept')
         ->get();
 
-    $response = [];
-
+    // Retrieve the user information for the first order of each reservation
     foreach ($reservations as $reservation) {
-        $reservationData = [
-            'reservation_id' => $reservation->reservation_id,
-            'total_price' => $reservation->total_price,
-            'trip' => [
-                'trip_id' => $reservation->trip_id,
-                'destination_name' => $reservation->destination_name,
-            ],
-            'orders' => [],
-        ];
+        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
+            ->orderBy('id')
+            ->first();
 
-        if (!isset($response[$reservation->reservation_id])) {
-            $response[$reservation->reservation_id] = $reservationData;
+        if ($firstOrder) {
+            $user = Order::find($firstOrder->order_id)->user;
+            
+            if ($user) {
+                $reservation->user = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'mobile_number' => $user->mobile_number,
+                ];
+            }
         }
-
-        $response[$reservation->reservation_id]['orders'][] = [
-            'order_id' => $reservation->order_id,
-            'order_name' => $reservation->order_name,
-            'order_address' => $reservation->order_address,
-            'order_mobile_number' => $reservation->order_mobile_number,
-            'order_nationality' => $reservation->order_nationality,
-            'order_age' => $reservation->order_age,
-            'seat_number' => $reservation->seat_number,
-        ];
     }
 
-    return ResponseHelper::success(array_values($response));
+    return ResponseHelper::success($reservations);
 
     }
     public function allConfirmedReservations()
 {
-    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
-        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
-        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
         ->select(
             'reservations.id as reservation_id',
             'reservations.total_price',
             'trips.id as trip_id',
-            'destinations.name as destination_name',
-            'orders.id as order_id',
-            'orders.name as order_name',
-            'orders.address as order_address',
-            'orders.mobile_number as order_mobile_number',
-            'orders.nationality as order_nationality',
-            'orders.age as order_age',
-            'reservation_orders.seat_number'
+            'destinations.name as destination_name'
         )
         ->where('reservations.status', 'confirmed')
         ->get();
 
-    $response = [];
-
+    // Retrieve the user information for the first order of each reservation
     foreach ($reservations as $reservation) {
-        $reservationData = [
-            'reservation_id' => $reservation->reservation_id,
-            'total_price' => $reservation->total_price,
-            'trip' => [
-                'trip_id' => $reservation->trip_id,
-                'destination_name' => $reservation->destination_name,
-            ],
-            'orders' => [],
-        ];
+        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
+            ->orderBy('id')
+            ->first();
 
-        if (!isset($response[$reservation->reservation_id])) {
-            $response[$reservation->reservation_id] = $reservationData;
+        if ($firstOrder) {
+            $user = Order::find($firstOrder->order_id)->user;
+            
+            if ($user) {
+                $reservation->user = [
+                    'user_id' => $user->id,
+                    'name' => $user->name,
+                    'mobile_number' => $user->mobile_number,
+                    'age' => $user->age,
+                    'address' => $user->address,
+                    'nationality' => $user->nationality,
+                ];
+            }
         }
-
-        $response[$reservation->reservation_id]['orders'][] = [
-            'order_id' => $reservation->order_id,
-            'order_name' => $reservation->order_name,
-            'order_address' => $reservation->order_address,
-            'order_mobile_number' => $reservation->order_mobile_number,
-            'order_nationality' => $reservation->order_nationality,
-            'order_age' => $reservation->order_age,
-            'seat_number' => $reservation->seat_number,
-        ];
     }
 
-    return ResponseHelper::success(array_values($response));
+    return ResponseHelper::success($reservations);
 }
     public function searchInAllReservation(Request $request)
    {
