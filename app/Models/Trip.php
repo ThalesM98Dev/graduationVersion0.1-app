@@ -9,6 +9,7 @@ class Trip extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $primaryKey = 'id';
 
     public function destination()
     {

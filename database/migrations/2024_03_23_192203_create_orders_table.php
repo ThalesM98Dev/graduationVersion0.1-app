@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('image_of_passport')->nullable();
             $table->string('image_of_security_clearance')->nullable();
             $table->string('image_of_visa')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'address','mobile_number','nationality', 'age', 'image_of_ID','image_of_passport','image_of_security_clearance','image_of_visa'];
+    protected $fillable = ['name', 'address','mobile_number','nationality', 'age', 'image_of_ID','image_of_passport','image_of_security_clearance','image_of_visa','user_id'];
 
     public function user(){
 
@@ -18,5 +18,10 @@ class Order extends Model
     public function trips(){
 
         return $this->belongsToMany(Trip::class ,'reservations' , 'order_id' , 'trip_id')->withTimestamps();
+    }
+
+    public function reservations(){
+
+        return $this->belongsToMany(Reservation::class ,'reservations' , 'order_id' , 'reservation_id')->withTimestamps();
     }
 }
