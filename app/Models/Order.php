@@ -19,4 +19,9 @@ class Order extends Model
 
         return $this->belongsToMany(Trip::class ,'reservations' , 'order_id' , 'trip_id')->withTimestamps();
     }
+
+    public function reservations(){
+
+        return $this->belongsToMany(Reservation::class ,'reservations' , 'order_id' , 'reservation_id')->withTimestamps();
+    }
 }

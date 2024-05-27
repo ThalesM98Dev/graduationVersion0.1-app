@@ -6,6 +6,7 @@ use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Trip;
 use App\Models\Reservation;
+use App\Models\ReservationOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -26,20 +27,19 @@ public function creatReservation(Request $request)
         'orders.*.age' => 'required|numeric',
         'orders.*.nationality' => 'required|string',
         'orders.*.user_id' => 'required|exists:users,id',
-        // 'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'seat_numbers' => 'required|array',
         'seat_numbers.*' => 'required|integer',
         'trip_id' => 'required|exists:trips,id',
     ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
 
     // Start the transaction
-    DB::beginTransaction();
+   // DB::beginTransaction();
 
-    try {
+    //try {
         $tripId = $request->input('trip_id');
         $trip = Trip::find($tripId);
         $seatNumbers = $request->input('seat_numbers');
@@ -58,39 +58,55 @@ public function creatReservation(Request $request)
             $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
             return response()->json(['message' => $message], 422);
         } else {
-            foreach ($request->input('orders') as $index => $orderData) {
-                $order = new Order([
-                    'name' => $orderData['name'],
-                    'mobile_number' => $orderData['mobile_number'],
-                    'age' => $orderData['age'],
-                    'address' => $orderData['address'],
-                    'nationality' => $orderData['nationality'],
-                    'image_of_ID' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_ID'], "images"),
-                    'image_of_passport' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_passport'], "images"),
-                    'image_of_security_clearance' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_security_clearance'], "images"),
-                    'image_of_visa' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_visa'], "images"),
-                    'user_id' => $orderData['user_id'],
-                ]);
-                $order->save();
-                $orders[] = $order;
-              }
-        $reservation = new Reservation([
-                    'seat_number' => intval($seatNumbers[$index]),
-                    'trip_id' => $tripId,
-                    'order_id' => $order->id,
-        ]);
+            $reservation = new Reservation([
+                'trip_id' => $tripId,
+                'total_price' => 0,
+                'count_of_persons' => 0,
+            ]);
 
-        $reservation->save();
-       $this->updateSeatAvailability($trip->bus, $seatNumber, false);
-    $reservations[] = $reservation;
-            
+            $reservation->save();
+            $totalPrice = 0;
+            $countOfPersons = 0;
+
+            foreach ($seatNumbers as $index => $seatNumber) {
+                $orderData = $request->input('orders')[$index];
+                $order = new Order([
+                'name' => $orderData['name'],
+                'mobile_number' => $orderData['mobile_number'],
+                'age' => $orderData['age'],
+                'address' => $orderData['address'],
+                'nationality' => $orderData['nationality'],
+                'image_of_ID' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_ID'], "images"),
+                'image_of_passport' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_passport'], "images"),
+                'image_of_security_clearance' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_security_clearance'], "images"),
+                'image_of_visa' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_visa'], "images"),
+                'user_id' => $orderData['user_id'],
+            ]);
+            $order->save();
+            $orders[] = $order;
+            $reservationOrder = new ReservationOrder([
+                    'reservation_id' => $reservation->id,
+                    'order_id' => $order->id,
+                    'seat_number' => intval($seatNumber),
+                ]);
+
+                $reservationOrder->save();
+                $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+                $reservations[] = $reservationOrder;
+                $totalPrice += $trip->price;
+                $countOfPersons++;
+
+            }      
+            $reservation->total_price = $totalPrice;
+            $reservation->count_of_persons = $countOfPersons + $reservation->count_of_persons;
+            $reservation->save();   
         }
 
         $trip->available_seats -= count($seatNumbers);
         $trip->save();
 
         // Commit the transaction
-        DB::commit();
+       // DB::commit();
 
         if (count($reservations) > 0) {
             $response = [
@@ -99,16 +115,17 @@ public function creatReservation(Request $request)
             ];
             return ResponseHelper::success($response);
         }
-    } catch (\Exception $e) {
+   // } catch (\Exception $e) {
         // Rollback the transaction in case of an exception
-        DB::rollBack();
-        throw $e;
-    }
+    //    DB::rollBack();
+      //  throw $e;
+   // }
 }
 private function isSeatTaken($trip, $seatNumber)
 {
-    return Reservation::where('trip_id', $trip->id)
-        ->where('seat_number', $seatNumber)
+    return ReservationOrder::join('reservations', 'reservation_orders.reservation_id', '=', 'reservations.id')
+        ->where('reservations.trip_id', $trip->id)
+        ->where('reservation_orders.seat_number', $seatNumber)
         ->exists();
 }
 
@@ -202,59 +219,268 @@ private function isSeatTaken($trip, $seatNumber)
     }
 public function getAllReservation()
 {
-    $reservation = Reservation::with(['trip.destination', 'order'])
-            ->where('status', 'pending')
-            ->get();
-        if (!$reservation) {
-            return response()->json(['message' => 'No Reservations Found'], Response::HTTP_NOT_FOUND);
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'trips.id as trip_id',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'reservation_orders.seat_number'
+        )
+        ->where('reservations.status', 'pending')
+        ->get();
+
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
         }
-        return ResponseHelper::success($reservation);
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'seat_number' => $reservation->seat_number,
+        ];
+    }
+
+    return ResponseHelper::success(array_values($response));
 }
     public function showReservationDetails($id)
-    {
-        $reservation = Reservation::with(['trip.destination', 'order'])
-            ->where('reservations.id', $id)
-            ->first();
-        if (!$reservation) {
-            return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
+{
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'reservations.count_of_persons',
+            'trips.id as trip_id',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'reservation_orders.seat_number'
+        )
+        ->where('reservations.id',$id)
+        ->get();
+
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'count_of_persons' => $reservation->count_of_persons,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
         }
-         return ResponseHelper::success($reservation);
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'seat_number' => $reservation->seat_number,
+        ];
     }
+
+    return ResponseHelper::success(array_values($response));
+}
 
     public function allAcceptedReservations(){
-        $reservation = Reservation::with(['trip.destination', 'order'])
-            ->where('status', 'accept')
-            ->get();
-        if (!$reservation) {
-            return response()->json(['message' => 'No Reservations Found'], Response::HTTP_NOT_FOUND);
+        $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'trips.id as trip_id',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'reservation_orders.seat_number'
+        )
+        ->where('reservations.status', 'accept')
+        ->get();
+
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
         }
-        return ResponseHelper::success($reservation);
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'seat_number' => $reservation->seat_number,
+        ];
+    }
+
+    return ResponseHelper::success(array_values($response));
 
     }
-    public function allConfirmedReservations(){
-     $reservation = Reservation::with(['trip.destination', 'order'])
-            ->where('status', 'confirmed')
-            ->get();
-    if (!$reservation) {
-            return response()->json(['message' => 'No Reservations Found'], Response::HTTP_NOT_FOUND);
-      }
-     return ResponseHelper::success($reservation);
+    public function allConfirmedReservations()
+{
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'trips.id as trip_id',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'reservation_orders.seat_number'
+        )
+        ->where('reservations.status', 'confirmed')
+        ->get();
 
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
+        }
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'seat_number' => $reservation->seat_number,
+        ];
     }
+
+    return ResponseHelper::success(array_values($response));
+}
     public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
-    $reservations = Reservation::with(['trip.destination', 'order'])
-        ->where('status', 'pending')
-        ->whereHas('order', function ($query) use ($userName) {
-            $query->where('name', 'LIKE', "%$userName%");
-        })
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'trips.id as trip_id',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'reservation_orders.seat_number'
+        )
+        ->where('reservations.status', 'pending')
+        ->where('orders.name', $userName)
         ->get();
-    if ($reservations->isEmpty()) {
-        return response()->json(['message' => 'No reservations found'], 404);
+
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
+        }
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'seat_number' => $reservation->seat_number,
+        ];
     }
 
-    return ResponseHelper::success($reservations);
+    return ResponseHelper::success(array_values($response));
    }
    public function searchInAllAcceptReserv(Request $request)
    {

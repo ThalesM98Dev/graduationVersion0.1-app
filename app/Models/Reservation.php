@@ -8,22 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Reservation extends Model
 {
     use HasFactory;
-    protected $guarded = ['id'];
+    
     protected $fillable = [
         'order_id',
         'trip_id',
-        'seat_number',
-    ];
-    protected $casts = [
-        'seat_number' => 'array',
+        'total_price',
+        'count_of_persons',
     ];
     public function trip()
     {
         return $this->belongsTo(Trip::class);
     }
 
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
+    public function orders(){
+
+        return $this->belongsToMany(Order::class ,'reservation_orders' , 'reservation_id' , 'order_id')->withTimestamps();
     }
 }
