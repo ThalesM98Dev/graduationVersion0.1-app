@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Models\Feedback;
 use Carbon\Carbon;
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class FeedbackController extends Controller
@@ -30,10 +28,9 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         return DB::transaction(function () use ($request) {
-            $user = auth('sanctum')->user();
             $result = Feedback::query()
                 ->create([
-                    'user_id' => $user->id,
+                    'user_id' => auth('sanctum')->id() ? : $request->user_id,
                     'date' => Carbon::now()->format('Y-m-d'),
                     'content' => $request->get('content'),
                 ]);
