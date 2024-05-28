@@ -7,8 +7,10 @@ use App\Services\TripService;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Destination;
+use App\Models\ReservationOrder;
 use App\Models\User;
 use App\Models\Trip;
+use App\Models\Order;
 use App\Models\Archive;
 use App\Models\Reservation;
 use App\Models\Bus;
@@ -35,12 +37,7 @@ class TripController extends Controller
         ->where('trip_type', 'External')
         ->with('destination', 'bus', 'driver')
         ->get();
-
-    $response = [
-        'trips' => $trips
-    ];
-
-    return ResponseHelper::success($response);
+    return ResponseHelper::success($trips);
 }
 
     public function add_trip(Request $request)
@@ -112,28 +109,47 @@ class TripController extends Controller
         $trip->save();
 
         // Return a response indicating success
-        $response = [
-            'trip' => $trip
-        ];
-        return ResponseHelper::success($response);
+        return ResponseHelper::success($trip);
     }
 
 
-    public function show_trip_details($id)
-    {
-          $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
+   public function show_trip_details($id)
+{
+    $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
         $query->where('status', 'confirmed');
-    }, 'reservations.order'])
-        ->find($id);
-        //dd($trip);
-        if (!$trip) {
-            return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
-        }
-        $response = [
-            'trip' => $trip,
-        ];
-        return ResponseHelper::success($response);
+    }])->find($id);
+
+    if (!$trip) {
+        return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
     }
+
+    // Retrieve all orders and reservation orders for every reservation
+    foreach ($trip->reservations as $reservation) {
+        $reservation->orders = $reservation->orders()->get();
+        $reservation->reservationOrders = $reservation->reservationOrders()->get();
+
+        // Map seat number to each order
+        foreach ($reservation->orders as $order) {
+            $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
+            if ($reservationOrder) {
+                $order->seat_number = $reservationOrder->seat_number;
+            }
+        }
+    }
+
+    // Extract seat numbers for each order
+    $orders = $trip->reservations->flatMap(function ($reservation) {
+        return $reservation->orders->map(function ($order) use ($reservation) {
+            $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
+            $order->seat_number = $reservationOrder ? $reservationOrder->seat_number : null;
+            return $order;
+        });
+    });
+
+    $trip->orders = $orders;
+
+    return ResponseHelper::success($trip);
+}
 
     public function endTrip(Request $request, $id)
     {
@@ -171,39 +187,41 @@ class TripController extends Controller
     }
 
     public function getPendingTripsByUser($userId)
-    {
+{
     $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
-                 ->where('orders.user_id', $userId)
-                 ->where('trips.status', 'pending')
-                 ->with('destination','bus','driver')
-                 ->get();
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trip found'], 404);
-    }
+        ->join('reservation_orders', 'reservation_orders.reservation_id', '=', 'reservations.id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->join('buses', 'buses.id', '=', 'trips.bus_id')
+        ->where('orders.user_id', $userId)
+        ->where('trips.status', 'pending')
+        ->select('trips.*', 'destinations.*', 'buses.*')
+        ->distinct()
+        ->get();
 
-        $response = [
-            'trips' => $trips
-        ];
-        return ResponseHelper::success($response);
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trips found'], 404);
     }
+    return ResponseHelper::success($trips);
+}
 
     public function getEndingTripsByUser($userId)
     {
     $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-                 ->join('orders', 'orders.id', '=', 'reservations.order_id')
-                 ->where('orders.user_id', $userId)
-                 ->where('trips.status', 'done')
-                 ->with('destination','bus','driver')
-                 ->get();
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trip found'], 404);
-    }
+        ->join('reservation_orders', 'reservation_orders.reservation_id', '=', 'reservations.id')
+        ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
+        ->join('buses', 'buses.id', '=', 'trips.bus_id')
+        ->where('orders.user_id', $userId)
+        ->where('trips.status', 'done')
+        ->select('trips.*', 'destinations.*', 'buses.*')
+        ->distinct()
+        ->get();
 
-    $response = [
-        'trips' => $trips
-    ];
-    return ResponseHelper::success($response);
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trips found'], 404);
+    }
+    return ResponseHelper::success($trips);
     }
 
     public function getTripsByDriver($driverId) {
@@ -222,16 +240,34 @@ class TripController extends Controller
         return ResponseHelper::success($response);
     }
     public function deleteTrip($id)
-    {
+{
     $trip = Trip::find($id);
 
-    if ($trip) {
+    // Check if the trip exists and has no reservations with confirmed status
+    if ($trip && !$trip->reservations()->where('status', 'confirmed')->exists()) {
+        $reservationIds = $trip->reservations->pluck('id');
+
+        // Retrieve the order IDs associated with the reservations
+        $orderIds = ReservationOrder::whereIn('reservation_id', $reservationIds)->pluck('order_id');
+
+        // Delete reservation orders associated with the reservations
+        ReservationOrder::whereIn('reservation_id', $reservationIds)->delete();
+
+        // Delete the reservations
+        Reservation::whereIn('id', $reservationIds)->delete();
+
+        // Delete the orders associated with the reservations
+        Order::whereIn('id', $orderIds)->delete();
+
+        // Delete the trip
         $trip->delete();
-        return response()->json(['message' => 'Trip deleted successfully'], Response::HTTP_OK);
-    } else {
-        return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+
+        // Return a response indicating success
+        return response()->json(['message' => 'Trip, associated reservations, and orders deleted successfully'], 200);
     }
-   }
+
+    return response()->json(['message' => 'Invalid trip ID or trip has confirmed reservations'], 422);
+}
    public function searchByTripNumber(Request $request)
    {
     $tripNumber = $request->input('trip_number');
