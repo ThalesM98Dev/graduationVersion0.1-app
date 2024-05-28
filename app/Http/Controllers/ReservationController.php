@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Trip;
+use App\Models\User;
 use App\Models\Reservation;
 use App\Models\ReservationOrder;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 class ReservationController extends Controller
 {
-public function creatReservation(Request $request)
+public function creatReservation(Request $request , $userId)
 {
     $validator = Validator::make($request->all(), [
         'orders' => 'required|array',
@@ -26,7 +27,7 @@ public function creatReservation(Request $request)
         'orders.*.mobile_number' => 'required|numeric',
         'orders.*.age' => 'required|numeric',
         'orders.*.nationality' => 'required|string',
-        'orders.*.user_id' => 'required|exists:users,id',
+        //'orders.*.user_id' => 'required|exists:users,id|in:'.$userId,
         'orders.*.image_of_ID' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'orders.*.image_of_passport' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         'orders.*.image_of_security_clearance' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -44,6 +45,11 @@ public function creatReservation(Request $request)
    // DB::beginTransaction();
 
     //try {
+        $user = User::find($userId);
+        if (!$user) {
+                $message = 'The User Did Not Exist';
+            return response()->json(['message' => $message], 422);
+            }
         $tripId = $request->input('trip_id');
         $trip = Trip::find($tripId);
         $seatNumbers = $request->input('seat_numbers');
@@ -84,7 +90,7 @@ public function creatReservation(Request $request)
                 'image_of_passport' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_passport'], "images"),
                 'image_of_security_clearance' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_security_clearance'], "images"),
                 'image_of_visa' => ImageUploadHelper::upload($request->file('orders')[$index]['image_of_visa'], "images"),
-                'user_id' => $orderData['user_id'],
+                'user_id' => $userId,
             ]);
             $order->save();
             $orders[] = $order;
