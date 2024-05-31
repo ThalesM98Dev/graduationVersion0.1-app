@@ -112,11 +112,10 @@ class TripController extends Controller
         return ResponseHelper::success($trip);
     }
 
-
-   public function show_trip_details($id)
+    public function show_trip_details($id)
 {
     $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
-        $query->where('status', 'confirmed');
+        $query->whereIn('status', ['confirmed']);
     }])->find($id);
 
     if (!$trip) {
@@ -136,17 +135,36 @@ class TripController extends Controller
             }
         }
     }
-
+    $allReservations = Reservation::whereIn('status', ['pending', 'accept', 'confirmed'])->get();
     // Extract seat numbers for each order
-    $orders = $trip->reservations->flatMap(function ($reservation) {
-        return $reservation->orders->map(function ($order) use ($reservation) {
+    $orders = $allReservations->flatMap(function ($reservation) {
+        $reservation->orders = $reservation->orders()->get();
+        $reservation->reservationOrders = $reservation->reservationOrders()->get();
+    
+        // Map seat number to each order
+        foreach ($reservation->orders as $order) {
             $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
-            $order->seat_number = $reservationOrder ? $reservationOrder->seat_number : null;
-            return $order;
-        });
+            if ($reservationOrder) {
+                $order->seat_number = $reservationOrder->seat_number;
+            }
+        }
+    
+        return $reservation->orders;
     });
+    $reservedSeats = $orders->pluck('seat_number')->toArray();
+    $busAvailability = $trip->bus->seats;
 
-    $trip->orders = $orders;
+    $unreservedSeats = [];
+    foreach ($busAvailability as $seatNumber => $isAvailable) {
+        if (!in_array($seatNumber, $reservedSeats)) {
+            $unreservedSeats[] = $seatNumber;
+        }
+    }
+
+    $availableSeatsCount = count($unreservedSeats);
+
+    $trip->bus->unreserved_seats = $unreservedSeats;
+    $trip->bus->available_seats = $availableSeatsCount;
 
     return ResponseHelper::success($trip);
 }

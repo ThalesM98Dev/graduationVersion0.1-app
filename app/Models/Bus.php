@@ -14,9 +14,9 @@ class Bus extends Model
         'seats' => 'array',
     ];
 
-    public function trips()
+    public function trip()
     {
-        return $this->hasMany(Trip::class);
+        return $this->hasOne(Trip::class);
     }
 
     public function ImageOfBus()
