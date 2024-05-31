@@ -59,7 +59,7 @@ public function creatReservation(Request $request , $userId)
 
         // Check seat availability and trip status
         foreach ($seatNumbers as $seatNumber) {
-            if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
+            if (!in_array($seatNumber, $trip->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
                 $unavailableSeats[] = $seatNumber;
             }
         }
@@ -101,7 +101,7 @@ public function creatReservation(Request $request , $userId)
                 ]);
 
                 $reservationOrder->save();
-                $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+                $this->updateSeatAvailability($trip, $seatNumber, false);
                 $reservations[] = $reservationOrder;
                 $totalPrice += $trip->price;
                 $countOfPersons++;
@@ -139,12 +139,12 @@ private function isSeatTaken($trip, $seatNumber)
         ->exists();
 }
 
-    private function updateSeatAvailability($bus, $seatNumber, $isAvailable)
+    private function updateSeatAvailability($trip, $seatNumber, $isAvailable)
     {
-        $seatsB = $bus->seats;
+        $seatsB = $trip->seats;
         $seatsB[$seatNumber] = $isAvailable;
-        $bus->seats = $seatsB;
-        $bus->save();
+        $trip->seats = $seatsB;
+        $trip->save();
     }
 
     public function acceptTripRequest(Request $request, $id)
@@ -176,7 +176,7 @@ private function isSeatTaken($trip, $seatNumber)
                 $orderSeatNumbers = $reservation->orders->pluck('seat_number');
 
                 foreach ($orderSeatNumbers as $seatNumber) {
-                    $this->updateSeatAvailability($trip->bus, $seatNumber, true);
+                    $this->updateSeatAvailability($trip, $seatNumber, true);
                 }
 
                 $trip->available_seats += $reservation->orders->count();

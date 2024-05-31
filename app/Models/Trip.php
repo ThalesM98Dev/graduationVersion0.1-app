@@ -10,6 +10,9 @@ class Trip extends Model
     use HasFactory;
     protected $guarded = [];
     protected $primaryKey = 'id';
+    protected $casts = [
+        'seats' => 'array',
+    ];
 
     public function destination()
     {

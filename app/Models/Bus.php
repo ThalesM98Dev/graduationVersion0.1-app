@@ -8,11 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Bus extends Model
 {
     use HasFactory;
-    protected $fillable = ['bus_number', 'type', 'number_of_seats', 'seats'];
-
-    protected $casts = [
-        'seats' => 'array',
-    ];
+    protected $fillable = ['bus_number', 'type', 'number_of_seats'];
 
     public function trip()
     {

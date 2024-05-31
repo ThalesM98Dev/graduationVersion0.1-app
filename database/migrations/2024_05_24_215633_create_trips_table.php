@@ -31,6 +31,7 @@ return new class extends Migration
             $table->unsignedBigInteger('driver_id')->nullable();
             $table->foreign('driver_id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('status')->default('pending');
+            $table->json('seats');
             $table->timestamps();
         });
     }
