@@ -520,7 +520,7 @@ public function getAllReservation()
 
         $seatNumber = $request->input('seat_number');
 
-        if (!in_array($seatNumber, $trip->bus->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
+        if (!in_array($seatNumber, $trip->seats) || $this->isSeatTaken($trip, $seatNumber) || $trip->status !== 'pending') {
             $message = 'Seat is not available or the trip is not available';
             return response()->json(['message' => $message], 422);
         } else {
@@ -549,7 +549,7 @@ public function getAllReservation()
             $reservationOrder->save();
             
 
-            $this->updateSeatAvailability($trip->bus, $seatNumber, false);
+            $this->updateSeatAvailability($trip, $seatNumber, false);
         }
 
         $trip->available_seats--;
@@ -597,7 +597,7 @@ public function getAllReservation()
         }
 
         if (
-            !in_array($reservationOrder->seat_number, $trip->bus->seats) ||
+            !in_array($reservationOrder->seat_number, $trip->seats) ||
             $this->isSeatTaken($trip, $reservationOrder->seat_number) ||
             $trip->status !== 'pending'
         ) {
