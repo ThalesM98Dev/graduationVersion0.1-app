@@ -39,7 +39,6 @@ class BusController extends Controller
         $bus->image_of_buse_id = $request->image_of_buse_id;
         $bus->image = ImageUploadHelper::upload($request->file('image'));
         $bus->number_of_seats = $request->number_of_seats;
-        $bus->seats = array_fill(1, $bus->number_of_seats, true);
         $bus->save();
         $response = [
             'bus' => $bus

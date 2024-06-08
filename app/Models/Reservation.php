@@ -15,13 +15,19 @@ class Reservation extends Model
         'total_price',
         'count_of_persons',
     ];
+    
     public function trip()
     {
         return $this->belongsTo(Trip::class);
     }
+    
+    public function reservationOrders()
+    {
+        return $this->hasMany(ReservationOrder::class, 'reservation_id');
+    }
 
-    public function orders(){
-
-        return $this->belongsToMany(Order::class ,'reservation_orders' , 'reservation_id' , 'order_id')->withTimestamps();
+    public function orders()
+    {
+        return $this->belongsToMany(Order::class, 'reservation_orders', 'reservation_id', 'order_id')->withTimestamps();
     }
 }

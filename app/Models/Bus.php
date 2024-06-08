@@ -8,15 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Bus extends Model
 {
     use HasFactory;
-    protected $fillable = ['bus_number', 'type', 'number_of_seats', 'seats'];
+    protected $fillable = ['bus_number', 'type', 'number_of_seats'];
 
-    protected $casts = [
-        'seats' => 'array',
-    ];
-
-    public function trips()
+    public function trip()
     {
-        return $this->hasMany(Trip::class);
+        return $this->hasOne(Trip::class);
     }
 
     public function ImageOfBus()
