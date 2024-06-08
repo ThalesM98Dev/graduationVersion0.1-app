@@ -2,106 +2,116 @@
 
 namespace App\Services;
 
-use App\Models\Bus;
-use App\Models\Destination;
-use App\Models\Reservation;
-use App\Models\Trip;
+use App\Models\CollageTrip;
+use App\Models\DailyCollageReservation;
+use App\Models\Station;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TripService
 {
-
     public function createCollageTrip($request)
     {
+        $trip = CollageTrip::query()->create([
+            'day' => $request['day'],
+            'departure_time' => Carbon::parse($request['departure_time'])->format('H:i:s'),
+            'arrival_time' => Carbon::parse($request['arrival_time'])->format('H:i:s'),
+            'go_price' => $request['go_price'],
+            'round_trip_price' => $request['round_trip_price'],
+            'semester_go_price' => $request['semester_go_price'],
+            'semester_round_trip_price' => $request['semester_round_trip_price'],
+            'go_points' => $request['go_points'],
+            'round_trip_points' => $request['round_trip_points'],
+            'semester_go_points' => $request['semester_go_points'],
+            'semester_round_trip_points' => $request['semester_round_trip_points'],
+        ]);
+        $stations = $request['stations'];
+        if ($stations) {
+            foreach ($stations as $station) {
+                //dd(strtotime($station['in_time']));
+                Station::create([
+                    'name' => $station['name'],
+                    'collage_trip_id' => $trip->id,
+                    'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
+                    'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                ]);
+            }
+        }
+        return $trip->with('stations')->findOrFail($trip->id);
+    }
+
+    public function updateCollageTrip($request)//TODO
+    {
         return DB::transaction(function () use ($request) {
-            $bus = Bus::query()->findOrFail($request->bus_id);
-            $trip = Trip::query()->create([
-                'trip_number' => $request->trip_number,
-                'date' => $request->date,
-                'depature_hour' => $request->depature_hour,
-                'back_hour' => $request->back_hour,
-                'trip_type' => $request->trip_type,
-                'starting_place' => $request->starting_place,
-                'destination_id' => $request->destination_id,
-                'bus_id' => $bus->id,
-                'driver_id' => $request->driver_id,
-                'price' => $request->daily_price,
-                'semester_price' => $request->semester_price,
-                'daily_points' => $request->daily_points,
-                'semester_points' => $request->semester_points,
-                'available_seats' => $bus->number_of_seats
+            $trip = CollageTrip::findOrFail($request->trip_id);
+            $trip->update([
+                'day' => $request->day,
+                'departure_time' => $request->departure_time,
+                'arrival_time' => $request->arrival_time,
+                'go_price' => $request->go_price,
+                'round_trip_price' => $request->round_trip_price,
+                'semester_go_price' => $request->semester_go_price,
+                'semester_round_trip_price' => $request->semester_round_trip_price,
+                'go_points' => $request->go_points,
+                'round_trip_points' => $request->round_trip_points,
+                'semester_go_points' => $request->semester_go_points,
             ]);
-            foreach ($request->stations as $station) {
-                if (isset($station['name']) && isset($station['arrival_dateTime'])) {
-                    $stationTrip = Destination::query()->updateOrCreate([
+            $stations = $request['stations'];
+            if ($stations) {
+                $trip->stations()->delete();
+                foreach ($stations as $station) {
+                    Station::create([
                         'name' => $station['name'],
+                        'collage_trip_id' => $trip->id,
+                        'in_time' => strtotime($station['in_time']),
+                        'out_time' => strtotime($station['out_time']),
                     ]);
-                    $trip->stations()->attach($stationTrip->id, ['arrival_dateTime' => $station['arrival_dateTime']]);
                 }
             }
-            return Trip::with(['stations' => function ($query) {
-                $query->select('name');
-                $query->withPivot('arrival_datetime');
-            }])->get();
+            return $trip->with('stations')->get();
         });
     }
 
-    public function updateCollageTrip($request)
+    public function listCollageTrips($request)//TODO TEST
     {
-        return DB::transaction(function () use ($request) {
-            $trip = Trip::query()->findOrFail($request->trip_id);
-            $trip->update([
-            ]);
-        });
-    }
-
-    public function listCollageTrips($request)
-    {
-        return Trip::query()->where('status', $request->status)
-            ->where('trip_type', 'collage trip')
-            //->where('starting_place', $request->starting_place)
-            //->select('id', 'starting_place', 'date', 'price')
-            //->groupBy('id', 'starting_place', 'date', 'price')
-            ->get();
+        if ('archived' == $request->type) {
+            $result = CollageTrip::with(['stations'])
+                ->with('trips', function ($query) {
+                    $query->whereDate('date', '<=', Carbon::now());
+                })
+                ->get();
+        }
+        if ('upcoming' == $request->type) {
+            $result = CollageTrip::with(['stations'])
+                ->with('trips', function ($query) {
+                    $query->whereDate('date', '>=', Carbon::now());
+                })
+                ->get();
+        }
+        return $result;
     }
 
     public function collageTripDetails($trip_id)
     {
-        $trip = Trip::query()
-            ->with([
-                'stations' => function ($query) {
-                    $query->select('name');
-                    $query->withPivot('arrival_datetime');
-                }])
+        return CollageTrip::with(['stations', 'subscriptions'])
+            ->whereHas('trips', function ($query) {
+                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
+            })
+            ->with(['trips.dailyCollageReservation'])
             ->findOrFail($trip_id);
-        $trip->subscriptions;
-        return $trip;
     }
 
-    public function bookDailyCollageTrip($request)
+    public function deleteCollageTrip($trip_id)
     {
-        return DB::transaction(function () use ($request) {
-            $trip = Trip::query()->findOrFail($request->trip_id);
-            $seats = $trip->bus->seats;
-            $seat_number = null;
-            foreach ($seats as $index => $seat) {
-                if ($seat) {
-                    $seats[$index] = false;
-                    $seat_number = $index;
-                }
-                break;
-            }
-            $trip->available_seats--;
-            $trip->save();
-            $trip->bus->seats = $seats;
-            $trip->bus->save();
-            $reservation = Reservation::query()->create([
-                'order_id' => $request->order_id,
-                'trip_id' => $request->trip_id,
-                'seat_number' => $seat_number,
-            ]);
-            return $reservation;
-        });
+        return CollageTrip::destroy($trip_id);
+    }
+
+    public function bookDailyCollageTrip($trip_id)
+    {
+        return DailyCollageReservation::create([
+            'trip_id' => $trip_id,
+            'user_id' => auth('sanctum')->id(),
+        ]);
     }
 
 

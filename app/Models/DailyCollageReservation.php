@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Subscription extends Model
+class DailyCollageReservation extends Model
 {
     use HasFactory;
 
@@ -16,8 +16,8 @@ class Subscription extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function collageTrip()
+    public function trip()
     {
-        return $this->belongsTo(CollageTrip::class);
+        return $this->belongsTo(Trip::class);
     }
 }

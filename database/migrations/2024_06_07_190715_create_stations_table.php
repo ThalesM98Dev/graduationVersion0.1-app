@@ -10,13 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('subscriptions', function (Blueprint $table) {
+        Schema::create('stations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('name');
             $table->foreignId('collage_trip_id')->constrained('collage_trips')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->bigInteger('amount')->default(0);
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->time('in_time')->nullable();
+            $table->time('out_time')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('subscriptions');
+        Schema::dropIfExists('stations');
     }
 };

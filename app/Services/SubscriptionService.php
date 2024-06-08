@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CollageTrip;
 use App\Models\Subscription;
 use App\Models\Trip;
 
@@ -14,16 +15,14 @@ class SubscriptionService
     public function subscribe($request)
     {
         return DB::transaction(function () use ($request) {
-            $trip = Trip::query()->findOrFail($request->trip_id);
-            $subscription = Subscription::query()->create([
-                'user_id' => \auth('sanctum')->id(),
-                'trip_id' => $request->trip_id,
-                'amount' => $trip->semester_price,
+            $trip = CollageTrip::findOrFail($request->collage_trip_id);
+            $subscription = Subscription::create([
+                'user_id' => auth('sanctum')->id(),
+                'collage_trip_id' => $trip->id,
+                'amount' => $request->semester_price,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
-            ///
-            ///
             return $subscription;
         });
     }
@@ -35,9 +34,9 @@ class SubscriptionService
             $subscription = Subscription::query()
                 ->where('user_id', \auth('sanctum')->id())
                 ->first();
-            $trip = Trip::query()->findOrFail($subscription->trip_id);
+            $trip = CollageTrip::query()->findOrFail($subscription->trip_id);
             $subscription->update([
-                'amount' => $trip->semester_price,
+                'amount' => $trip->semester_round_trip_price,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
