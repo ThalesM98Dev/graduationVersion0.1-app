@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Trip extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
     protected $primaryKey = 'id';
     protected $casts = [
@@ -48,5 +51,15 @@ class Trip extends Model
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function collageTrip(): BelongsTo
+    {
+        return $this->belongsTo(CollageTrip::class);
+    }
+
+    public function dailyCollageReservation(): HasMany
+    {
+        return $this->hasMany(DailyCollageReservation::class);
     }
 }

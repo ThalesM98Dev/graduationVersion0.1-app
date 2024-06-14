@@ -79,4 +79,8 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Feedback::class);
     }
 
+    public function dailyCollageReservations()
+    {
+        return $this->hasMany(DailyCollageReservation::class);
+    }
 }

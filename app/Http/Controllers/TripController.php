@@ -23,12 +23,7 @@ use Carbon\Carbon;
 class TripController extends Controller
 {
 
-    public $tripService;
 
-    public function __construct(TripService $tripService)
-    {
-        $this->tripService = $tripService;
-    }
 
 
    public function all_trip()
@@ -302,39 +297,6 @@ class TripController extends Controller
    }
 
 
-    /*
-    Collage Trips
-    */
-
-    public function createCollageTrip(CollageTripRequest $request)
-    {
-        $result = $this->tripService->createCollageTrip($request);
-        return ResponseHelper::success($result);
-    }
-
-    public function updateCollageTrip(CollageTripRequest $request)//TODO
-    {
-        $result = $this->tripService->updateCollageTrip($request);
-        return ResponseHelper::success($result);
-    }
-
-    public function collageTrips(Request $request)
-    {
-        $result = $this->tripService->listCollageTrips($request);
-        return ResponseHelper::success($result);
-    }
-
-    public function collageTripDetails(Request $request)
-    {
-        $result = $this->tripService->collageTripDetails($request->trip_id);
-        return ResponseHelper::success($result);
-    }
-
-    public function bookDailyCollageTrip(Request $request)
-    {
-        $result = $this->tripService->bookDailyCollageTrip($request);
-        return ResponseHelper::success($result);
-    }
 
 
 }

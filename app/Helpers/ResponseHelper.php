@@ -2,8 +2,6 @@
 
 namespace App\Helpers;
 
-use Illuminate\Http\JsonResponse;
-
 class ResponseHelper
 {
     public static function success($data = [], $message = 'success', $status = 200)

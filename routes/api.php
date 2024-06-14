@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CollageTripController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TripController;
@@ -103,10 +104,11 @@ Route::prefix('user')->group(function () {
 });
 
 Route::prefix('collage_trips')->group(function () {
-    Route::get('/all', [TripController::class, 'collageTrips']);
-    Route::get('/details', [TripController::class, 'collageTripDetails']);
-    Route::post('/create', [TripController::class, 'createCollageTrip']);
-    Route::post('/book', [TripController::class, 'bookDailyCollageTrip']);
+    Route::get('/all', [CollageTripController::class, 'index']);
+    Route::get('/details/{id}', [CollageTripController::class, 'show']);
+    Route::post('/create', [CollageTripController::class, 'create']);
+    Route::get('/book/{id}', [CollageTripController::class, 'bookDailyCollageTrip']);
+
     Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
     Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
