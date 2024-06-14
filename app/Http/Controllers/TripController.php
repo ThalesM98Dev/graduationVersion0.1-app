@@ -113,7 +113,7 @@ class TripController extends Controller
         return ResponseHelper::success($trip);
     }
 
-    public function show_trip_details($id)
+   public function show_trip_details($id)
 {
     $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
         $query->where('status', 'confirmed');
@@ -133,6 +133,7 @@ class TripController extends Controller
             $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
             if ($reservationOrder) {
                 $order->seat_number = $reservationOrder->seat_number;
+                $order->is_seat_assigned = true; // Add a new property to indicate seat assignment
             }
         }
     }
@@ -142,11 +143,23 @@ class TripController extends Controller
         return $reservation->orders->map(function ($order) use ($reservation) {
             $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
             $order->seat_number = $reservationOrder ? $reservationOrder->seat_number : null;
+            $order->is_seat_assigned = ($reservationOrder !== null); // Check if seat is assigned
             return $order;
         });
     });
 
     $trip->orders = $orders;
+
+     $availableSeatNumbers = collect($trip->seats)
+    ->filter(function ($seat) {
+        return $seat === true;
+    })
+    ->keys()
+    ->map(function ($seatNumber) {
+        return (int)$seatNumber;
+    });
+
+    $trip->available_seat_numbers = $availableSeatNumbers;
 
     return ResponseHelper::success($trip);
 }
