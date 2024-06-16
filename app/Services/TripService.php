@@ -171,6 +171,7 @@ class TripService
     {
         return CollageTrip::whereHas('stations', function ($query) use ($station) {
             $query->where('name', $station);
-        })->get();
+        })->with(['stations', 'trips'])
+            ->get();
     }
 }
