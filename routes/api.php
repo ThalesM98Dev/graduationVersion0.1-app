@@ -113,7 +113,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
     Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
-    Route::get('/all', [SubscriptionController::class, 'index']);
+    Route::get('/allSubscription', [SubscriptionController::class, 'index']);
 });
 
 
