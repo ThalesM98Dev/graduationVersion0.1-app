@@ -54,4 +54,11 @@ class SubscriptionService
             ->where('user_id', \auth('sanctum')->id())
             ->first()->delete();
     }
+
+    public function updateStatus($request)
+    {
+        return Subscription::findOrFail($request->subscription_id)->update([
+            'status' => $request->status,
+        ]);
+    }
 }

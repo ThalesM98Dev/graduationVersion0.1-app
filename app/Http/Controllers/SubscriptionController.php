@@ -39,4 +39,11 @@ class SubscriptionController extends Controller
         $this->subscriptionService->unSubscribe();
         return ResponseHelper::success('Subscription cancelled successfully.');
     }
+
+    public function update(Request $request)
+    {
+        $this->subscriptionService->updateStatus($request);
+        return ResponseHelper::success('Subscription accepted successfully.');
+    }
+
 }
