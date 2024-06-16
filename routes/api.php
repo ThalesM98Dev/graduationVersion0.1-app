@@ -41,7 +41,8 @@ Route::prefix('auth')->group(function () {
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip']);
     Route::get('/all_trip', [TripController::class, 'all_trip']);
-    Route::get('/getTripsByDestination/{destination}', [TripController::class, 'getTripsByDestination']);
+    Route::post('/getTripsByDestinationInArchive', [TripController::class, 'getTripsByDestinationInArchive']);
+    Route::post('/getTripsByDestinationInAllTrips', [TripController::class, 'getTripsByDestinationInAllTrips']);
     Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details']);
     Route::get('/getPendingTripsByUser/{userId}', [TripController::class, 'getPendingTripsByUser']);
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser']);
@@ -49,7 +50,6 @@ Route::prefix('trip')->group(function () {
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
     Route::get('/showArchive', [ArchiveController::class, 'showArchive']);
     Route::delete('/deleteTrip/{id}', [TripController::class, 'deleteTrip']);
-    Route::post('/searchByTripNumber', [TripController::class, 'searchByTripNumber']);
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
@@ -78,7 +78,6 @@ Route::prefix('reserv')->group(function () {
     Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation']);
     Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails']);
     Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations']);
-    Route::get('/allConfirmedReservations', [ReservationController::class, 'allConfirmedReservations']);
     Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation']);
     Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);
     Route::post('/addPersonFromDash', [ReservationController::class, 'addPersonFromDash']);

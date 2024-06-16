@@ -364,43 +364,6 @@ public function getAllReservation()
     return ResponseHelper::success($response);
 
     }
-    public function allConfirmedReservations()
-{
-    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
-        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
-        ->select(
-            'reservations.id as reservation_id',
-            'reservations.total_price',
-            'trips.id as trip_id',
-            'destinations.name as destination_name'
-        )
-        ->where('reservations.status', 'confirmed')
-        ->get();
-
-    // Retrieve the user information for the first order of each reservation
-    foreach ($reservations as $reservation) {
-        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
-            ->orderBy('id')
-            ->first();
-
-        if ($firstOrder) {
-            $user = Order::find($firstOrder->order_id)->user;
-            
-            if ($user) {
-                $reservation->user = [
-                    'user_id' => $user->id,
-                    'name' => $user->name,
-                    'mobile_number' => $user->mobile_number,
-                    'age' => $user->age,
-                    'address' => $user->address,
-                    'nationality' => $user->nationality,
-                ];
-            }
-        }
-    }
-
-    return ResponseHelper::success($reservations);
-}
     public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
