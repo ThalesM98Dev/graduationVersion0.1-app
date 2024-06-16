@@ -2,20 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\TripService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
-use App\Models\Trip;
 use App\Models\Reservation;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Response;
-use App\Helpers\ImageUploadHelper;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller
 {
+    private $tripService;
+
+    public function __construct(TripService $tripService)
+    {
+        $this->tripService = $tripService;
+    }
+
+
     public function byDateAndDestenation(Request $request)
     {
 
@@ -57,49 +61,19 @@ class StatisticsController extends Controller
 
     /*
        * Statistics
-      */
+     */
 
-    public function tripsCountPerDatePeriod(Request $request)
+    public function tripsCountPerDatePeriod(Request $request): JsonResponse
     {
-        $startDate = Carbon::createFromDate($request->start_date);
-        $endDate = Carbon::createFromDate($request->end_date);
-        $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
-            ->whereBetween('trips.date', [$startDate, $endDate]);
-        if ($request->type === 'year') {
-            $query->groupBy(DB::raw('YEAR(trips.date)'))
-                ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
-                ->orderBy('period', 'asc');
-        } elseif ($request->type === 'month') {
-            $query->groupBy(DB::raw('MONTH(trips.date)'))
-                ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
-                ->orderBy('period', 'asc');
-        }
-        $statistics = $query->get();
-        $response = [
-            'statistics' => $statistics
-        ];
-        return ResponseHelper::success($response);
+        $statistics = $this->tripService->tripsCountPerDatePeriod($request);
+        return ResponseHelper::success($statistics);
     }
 
-    public function tripsCountDestinationPeriod(Request $request)
+    public function tripsCountDestinationPeriod(Request $request): JsonResponse
     {
-        $dest_id = $request->input('destination_id');
-        $query = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
-            ->where('trips.destination_id', $dest_id);
-        if ($request->type === 'year') {
-            $query->groupBy(DB::raw('YEAR(trips.date)'))
-                ->select(DB::raw('YEAR(trips.date) as period, COUNT(*) as reservation_count'))
-                ->orderBy('period', 'asc');
-        } elseif ($request->type === 'month') {
-            $query->groupBy(DB::raw('MONTH(trips.date)'))
-                ->select(DB::raw('MONTH(trips.date) as period, COUNT(*) as reservation_count'))
-                ->orderBy('period', 'asc');
-        }
-        $statistics = $query->get();
-        $response = [
-            'statistics' => $statistics
-        ];
-        return ResponseHelper::success($response);
+        $statistics = $this->tripService->tripsCountDestinationPeriod($request);
+        return ResponseHelper::success($statistics);
     }
+
 
 }

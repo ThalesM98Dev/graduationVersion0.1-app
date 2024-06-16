@@ -25,21 +25,22 @@ class UpdateCollageTripRequest extends FormRequest
     {
         return [
             //collage Trip
-            'day' => ['required', 'string'],
-            'departure_time' => ['required', 'string'],
-            'arrival_time' => ['required', 'string'],
-            'go_price' => ['required'],
-            'round_trip_price' => ['required', 'numeric'],
-            'semester_go_price' => ['required', 'numeric'],
-            'semester_round_trip_price' => ['required', 'numeric'],
-            'go_points' => ['required', 'numeric'],
-            'round_trip_points' => ['required', 'numeric'],
-            'semester_go_points' => ['required', 'numeric'],
-            'semester_round_trip_points' => ['required', 'numeric'],
-            'stations' => ['required', 'array'],
-            'stations.*name' => ['required', 'string'],
-            'stations.*in_time' => ['required', 'string'],
-            'stations.*out_time' => ['required', 'string'],
+            'trip_id' => ['required', 'exists:collage_trips,id'],
+            'day' => ['string'],
+            'departure_time' => ['string'],
+            'arrival_time' => ['string'],
+            'go_price' => ['numeric'],
+            'round_trip_price' => ['numeric'],
+            'semester_go_price' => ['numeric'],
+            'semester_round_trip_price' => ['numeric'],
+            'go_points' => ['numeric'],
+            'round_trip_points' => ['numeric'],
+            'semester_go_points' => ['numeric'],
+            'semester_round_trip_points' => ['numeric'],
+            'stations' => ['array'],
+            'stations.*name' => ['string'],
+            'stations.*in_time' => ['string'],
+            'stations.*out_time' => ['string'],
         ];
     }
 

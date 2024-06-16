@@ -108,7 +108,9 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/details/{id}', [CollageTripController::class, 'show']);
     Route::post('/create', [CollageTripController::class, 'create']);
     Route::get('/book/{id}', [CollageTripController::class, 'bookDailyCollageTrip']);
-
+    Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
+    Route::post('/update', [CollageTripController::class, 'update']);
+    Route::delete('/delete/{id}', [CollageTripController::class, 'destroy']);
     Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
     Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
