@@ -60,4 +60,5 @@ class CollageTripController extends Controller
         return ResponseHelper::success($trips);
     }
 
+
 }

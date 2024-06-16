@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
+    public function getAllSubscriptions()
+    {
+        return Subscription::with(['user', 'collageTrip'])->get();
+    }
 
     public function subscribe($request)
     {
@@ -46,11 +50,8 @@ class SubscriptionService
 
     public function unSubscribe()
     {
-        return DB::transaction(function () {
-            Subscription::query()
-                ->where('user_id', \auth('sanctum')->id())
-                ->first()->delete();
-            return true;
-        });
+        return Subscription::query()
+            ->where('user_id', \auth('sanctum')->id())
+            ->first()->delete();
     }
 }
