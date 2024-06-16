@@ -364,43 +364,6 @@ public function getAllReservation()
     return ResponseHelper::success($response);
 
     }
-    public function allConfirmedReservations()
-{
-    $reservations = Reservation::join('trips', 'trips.id', '=', 'reservations.trip_id')
-        ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
-        ->select(
-            'reservations.id as reservation_id',
-            'reservations.total_price',
-            'trips.id as trip_id',
-            'destinations.name as destination_name'
-        )
-        ->where('reservations.status', 'confirmed')
-        ->get();
-
-    // Retrieve the user information for the first order of each reservation
-    foreach ($reservations as $reservation) {
-        $firstOrder = ReservationOrder::where('reservation_id', $reservation->reservation_id)
-            ->orderBy('id')
-            ->first();
-
-        if ($firstOrder) {
-            $user = Order::find($firstOrder->order_id)->user;
-            
-            if ($user) {
-                $reservation->user = [
-                    'user_id' => $user->id,
-                    'name' => $user->name,
-                    'mobile_number' => $user->mobile_number,
-                    'age' => $user->age,
-                    'address' => $user->address,
-                    'nationality' => $user->nationality,
-                ];
-            }
-        }
-    }
-
-    return ResponseHelper::success($reservations);
-}
     public function searchInAllReservation(Request $request)
    {
     $userName = $request->input('userName');
@@ -485,7 +448,7 @@ public function getAllReservation()
    }
 
 
-  public function addPersonFromDash(Request $request, $id)
+  public function addPersonFromDash(Request $request)
   {
 
      // Define the validation rules
@@ -511,7 +474,7 @@ public function getAllReservation()
         // Start the transaction
         //DB::beginTransaction();
         
-        $trip = Trip::find($id);
+        $trip = Trip::find($request->input('trip_id'));
 
          if (!$trip) {
             $message = 'Trip not found';
@@ -534,11 +497,11 @@ public function getAllReservation()
                 'user_id' => $request->input('user_id'),
             ]);
             $order->save();
-            $reservation = new Reservation([
-                'trip_id' => $trip->id,
-                'total_price' => $trip->price,
-                'count_of_persons' => 1,
-            ]);
+            $reservation = new Reservation();
+            $reservation->trip_id = $trip->id;
+            $reservation->total_price = $trip->price;
+            $reservation->status = 'confirmed';
+            $reservation->count_of_persons = 1;
             $reservation->save();
 
             $reservationOrder = new ReservationOrder([
@@ -571,7 +534,7 @@ public function getAllReservation()
     }
   //}
 
- public function updateReservationFromDash(Request $request, $orderId)
+public function updateReservationFromDash(Request $request, $orderId)
 {
     try {
         // Start the transaction
@@ -593,18 +556,15 @@ public function getAllReservation()
         $trip = $reservation->trip;
 
         if ($request->has('seat_number')) {
-            $reservationOrder->seat_number = (int)$request->input('seat_number');
+            $newSeatNumber = (int)$request->input('seat_number');
+            // Update the seat availability
+            $this->updateSeatAvailability($trip, $reservationOrder->seat_number, true);
+            $this->updateSeatAvailability($trip, $newSeatNumber, false);
+
+            $reservationOrder->seat_number = $newSeatNumber;
         }
 
-        if (
-            !in_array($reservationOrder->seat_number, $trip->seats) ||
-            $this->isSeatTaken($trip, $reservationOrder->seat_number) ||
-            $trip->status !== 'pending'
-        ) {
-            $message = 'Seat is not available';
-            return response()->json(['message' => $message], 422);
-        }
-
+        // Update other fields if provided in the request
         if ($request->has('name')) {
             $order->name = $request->input('name');
         }
