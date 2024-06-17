@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
+use App\Models\Reservation;
 use App\Models\Station;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TripService
@@ -28,12 +30,12 @@ class TripService
         $stations = $request['stations'];
         if ($stations) {
             foreach ($stations as $station) {
-                //dd(strtotime($station['in_time']));
                 Station::create([
                     'name' => $station['name'],
                     'collage_trip_id' => $trip->id,
                     'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                     'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                    'isSource' => $station['isSource'],
                 ]);
             }
         }
@@ -103,7 +105,7 @@ class TripService
 
     public function deleteCollageTrip($trip_id)
     {
-        return CollageTrip::destroy($trip_id);
+        return CollageTrip::findOrFail($trip_id)->delete();
     }
 
     public function bookDailyCollageTrip($trip_id)
@@ -114,5 +116,62 @@ class TripService
         ]);
     }
 
+    public function tripsCountDestinationPeriod($request)
+    {
+        $destination_id = $request['destination_id'];
+        $reservations = Reservation::with('trip')
+            ->whereHas('trip', function ($query) use ($destination_id) {
+                $query->where('destination_id', $destination_id);
+            })->get();
+        return $this->getStatistics($request, $reservations);
+    }
 
+    public function tripsCountPerDatePeriod($request)
+    {
+        $startDate = Carbon::parse($request['start_date']);
+        $endDate = Carbon::parse($request['end_date']);
+        $reservations = Reservation::with('trip')
+            ->whereHas('trip', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            })->get();
+        return $this->getStatistics($request, $reservations);
+    }
+
+    /**
+     * @param $request
+     * @param Collection|array $reservations
+     * @return array|\Illuminate\Support\Collection
+     */
+    public function getStatistics($request, Collection|array $reservations): \Illuminate\Support\Collection|array
+    {
+        $statistics = [];
+        if ('year' == $request['type']) {
+            $statistics = $reservations->groupBy(function ($reservation) {
+                return Carbon::parse($reservation->trip->date)->format('Y');
+            })->map(function ($group) {
+                return [
+                    'period' => $group->first()->trip->date->format('Y'),
+                    'reservation_count' => $group->count()
+                ];
+            })->values();
+        } elseif ('month' == $request['type']) {
+            $statistics = $reservations->groupBy(function ($reservation) {
+                return Carbon::parse($reservation->trip->date)->format('m');
+            })->map(function ($group) {
+                return [
+                    'period' => $group->first()->trip->date->format('m'),
+                    'reservation_count' => $group->count()
+                ];
+            })->values();
+        }
+        return $statistics;
+    }
+
+    public function searchByDestination($station)
+    {
+        return CollageTrip::whereHas('stations', function ($query) use ($station) {
+            $query->where('name', $station);
+        })->with(['stations', 'trips'])
+            ->get();
+    }
 }

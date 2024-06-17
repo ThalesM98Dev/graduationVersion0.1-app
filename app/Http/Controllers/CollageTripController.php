@@ -54,4 +54,11 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Booked successfully');
     }
 
+    public function searchCollageTrips(Request $request)
+    {
+        $trips = $this->tripService->searchByDestination($request->destination);
+        return ResponseHelper::success($trips);
+    }
+
+
 }

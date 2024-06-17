@@ -4,13 +4,14 @@ namespace App\Services;
 
 use App\Models\CollageTrip;
 use App\Models\Subscription;
-use App\Models\Trip;
-
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
+    public function getAllSubscriptions()
+    {
+        return Subscription::with(['user', 'collageTrip'])->get();
+    }
 
     public function subscribe($request)
     {
@@ -46,11 +47,15 @@ class SubscriptionService
 
     public function unSubscribe()
     {
-        return DB::transaction(function () {
-            Subscription::query()
-                ->where('user_id', \auth('sanctum')->id())
-                ->first()->delete();
-            return true;
-        });
+        return Subscription::query()
+            ->where('user_id', \auth('sanctum')->id())
+            ->first()->delete();
+    }
+
+    public function updateStatus($request)
+    {
+        return Subscription::findOrFail($request->subscription_id)->update([
+            'status' => $request->status,
+        ]);
     }
 }

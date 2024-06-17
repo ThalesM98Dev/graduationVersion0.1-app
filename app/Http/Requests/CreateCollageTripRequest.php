@@ -41,6 +41,7 @@ class CreateCollageTripRequest extends FormRequest
             'stations.*name' => ['required', 'string'],
             'stations.*in_time' => ['required', 'string'],
             'stations.*out_time' => ['required', 'string'],
+            'stations.*isSource' => ['required', 'boolean'],
         ];
     }
 
