@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Carbon\Carbon;
+use Mpdf\Mpdf;
 
 class TripController extends Controller
 {
@@ -108,6 +109,7 @@ class TripController extends Controller
         return ResponseHelper::success($trip);
     }
 
+
    public function show_trip_details($id)
 {
     $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
@@ -182,7 +184,7 @@ class TripController extends Controller
     $destinationName = $request->input('destination');
     
     $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
-            $query->where('name', $destinationName);
+            $query->where('name', 'LIKE', "%{$destinationName}%");
         })
         ->where('status', 'done')
         ->with('destination', 'bus', 'driver')
@@ -203,7 +205,7 @@ class TripController extends Controller
     $destinationName = $request->input('destination');
     
     $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
-            $query->where('name', $destinationName);
+            $query->where('name', 'LIKE', "%{$destinationName}%");
         })
         ->where('status', 'pending')
         ->with('destination', 'bus', 'driver')
