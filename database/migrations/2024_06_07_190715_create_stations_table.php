@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->foreignId('collage_trip_id')->constrained('collage_trips')->cascadeOnDelete()->cascadeOnUpdate();
             $table->time('in_time')->nullable();
             $table->time('out_time')->nullable();
+            $table->boolean('isSource')->default(false);
             $table->timestamps();
         });
     }

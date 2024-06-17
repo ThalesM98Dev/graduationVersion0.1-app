@@ -30,12 +30,12 @@ class TripService
         $stations = $request['stations'];
         if ($stations) {
             foreach ($stations as $station) {
-                //dd(strtotime($station['in_time']));
                 Station::create([
                     'name' => $station['name'],
                     'collage_trip_id' => $trip->id,
                     'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                     'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                    'isSource' => $station['isSource'],
                 ]);
             }
         }

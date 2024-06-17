@@ -4,9 +4,6 @@ namespace App\Services;
 
 use App\Models\CollageTrip;
 use App\Models\Subscription;
-use App\Models\Trip;
-
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService

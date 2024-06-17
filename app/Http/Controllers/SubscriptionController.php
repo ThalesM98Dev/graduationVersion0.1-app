@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Services\SubscriptionService;
-use App\Services\TripService;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
