@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use App\Models\CollageTrip;
@@ -30,21 +31,31 @@ class TripDateCommand extends Command
     public function handle()
     {
         try {
-            $collageTrips = CollageTrip::all();
+            Log::info('Starting TripDateCommand');
+
+            $collageTrips = CollageTrip::with('days')->get();
+            Log::info('Fetched collage trips', ['collageTrips' => $collageTrips]);
+
             $latestTrip = Trip::latest()->first();
             $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
+            Log::info('Latest trip number', ['latestTripNumber' => $latestTripNumber]);
 
-            DB::transaction(function() use ($collageTrips, &$latestTripNumber) {
+            DB::transaction(function () use ($collageTrips, &$latestTripNumber) {
                 foreach ($collageTrips as $collageTrip) {
-                    $currentTripDate = Carbon::parse($collageTrip->day);
-                    $nextWeekTripDate = $currentTripDate->copy()->addWeek();
+                    foreach ($collageTrip->days as $day) {
+                        // Calculate next week's date for the specific day
+                        $nextWeekTripDate = Carbon::now()->next($day->name);
+                        Log::info('Calculated next week trip date', ['nextWeekTripDate' => $nextWeekTripDate->format('Y-m-d')]);
 
-                    Trip::create([
-                        'trip_number' => ++$latestTripNumber,
-                        'collage_trip_id' => $collageTrip->id,
-                        'date' => $nextWeekTripDate->format('Y-m-d'),
-                        'trip_type' => 'Universities',
-                    ]);
+                        // Create a new trip
+                        Trip::create([
+                            'trip_number' => ++$latestTripNumber,
+                            'collage_trip_id' => $collageTrip->id,
+                            'date' => $nextWeekTripDate->format('Y-m-d'),
+                            'trip_type' => 'Universities',
+                        ]);
+                        Log::info('Created trip', ['trip_number' => $latestTripNumber, 'collage_trip_id' => $collageTrip->id, 'date' => $nextWeekTripDate->format('Y-m-d')]);
+                    }
                 }
             });
 

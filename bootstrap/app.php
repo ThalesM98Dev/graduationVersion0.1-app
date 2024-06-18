@@ -39,36 +39,38 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),401);
+                return ResponseHelper::error([], $e->getMessage(), 401);
             }
         });
-
         $exceptions->render(function (QueryException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),500);
+                return ResponseHelper::error([], $e->getMessage(), 500);
             }
         });
 
         $exceptions->render(function (ModelNotFoundException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),404);
+                return ResponseHelper::error([], $e->getMessage(), 404);
             }
         });
 
         $exceptions->render(function (ValidationException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),422);
+                return ResponseHelper::error([], $e->getMessage(), 422);
             }
         });
+
         $exceptions->render(function (HttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),404);
+                return ResponseHelper::error([], $e->getMessage(), 404);
             }
         });
+
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                return ResponseHelper::error([],null,$e->getMessage(),404);
+                return ResponseHelper::error([], $e->getMessage(), 404);
             }
         });
         //
     })->create();
+

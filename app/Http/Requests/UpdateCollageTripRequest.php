@@ -26,7 +26,9 @@ class UpdateCollageTripRequest extends FormRequest
         return [
             //collage Trip
             'trip_id' => ['required', 'exists:collage_trips,id'],
-            'day' => ['string'],
+            //'day' => ['string'],
+            'days' => ['array'],
+            'days.*' => ['integer', 'exists:days,id'],
             'departure_time' => ['string'],
             'arrival_time' => ['string'],
             'go_price' => ['numeric'],

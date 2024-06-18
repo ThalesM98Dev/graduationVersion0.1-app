@@ -4,16 +4,16 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('daily_collage_reservations', function (Blueprint $table) {
+        Schema::create('trips_days', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('trip_id')->constrained('trips')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('collage_trip_id')->constrained('collage_trips')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('day_id')->constrained('days')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
@@ -24,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_collage_reservations');
+        Schema::dropIfExists('trips_days');
     }
 };

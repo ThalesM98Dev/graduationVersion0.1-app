@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('collage_trips', function (Blueprint $table) {
             $table->id();
-            $table->string('day');
+            //$table->string('day');
             $table->time('departure_time');
             $table->time('arrival_time');
 //            $table->string('starting_place');
