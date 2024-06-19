@@ -11,6 +11,7 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
+use App\Models\Day;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -125,3 +126,4 @@ Route::prefix('feedback')->group(function () {
     Route::post('/create', [FeedbackController::class, 'store']);
     Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
+Route::get('/days', [Day::all()]);
