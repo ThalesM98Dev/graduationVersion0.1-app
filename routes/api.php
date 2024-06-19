@@ -126,4 +126,8 @@ Route::prefix('feedback')->group(function () {
     Route::post('/create', [FeedbackController::class, 'store']);
     Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
-Route::get('/days', [Day::all()]);
+Route::get('/days', function () {
+    $days = Day::all();
+    return response()->json($days);
+});
+
