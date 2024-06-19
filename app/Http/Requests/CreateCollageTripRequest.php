@@ -28,8 +28,6 @@ class CreateCollageTripRequest extends FormRequest
             //collage Trip
             'days' => ['required', 'array'],
             'days.*' => ['integer', 'exists:days,id'],
-            'departure_time' => ['required', 'string'],
-            'arrival_time' => ['required', 'string'],
             'go_price' => ['required', 'numeric'],
             'round_trip_price' => ['required', 'numeric'],
             'semester_go_price' => ['required', 'numeric'],

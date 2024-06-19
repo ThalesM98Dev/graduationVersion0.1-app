@@ -17,8 +17,6 @@ class TripService
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::query()->create([
                 //'day' => $request['day'],
-                'departure_time' => Carbon::parse($request['departure_time'])->format('H:i:s'),
-                'arrival_time' => Carbon::parse($request['arrival_time'])->format('H:i:s'),
                 'go_price' => $request['go_price'],
                 'round_trip_price' => $request['round_trip_price'],
                 'semester_go_price' => $request['semester_go_price'],
@@ -54,8 +52,6 @@ class TripService
             $trip = CollageTrip::findOrFail($request->trip_id);
             $trip->update([
                 //'day' => $request->day,
-                'departure_time' => Carbon::parse($request['departure_time'])->format('H:i:s'),
-                'arrival_time' => Carbon::parse($request['arrival_time'])->format('H:i:s'),
                 'go_price' => $request->go_price,
                 'round_trip_price' => $request->round_trip_price,
                 'semester_go_price' => $request->semester_go_price,
