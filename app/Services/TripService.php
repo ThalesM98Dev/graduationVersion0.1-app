@@ -84,6 +84,7 @@ class TripService
 
     public function listCollageTrips($request)
     {
+        $result = [];
         if ('archived' == $request->type) {
             $result = CollageTrip::with(['stations', 'days:id,name'])
                 ->with('trips', function ($query) {
