@@ -65,7 +65,7 @@ public function creatReservation(Request $request , $userId)
         }
 
         if (!empty($unavailableSeats)) {
-            $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is not available';
+            $message = 'Seats ' . implode(', ', $unavailableSeats) . ' are not available or the trip is Done';
             return response()->json(['message' => $message], 422);
         } else {
             $reservation = new Reservation([

@@ -222,42 +222,144 @@ class TripController extends Controller
     return ResponseHelper::success($response);
 }
 
-    public function getPendingTripsByUser($userId)
+   public function getPendingTripsByUser($userId)
 {
-    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-        ->join('reservation_orders', 'reservation_orders.reservation_id', '=', 'reservations.id')
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
         ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
-        ->join('buses', 'buses.id', '=', 'trips.bus_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'reservations.count_of_persons',
+            'reservations.status',
+            'trips.id as trip_id',
+            'trips.date as trip_date',
+            'trips.status as trip_status',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'orders.image_of_ID as order_image_of_ID',
+            'orders.image_of_passport as order_image_of_passport',
+            'orders.image_of_security_clearance as order_image_of_security_clearance',
+            'orders.image_of_visa as order_image_of_visa',
+            'reservation_orders.seat_number'
+        )
         ->where('orders.user_id', $userId)
         ->where('trips.status', 'pending')
-        ->select('trips.*', 'destinations.*', 'buses.*')
-        ->distinct()
         ->get();
 
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trips found'], 404);
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'count_of_persons' => $reservation->count_of_persons,
+            'status' => $reservation->status,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'trip_date' => $reservation->trip_date,
+                'trip_status' => $reservation->trip_status,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
+        }
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'order_image_of_ID' => $reservation->order_image_of_ID,
+            'order_image_of_passport' => $reservation->order_image_of_passport,
+            'order_image_of_security_clearance' => $reservation->order_image_of_security_clearance,
+            'order_image_of_visa' => $reservation->order_image_of_visa,
+            'seat_number' => $reservation->seat_number,
+        ];
     }
-    return ResponseHelper::success($trips);
+
+    return ResponseHelper::success(array_values($response));
 }
 
     public function getEndingTripsByUser($userId)
     {
-    $trips = Trip::join('reservations', 'reservations.trip_id', '=', 'trips.id')
-        ->join('reservation_orders', 'reservation_orders.reservation_id', '=', 'reservations.id')
+    $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
         ->join('orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
         ->join('destinations', 'destinations.id', '=', 'trips.destination_id')
-        ->join('buses', 'buses.id', '=', 'trips.bus_id')
+        ->select(
+            'reservations.id as reservation_id',
+            'reservations.total_price',
+            'reservations.count_of_persons',
+            'reservations.status',
+            'trips.id as trip_id',
+            'trips.date as trip_date',
+            'trips.status as trip_status',
+            'destinations.name as destination_name',
+            'orders.id as order_id',
+            'orders.name as order_name',
+            'orders.address as order_address',
+            'orders.mobile_number as order_mobile_number',
+            'orders.nationality as order_nationality',
+            'orders.age as order_age',
+            'orders.image_of_ID as order_image_of_ID',
+            'orders.image_of_passport as order_image_of_passport',
+            'orders.image_of_security_clearance as order_image_of_security_clearance',
+            'orders.image_of_visa as order_image_of_visa',
+            'reservation_orders.seat_number'
+        )
         ->where('orders.user_id', $userId)
         ->where('trips.status', 'done')
-        ->select('trips.*', 'destinations.*', 'buses.*')
-        ->distinct()
         ->get();
 
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trips found'], 404);
+    $response = [];
+
+    foreach ($reservations as $reservation) {
+        $reservationData = [
+            'reservation_id' => $reservation->reservation_id,
+            'total_price' => $reservation->total_price,
+            'count_of_persons' => $reservation->count_of_persons,
+            'status' => $reservation->status,
+            'trip' => [
+                'trip_id' => $reservation->trip_id,
+                'trip_date' => $reservation->trip_date,
+                'trip_status' => $reservation->trip_status,
+                'destination_name' => $reservation->destination_name,
+            ],
+            'orders' => [],
+        ];
+
+        if (!isset($response[$reservation->reservation_id])) {
+            $response[$reservation->reservation_id] = $reservationData;
+        }
+
+        $response[$reservation->reservation_id]['orders'][] = [
+            'order_id' => $reservation->order_id,
+            'order_name' => $reservation->order_name,
+            'order_address' => $reservation->order_address,
+            'order_mobile_number' => $reservation->order_mobile_number,
+            'order_nationality' => $reservation->order_nationality,
+            'order_age' => $reservation->order_age,
+            'order_image_of_ID' => $reservation->order_image_of_ID,
+            'order_image_of_passport' => $reservation->order_image_of_passport,
+            'order_image_of_security_clearance' => $reservation->order_image_of_security_clearance,
+            'order_image_of_visa' => $reservation->order_image_of_visa,
+            'seat_number' => $reservation->seat_number,
+        ];
     }
-    return ResponseHelper::success($trips);
+
+    return ResponseHelper::success(array_values($response));
     }
 
     public function getTripsByDriver($driverId) {
