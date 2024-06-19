@@ -127,6 +127,7 @@ class TripService
             'trip_id' => $request->trip_id,
             'user_id' => auth('sanctum')->id(),
             'day_id' => $request->day_id,
+            'type' => $request->type
         ]);
     }
 
