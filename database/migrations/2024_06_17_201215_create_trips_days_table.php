@@ -4,19 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('stations', function (Blueprint $table) {
+        Schema::create('trips_days', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->foreignId('collage_trip_id')->constrained('collage_trips')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->time('in_time')->nullable();
-            $table->time('out_time')->nullable();
-            //$table->boolean('isSource')->default(false);
+            $table->foreignId('day_id')->constrained('days')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('stations');
+        Schema::dropIfExists('trips_days');
     }
 };

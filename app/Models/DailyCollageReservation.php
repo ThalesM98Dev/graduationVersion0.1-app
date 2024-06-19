@@ -20,4 +20,10 @@ class DailyCollageReservation extends Model
     {
         return $this->belongsTo(Trip::class);
     }
+
+    public function day()
+    {
+        return $this->belongsTo(Day::class);
+    }
+
 }

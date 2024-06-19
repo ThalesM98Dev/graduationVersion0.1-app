@@ -26,9 +26,8 @@ class CreateCollageTripRequest extends FormRequest
     {
         return [
             //collage Trip
-            'day' => ['required', 'string'],
-            'departure_time' => ['required', 'string'],
-            'arrival_time' => ['required', 'string'],
+            'days' => ['required', 'array'],
+            'days.*' => ['integer', 'exists:days,id'],
             'go_price' => ['required', 'numeric'],
             'round_trip_price' => ['required', 'numeric'],
             'semester_go_price' => ['required', 'numeric'],
@@ -41,7 +40,7 @@ class CreateCollageTripRequest extends FormRequest
             'stations.*name' => ['required', 'string'],
             'stations.*in_time' => ['required', 'string'],
             'stations.*out_time' => ['required', 'string'],
-            'stations.*isSource' => ['required', 'boolean'],
+            //'stations.*isSource' => ['required', 'boolean'],
         ];
     }
 

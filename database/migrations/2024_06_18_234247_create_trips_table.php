@@ -29,7 +29,7 @@ return new class extends Migration
             $table->foreignId('bus_id')->nullable()->constrained('buses')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('driver_id')->nullable()->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('collage_trip_id')->nullable()->constrained('collage_trips')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->json('seats');
+            $table->json('seats')->nullable();
             $table->timestamps();
         });
     }

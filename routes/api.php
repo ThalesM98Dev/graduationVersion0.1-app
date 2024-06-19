@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CollageTripController;
 use App\Http\Controllers\FeedbackController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
+use App\Models\Day;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,12 +22,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
     return response()->json('Email verified!');
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
-
 
 
 Route::prefix('auth')->group(function () {
@@ -106,7 +106,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/all', [CollageTripController::class, 'index']);
     Route::get('/details/{id}', [CollageTripController::class, 'show']);
     Route::post('/create', [CollageTripController::class, 'create']);
-    Route::get('/book/{id}', [CollageTripController::class, 'bookDailyCollageTrip']);
+    Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
     Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
     Route::post('/update', [CollageTripController::class, 'update']);
     Route::delete('/delete/{id}', [CollageTripController::class, 'destroy']);
@@ -125,3 +125,9 @@ Route::prefix('feedback')->group(function () {
     Route::post('/create', [FeedbackController::class, 'store']);
     Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
+
+Route::get('/days', function () {
+    $days = Day::all();
+    return ResponseHelper::success($days);
+});
+

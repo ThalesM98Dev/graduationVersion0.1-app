@@ -6,6 +6,7 @@ use App\Helpers\ResponseHelper;
 use App\Http\Requests\CreateCollageTripRequest;
 use App\Http\Requests\UpdateCollageTripRequest;
 use App\Services\TripService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CollageTripController extends Controller
@@ -29,14 +30,14 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function create(CreateCollageTripRequest $request)
+    public function create(CreateCollageTripRequest $request): JsonResponse
     {
         $result = $this->tripService->createCollageTrip($request);
         return ResponseHelper::success($result, 'Created successfully.');
     }
 
 
-    public function update(UpdateCollageTripRequest $request)//TODO
+    public function update(UpdateCollageTripRequest $request): JsonResponse
     {
         $result = $this->tripService->updateCollageTrip($request);
         return ResponseHelper::success($result, 'Updated successfully');
@@ -48,9 +49,9 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Deleted successfully');
     }
 
-    public function bookDailyCollageTrip($trip_id)
+    public function bookDailyCollageTrip(Request $request)
     {
-        $result = $this->tripService->bookDailyCollageTrip($trip_id);
+        $result = $this->tripService->bookDailyCollageTrip($request);
         return ResponseHelper::success($result, 'Booked successfully');
     }
 
