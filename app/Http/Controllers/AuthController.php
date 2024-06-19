@@ -134,24 +134,23 @@ class AuthController extends Controller
     }
    }
 
-    public function searchDriver(Request $request)
-    {
-        $driverName = $request->input('driverName');
+public function searchDriver(Request $request)
+{
+    $driverName = $request->input('driverName');
 
-        $driver = User::where('name', 'LIKE', "%$driverName%")
-            ->where('role', 'Driver')
-            ->get();
+    $drivers = User::where('name',$driverName)
+        ->where('role' ,'Driver')
+        ->get();
 
-        if ($driver->isEmpty()) {
-            return response()->json(['message' => 'No driver found'], 404);
-        }
+    if ($drivers->isEmpty()) {
+        return response()->json(['message' => 'No drivers found'], Response::HTTP_NOT_FOUND);
+    }
 
         $response = [
-            'driver' => $driver
+            'drivers' => $drivers
         ];
-
-        return response()->json($response, 200);
-    }
+        return ResponseHelper::success($response);
+}
 
     public function getDrivers()
     {
