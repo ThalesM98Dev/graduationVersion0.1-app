@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CollageTripController;
 use App\Http\Controllers\FeedbackController;
@@ -21,12 +22,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
     return response()->json('Email verified!');
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
-
 
 
 Route::prefix('auth')->group(function () {
@@ -126,8 +125,9 @@ Route::prefix('feedback')->group(function () {
     Route::post('/create', [FeedbackController::class, 'store']);
     Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
+
 Route::get('/days', function () {
     $days = Day::all();
-    return response()->json($days);
+    return ResponseHelper::success($days);
 });
 
