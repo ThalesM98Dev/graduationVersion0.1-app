@@ -6,6 +6,7 @@ use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Reservation;
 use App\Models\Station;
+use App\Models\Trip;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,17 @@ class TripService
                         //'isSource' => $station['isSource'],
                     ]);
                 }
+            }
+            $latestTrip = Trip::latest()->first();
+            $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
+            foreach ($trip->days as $day) {
+                $nextWeekTripDate = Carbon::now()->next($day->name);
+                Trip::create([
+                    'trip_number' => ++$latestTripNumber,
+                    'collage_trip_id' => $trip->id,
+                    'date' => $nextWeekTripDate->format('Y-m-d'),
+                    'trip_type' => 'Universities',
+                ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
         });
