@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
-    public function getAllSubscriptions($request)
+    public function getAllSubscriptions()
     {
         return Subscription::with(['user', 'collageTrip'])
-            ->where('status', $request->status)
+            ->where('status', 'accepted')
             ->get();
     }
 

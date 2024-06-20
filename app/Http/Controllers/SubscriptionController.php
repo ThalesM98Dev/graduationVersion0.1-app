@@ -15,9 +15,9 @@ class SubscriptionController extends Controller
         $this->subscriptionService = $subscriptionService;
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $result = $this->subscriptionService->getAllSubscriptions($request);
+        $result = $this->subscriptionService->getAllSubscriptions();
         return ResponseHelper::success($result);
     }
 
