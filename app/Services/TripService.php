@@ -206,4 +206,11 @@ class TripService
             ->where('user_id', auth('sanctum')->id())
             ->get();
     }
+
+    public function dailyReservations()
+    {
+        return DailyCollageReservation::with(['user', 'trip' => function ($query) {
+            $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
+        }, 'days:id,name']);
+    }
 }
