@@ -114,15 +114,15 @@ class TripService
     {
         return CollageTrip::with([
             'stations',
-            'subscriptions' => function ($query) {
-                $query->where('status', 'accepted');
-            },
             'days:id,name',
             'trips' => function ($query) {
-                $query->whereDate('date', '=', Carbon::now()->format('Y-m-d'))
+                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
-        ])->findOrFail($trip_id);
+        ])->whereHas('subscriptions', function ($query) {
+            $query->where('status', 'accepted');
+            $query->with('user');
+        })->findOrFail($trip_id);
     }
 
     public function deleteCollageTrip($trip_id)
