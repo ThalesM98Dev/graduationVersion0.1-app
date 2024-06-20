@@ -96,7 +96,7 @@ class TripService
 
     public function listCollageTrips($request)
     {
-        $result = CollageTrip::with(['trips']);
+        $result = CollageTrip::with(['stations', 'days:id,name']);
         if ('archived' == $request->type) {
             $result->whereHas('trips', function ($query) {
                 $query->whereDate('date', '<=', Carbon::now());
@@ -107,7 +107,7 @@ class TripService
                 $query->whereDate('date', '>=', Carbon::now());
             });
         }
-        return $result->get();
+        return $result->with('trips')->get();
     }
 
     public function collageTripDetails($trip_id)
