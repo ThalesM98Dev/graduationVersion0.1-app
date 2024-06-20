@@ -118,6 +118,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
     Route::post('/acceptSubscription', [SubscriptionController::class, 'update']);
     Route::get('/allSubscription', [SubscriptionController::class, 'index']);
+    Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
 });
 
 
@@ -140,8 +141,8 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
-     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
-     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+    Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
+    Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
 });
 
 Route::prefix('shipmentRequest')->group(function () {

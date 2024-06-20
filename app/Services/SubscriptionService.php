@@ -4,14 +4,15 @@ namespace App\Services;
 
 use App\Models\CollageTrip;
 use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
-    public function getAllSubscriptions()
+    public function getAllSubscriptions($type)
     {
         return Subscription::with(['user', 'collageTrip'])
-            ->where('status', 'accepted')
+            ->where('status', $type)
             ->get();
     }
 
@@ -26,6 +27,15 @@ class SubscriptionService
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
+            $user = User::findOrFail(auth('sanctum')->id());
+            switch ($request->type) {
+                case 'Go' | 'Back':
+                    $user->update(['points' => $user->points + $trip->semester_go_points]);
+                    break;
+                case 'Round Trip':
+                    $user->update(['points' => $user->points + $trip->semester_round_trip_points]);
+                    break;
+            }
             return $subscription;
         });
     }
