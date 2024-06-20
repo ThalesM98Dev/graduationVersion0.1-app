@@ -9,6 +9,8 @@ use App\Http\Controllers\TripController;
 use App\Http\Controllers\DestController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\ShipmentTripController;
+use App\Http\Controllers\ShipmentRequestController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
@@ -131,3 +133,14 @@ Route::get('/days', function () {
     return ResponseHelper::success($days);
 });
 
+Route::prefix('shipmentTrip')->group(function () {
+    Route::post('/add_truck', [ShipmentTripController::class, 'add_truck']);
+    Route::delete('/delete_truck/{id}', [ShipmentTripController::class, 'delete_truck']);
+    Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
+    Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
+});
+
+Route::prefix('shipmentRequest')->group(function () {
+    Route::post('/add_shipment_request', [ShipmentRequestController::class, 'add_shipment_request']);
+    Route::post('/add_foodstuff', [ShipmentRequestController::class, 'add_foodstuff']);
+});

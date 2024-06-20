@@ -161,11 +161,12 @@ public function searchDriver(Request $request)
         return ResponseHelper::success($response);
     }
 
+
     public function updateDriver(Request $request, $id)
 {
-    $user = User::findOrFail($id);
-    if ($user->role !== 'Driver') {
-        return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
+    $user = User::find($id);
+    if (!$user) {
+        return response()->json(['message' => 'The User Not Found'], Response::HTTP_NOT_FOUND);
     }
 
     // Update the user fields if they are present in the request
@@ -194,7 +195,7 @@ public function searchDriver(Request $request)
     // Save the changes
     $user->save();
 
-    return response()->json($user);
+    return response()->json(['success' => true, 'message' => 'User updated successfully', 'data' => $user]);
 }
 
     public function deleteDriver(Request $request, $id)
