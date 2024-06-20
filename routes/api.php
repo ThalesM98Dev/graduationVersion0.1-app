@@ -138,9 +138,19 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::delete('/delete_truck/{id}', [ShipmentTripController::class, 'delete_truck']);
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
+    Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
+     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
+     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
 });
 
 Route::prefix('shipmentRequest')->group(function () {
     Route::post('/add_shipment_request', [ShipmentRequestController::class, 'add_shipment_request']);
     Route::post('/add_foodstuff', [ShipmentRequestController::class, 'add_foodstuff']);
+    Route::put('/acceptShipmentRequest/{id}', [ShipmentRequestController::class, 'acceptShipmentRequest']);
+    Route::delete('/rejectDeleteShipmentRequest/{id}', [ShipmentRequestController::class, 'rejectDeleteShipmentRequest']);
+    Route::get('/getAllShipmentRequests', [ShipmentRequestController::class, 'getAllShipmentRequests']);
+    Route::get('/getAllAcceptedShipmentRequests', [ShipmentRequestController::class, 'getAllAcceptedShipmentRequests']);
+    Route::get('/AllMyShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyShipmentRequests']);
+    Route::get('/AllMyDoneShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyDoneShipmentRequests']);
+    Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails']);
 });

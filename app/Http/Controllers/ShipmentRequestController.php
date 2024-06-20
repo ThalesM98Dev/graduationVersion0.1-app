@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Foodstuff;
+use App\Models\User;
 use App\Models\ShipmentTrip;
 use App\Models\ShipmentFoodstuff;
 use App\Models\ShipmentRequest;
@@ -15,6 +16,39 @@ use App\Helpers\ImageUploadHelper;
 
 class ShipmentRequestController extends Controller
 {
+    public function ShowShipmentRequestDetails($id)
+{
+    $shipmentRequest = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+        ->where('id', $id)
+        ->first();
+
+    if (!$shipmentRequest) {
+        $response = [
+            'success' => false,
+            'message' => 'Shipment Request not found',
+            'data' => [],
+            'status' => 404,
+        ];
+
+        return response()->json($response, $response['status']);
+    }
+
+    $foodstuffs = $shipmentRequest->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
+        return $shipmentFoodstuff->foodstuff->stuff;
+    });
+
+    $formattedRequest = [
+        'id' => $shipmentRequest->id,
+        // Add other shipment request properties if needed
+        'foodstuffs' => $foodstuffs,
+    ];
+
+    $response = [
+        'shipmentRequest' => $shipmentRequest,
+    ];
+
+    return ResponseHelper::success($response);
+}
 
     public function add_foodstuff(Request $request){
 
@@ -89,4 +123,117 @@ class ShipmentRequestController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+
+    public function acceptShipmentRequest(Request $request, $id)
+    {
+        $shipmentRequest = ShipmentRequest::find($id);
+
+        if (!$shipmentRequest) {
+            return response()->json(['message' => 'Shipment Request not found'], 404);
+        }
+
+        $shipmentRequest->status = 'accept';
+        $shipmentRequest->save();
+
+        $response = [
+            'shipmentRequest' => $shipmentRequest
+        ];
+        return ResponseHelper::success($response);
+    }
+
+    public function rejectDeleteShipmentRequest(Request $request, $id)
+    {
+        $shipmentRequest = ShipmentRequest::find($id);
+
+        if ($shipmentRequest) {
+            $shipmentRequest->delete();
+
+            return response()->json(['message' => 'Shipment Request rejected successfully'], Response::HTTP_OK);
+        } else {
+
+            return response()->json(['message' => 'Shipment Request not found'], Response::HTTP_NOT_FOUND);
+        }
+   }
+
+   public function AllMyShipmentRequests($id)
+   {
+    $user = User::find($id);
+    $shipmentRequests = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+        ->whereHas('shipmentTrip', function ($query) {
+            $query->where('status', 'pending');
+        })
+        ->where('user_id', $id)
+        ->get();
+
+    $formattedRequests = $shipmentRequests->map(function ($request) {
+        $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
+            return $shipmentFoodstuff->foodstuff->stuff;
+        });
+
+        return [
+            'id' => $request->id,
+            // Add other shipment request properties if needed
+            'foodstuffs' => $foodstuffs,
+        ];
+    });
+
+    $response = [
+        'shipmentRequests' => $shipmentRequests,
+    ];
+
+    return ResponseHelper::success($response);
+   }
+
+   public function AllMyDoneShipmentRequests($id)
+   {
+    $user = User::find($id);
+    $shipmentRequests = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+        ->whereHas('shipmentTrip', function ($query) {
+            $query->where('status', 'done');
+        })
+        ->where('user_id', $id)
+        ->get();
+
+    $formattedRequests = $shipmentRequests->map(function ($request) {
+        $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
+            return $shipmentFoodstuff->foodstuff->stuff;
+        });
+
+        return [
+            'id' => $request->id,
+            // Add other shipment request properties if needed
+            'foodstuffs' => $foodstuffs,
+        ];
+    });
+
+    $response = [
+        'shipmentRequests' => $shipmentRequests,
+    ];
+
+    return ResponseHelper::success($response);
+   }
+
+   public function getAllAcceptedShipmentRequests()
+   {
+    $shipmentRequests = ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
+        ->where('status', 'accept')
+        ->get();
+    $response = [
+            'shipmentRequests' => $shipmentRequests
+        ];
+
+    return ResponseHelper::success($response);
+   }
+
+   public function getAllShipmentRequests()
+   {
+    $shipmentRequests = ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
+        ->where('status', 'pending')
+        ->get();
+    $response = [
+            'shipmentRequests' => $shipmentRequests
+        ];
+
+    return ResponseHelper::success($response);
+   }
 }

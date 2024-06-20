@@ -9,8 +9,8 @@ class Foodstuff extends Model
 {
     use HasFactory;
 
-    public function shipmentFoodstuffs()
+    public function shipmentRequests()
     {
-        return $this->hasMany(ShipmentFoodstuff::class, 'reservation_id');
+        return $this->hasMany(ShipmentRequest::class);
     }
 }
