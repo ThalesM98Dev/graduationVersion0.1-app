@@ -122,8 +122,7 @@ class TripService
                 $query->whereDate('date', '=', Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
-        ])
-            ->findOrFail($trip_id);
+        ])->findOrFail($trip_id);
     }
 
     public function deleteCollageTrip($trip_id)
