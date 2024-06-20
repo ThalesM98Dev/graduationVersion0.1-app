@@ -14,12 +14,13 @@ class ShipmentRequest extends Model
         return $this->belongsTo(ShipmentTrip::class);
     }
 
-    public function shipment()
+    public function foodstuffs()
     {
-        return $this->hasMany(ShipmentRequest::class);
+        return $this->hasMany(Foodstuff::class);
     }
+
     public function shipmentFoodstuffs()
     {
-        return $this->hasMany(ShipmentFoodstuff::class, 'reservation_id');
+        return $this->hasMany(ShipmentFoodstuff::class);
     }
 }

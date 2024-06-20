@@ -12,6 +12,27 @@ use Illuminate\Http\Response;
 
 class ShipmentTripController extends Controller
 {
+    public function allShipmentTrips(){
+
+     $allTrips = ShipmentTrip::all()
+     ->where('status','pending');
+        $response = [
+            'allTrips' => $allTrips
+        ];
+        return ResponseHelper::success($response);
+    } 
+
+    public function showArchive(){
+
+     $allTrips = ShipmentTrip::all()
+     ->where('status','done');
+        $response = [
+            'allTrips' => $allTrips
+        ];
+        return ResponseHelper::success($response);
+    } 
+
+
      public function add_truck(Request $request){
 
         $validator = Validator::make($request->all(), [
@@ -93,4 +114,29 @@ class ShipmentTripController extends Controller
         }
         return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
+
+    public function ShowShipmentTripDetails($id)
+   {
+    $shipmentTrip = ShipmentTrip::with(['shipmentRequests' => function ($query) {
+            $query->where('status', 'accept');
+        }])
+        ->where('id', $id)
+        ->first();
+    if (!$shipmentTrip) {
+        $response = [
+            'success' => false,
+            'message' => 'Shipment Request not found',
+            'data' => [],
+            'status' => 404,
+        ];
+
+        return response()->json($response, $response['status']);
+    }
+
+    $response = [
+        'shipmentTrip' => $shipmentTrip,
+    ];
+
+    return ResponseHelper::success($response);
+   }
 }
