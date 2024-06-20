@@ -115,7 +115,7 @@ class TripService
         return CollageTrip::with([
             'stations',
             'subscriptions' => function ($query) {
-                $query->where('status', 1);
+                $query->where('status', 'accepted');
             },
             'days:id,name',
             'trips' => function ($query) {
@@ -207,7 +207,7 @@ class TripService
             ->get();
     }
 
-    public function dailyReservations()
+    public function dailyReservations()//not used
     {
         return DailyCollageReservation::with(['user', 'trip' => function ($query) {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
