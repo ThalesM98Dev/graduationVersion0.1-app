@@ -121,8 +121,7 @@ class TripService
             }
         ])->whereHas('subscriptions', function ($query) {
             $query->where('status', 'accepted');
-            $query->with('user');
-        })->findOrFail($trip_id);
+        })->with('subscriptions.user')->findOrFail($trip_id);
     }
 
     public function deleteCollageTrip($trip_id)
