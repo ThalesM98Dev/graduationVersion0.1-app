@@ -58,7 +58,7 @@ class TripService
         });
     }
 
-    public function updateCollageTrip($request)//TODO
+    public function updateCollageTrip($request) //TODO
     {
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::findOrFail($request->trip_id);
@@ -96,22 +96,18 @@ class TripService
 
     public function listCollageTrips($request)
     {
-        $result = [];
+        $result = CollageTrip::with(['trips']);
         if ('archived' == $request->type) {
-            $result = CollageTrip::with(['stations', 'days:id,name'])
-                ->with('trips', function ($query) {
-                    $query->whereDate('date', '<=', Carbon::now());
-                })
-                ->get();
+            $result->whereHas('trips', function ($query) {
+                $query->whereDate('date', '<=', Carbon::now());
+            });
         }
         if ('upcoming' == $request->type) {
-            $result = CollageTrip::with(['stations', 'days:id,name'])
-                ->with('trips', function ($query) {
-                    $query->whereDate('date', '>=', Carbon::now());
-                })
-                ->get();
+            $result->whereHas('trips', function ($query) {
+                $query->whereDate('date', '>=', Carbon::now());
+            });
         }
-        return $result;
+        return $result->get();
     }
 
     public function collageTripDetails($trip_id)
