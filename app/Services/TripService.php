@@ -211,7 +211,7 @@ class TripService
     {
         return DailyCollageReservation::with(['user', 'trip' => function ($query) {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
-        }, 'days:id,name'])
+        }, 'day:id,name'])
             ->get();
 
     }
