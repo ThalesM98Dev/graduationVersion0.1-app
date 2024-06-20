@@ -119,7 +119,7 @@ class TripService
             },
             'days:id,name',
             'trips' => function ($query) {
-                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
+                $query->whereDate('date', '=', Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
         ])
