@@ -42,7 +42,7 @@ class SubscriptionController extends Controller
     public function update(Request $request)
     {
         $result = $this->subscriptionService->updateStatus($request);
-        return ResponseHelper::success('Subscription' . $result->status . ' successfully.');
+        return ResponseHelper::success('Subscription' . $result . ' successfully.');
     }
 
 }

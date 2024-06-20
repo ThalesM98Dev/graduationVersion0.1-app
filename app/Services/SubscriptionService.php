@@ -57,11 +57,13 @@ class SubscriptionService
     public function updateStatus($request)
     {
         if ('accepted' == $request->status) {
-            return Subscription::findOrFail($request->subscription_id)->update([
+            Subscription::findOrFail($request->subscription_id)->update([
                 'status' => $request->status,
             ]);
+            return 'accepted';
         } elseif ('rejected' == $request->status) {
-            return Subscription::findOrFail($request->subscription_id)->delete();
+            Subscription::findOrFail($request->subscription_id)->delete();
+            return 'rejected';
         }
         return false;
     }
