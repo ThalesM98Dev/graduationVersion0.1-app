@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('daily_collage_reservations', function (Blueprint $table) {
             $table->id();
+            $table->enum('type', ['Go', 'Back', 'Round Trip'])->default('Round Trip');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('trip_id')->constrained('trips')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('day_id')->constrained('days')->cascadeOnDelete()->cascadeOnUpdate();
