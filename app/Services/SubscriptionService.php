@@ -11,7 +11,7 @@ class SubscriptionService
     public function getAllSubscriptions($request)
     {
         return Subscription::with(['user', 'collageTrip'])
-            ->where('status',$request->status)
+            ->where('status', $request->status)
             ->get();
     }
 
