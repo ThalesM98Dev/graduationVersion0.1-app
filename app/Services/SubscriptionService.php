@@ -8,9 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
-    public function getAllSubscriptions()
+    public function getAllSubscriptions($request)
     {
-        return Subscription::with(['user', 'collageTrip'])->get();
+        return Subscription::with(['user', 'collageTrip'])
+            ->where('status',$request->status)
+            ->get();
     }
 
     public function subscribe($request)
