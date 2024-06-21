@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\CreateCollageTripRequest;
 use App\Http\Requests\UpdateCollageTripRequest;
+use App\Models\CollageTrip;
+use App\Models\DailyCollageReservation;
+use App\Models\User;
 use App\Services\TripService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,7 +39,6 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Created successfully.');
     }
 
-
     public function update(UpdateCollageTripRequest $request): JsonResponse
     {
         $result = $this->tripService->updateCollageTrip($request);
@@ -61,5 +63,26 @@ class CollageTripController extends Controller
         return ResponseHelper::success($trips);
     }
 
+    public function dailyReservations()
+    {
+        $result = $this->tripService->dailyReservations();
+        return ResponseHelper::success($result);
+    }
+
+    public function checkCost(Request $request)
+    {
+        $user = User::findOrFail(auth('sanctum')->id());
+        $trip = CollageTrip::findOrFail($request->trip_id);
+        $result = $this->tripService->pointsDiscount($user->points, $trip, $request->type);
+        return ResponseHelper::success($result);
+    }
+
+    public function payDailyReservation(Request $request)//TODO
+    {
+        $user = User::findOrFail(auth('sanctum')->id());
+        $reservation = DailyCollageReservation::findOrFail($request->reservation_id);
+        $result = $this->tripService->payReservation($user, $reservation);
+        return ResponseHelper::success('Paid successfully');
+    }
 
 }

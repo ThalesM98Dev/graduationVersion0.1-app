@@ -4,32 +4,30 @@ namespace App\Services;
 
 use App\Models\CollageTrip;
 use App\Models\Subscription;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
-    public function getAllSubscriptions()
+    public function getAllSubscriptions($type)
     {
-        return Subscription::with(['user', 'collageTrip'])->get();
+        return Subscription::with(['user', 'collageTrip'])
+            ->where('status', $type)
+            ->get();
     }
 
     public function subscribe($request)
     {
         return DB::transaction(function () use ($request) {
-            $trip = CollageTrip::findOrFail($request->collage_trip_id);
-            $subscription = Subscription::create([
-                'user_id' => auth('sanctum')->id(),
-                'collage_trip_id' => $trip->id,
-                'amount' => $request->semester_price,
-                'start_date' => $request->start_date,
-                'end_date' => $request->end_date,
-            ]);
-            return $subscription;
+            $subscription['user_id'] = auth('sanctum')->id();
+            $subscription['collage_trip_id'] = $request->collage_trip_id;
+            $subscription['start_date'] = $request->start_date;
+            $subscription['end_date'] = $request->end_date;
+            return Subscription::create($subscription);
         });
     }
 
-
-    public function renew($request)
+    public function renew($request)//TODO
     {
         return DB::transaction(function () use ($request) {
             $subscription = Subscription::query()
@@ -54,8 +52,24 @@ class SubscriptionService
 
     public function updateStatus($request)
     {
-        return Subscription::findOrFail($request->subscription_id)->update([
-            'status' => $request->status,
-        ]);
+        if ('accepted' == $request->status) {
+            $subscription = Subscription::findOrFail($request->subscription_id);
+            //points
+            $user = User::findOrFail($subscription->user_id);
+            $result = app(TripService::class)->pointsDiscountDaily($user->points, $subscription->collageTrip()->first(), 'Round Trip', false);
+           // dd($result);
+            $subscription->update([
+                'status' => $request->status,
+                'amount' => $result['cost'],
+                'used_points' => $result['required_points']
+            ]);
+            $user->points = $result['remaining_points'];
+            $user->save();
+            return 'accepted';
+        } elseif ('rejected' == $request->status) {
+            Subscription::findOrFail($request->subscription_id)->delete();
+            return 'rejected';
+        }
+        return false;
     }
 }

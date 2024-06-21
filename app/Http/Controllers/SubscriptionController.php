@@ -15,9 +15,15 @@ class SubscriptionController extends Controller
         $this->subscriptionService = $subscriptionService;
     }
 
-    public function index()
+    public function index()//accepted
     {
-        $result = $this->subscriptionService->getAllSubscriptions();
+        $result = $this->subscriptionService->getAllSubscriptions('accepted');
+        return ResponseHelper::success($result);
+    }
+
+    public function indexPending()//pending
+    {
+        $result = $this->subscriptionService->getAllSubscriptions('pending');
         return ResponseHelper::success($result);
     }
 
@@ -33,16 +39,16 @@ class SubscriptionController extends Controller
         return ResponseHelper::success('Subscription renewed successfully.');
     }
 
-    public function cancelSubscription()
+    public function cancelSubscription()//user
     {
         $this->subscriptionService->unSubscribe();
         return ResponseHelper::success('Subscription cancelled successfully.');
     }
 
-    public function update(Request $request)
+    public function update(Request $request)//admin
     {
-        $this->subscriptionService->updateStatus($request);
-        return ResponseHelper::success('Subscription accepted successfully.');
+        $result = $this->subscriptionService->updateStatus($request);
+        return ResponseHelper::success('Subscription ' . $result . ' successfully.');
     }
 
 }

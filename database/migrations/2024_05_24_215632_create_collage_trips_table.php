@@ -14,12 +14,16 @@ return new class extends Migration {
             $table->id();
             $table->bigInteger('go_price')->nullable();
             $table->bigInteger('round_trip_price')->nullable();
-            $table->bigInteger('semester_go_price')->nullable();
+           // $table->bigInteger('semester_go_price')->nullable();
             $table->bigInteger('semester_round_trip_price')->nullable();
             $table->bigInteger('go_points')->nullable();
             $table->bigInteger('round_trip_points')->nullable();
-            $table->bigInteger('semester_go_points')->nullable();
+           // $table->bigInteger('semester_go_points')->nullable();
             $table->bigInteger('semester_round_trip_points')->nullable();
+            $table->bigInteger('required_go_points')->nullable();
+            $table->bigInteger('required_round_trip_points')->nullable();
+            //$table->bigInteger('required_semester_go_points')->nullable();
+            $table->bigInteger('required_semester_round_trip_points')->nullable();
             $table->timestamps();
         });
     }

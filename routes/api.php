@@ -109,6 +109,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/details/{id}', [CollageTripController::class, 'show']);
     Route::post('/create', [CollageTripController::class, 'create']);
     Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
+    Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations']);
     Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
     Route::post('/update', [CollageTripController::class, 'update']);
     Route::delete('/delete/{id}', [CollageTripController::class, 'destroy']);
@@ -116,7 +117,11 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
     Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
     Route::post('/acceptSubscription', [SubscriptionController::class, 'update']);
+    Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation']);
     Route::get('/allSubscription', [SubscriptionController::class, 'index']);
+    Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
+
+    Route::get('/checkCost', [CollageTripController::class, 'checkCost']);
 });
 
 
@@ -141,8 +146,6 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
      Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
      Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);
-     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
-     Route::post('/createNewShipmentTripAPI', [ShipmentTripController::class, 'createNewShipmentTripAPI']);
      Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
      Route::post('/filterByType', [ShipmentTripController::class, 'filterByType']);
 });
