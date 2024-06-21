@@ -140,7 +140,11 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
      Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
+     Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);
      Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+     Route::post('/createNewShipmentTripAPI', [ShipmentTripController::class, 'createNewShipmentTripAPI']);
+     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+     Route::post('/filterByType', [ShipmentTripController::class, 'filterByType']);
 });
 
 Route::prefix('shipmentRequest')->group(function () {
