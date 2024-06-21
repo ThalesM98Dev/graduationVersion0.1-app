@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->integer('age');
             $table->string('address');
             $table->string('nationality')->nullable();
-            $table->bigInteger('points')->nullable();
+            $table->bigInteger('points')->default(0);
             $table->enum('role', ['User', 'Driver', 'Shipment Employee', 'Travel Trips Employee', 'University trips Employee', 'Admin']);
             $table->rememberToken();
             $table->timestamps();

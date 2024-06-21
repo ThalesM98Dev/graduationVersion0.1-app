@@ -15,9 +15,9 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('collage_trip_id')->constrained('collage_trips')->cascadeOnDelete()->cascadeOnUpdate();
             $table->bigInteger('amount')->default(0);
+            $table->bigInteger('used_points')->default(0);
             $table->date('start_date');
             $table->date('end_date');
-            $table->enum('type', ['Go', 'Back', 'Round Trip'])->default('Round Trip');
             $table->enum('status', ['pending', 'accepted'])->default('pending');
             $table->timestamps();
         });

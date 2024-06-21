@@ -7,9 +7,11 @@ use App\Models\DailyCollageReservation;
 use App\Models\Reservation;
 use App\Models\Station;
 use App\Models\Trip;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use function Symfony\Component\String\u;
 
 class TripService
 {
@@ -20,12 +22,16 @@ class TripService
                 //'day' => $request['day'],
                 'go_price' => $request['go_price'],
                 'round_trip_price' => $request['round_trip_price'],
-                'semester_go_price' => $request['semester_go_price'],
+                //'semester_go_price' => $request['semester_go_price'],
                 'semester_round_trip_price' => $request['semester_round_trip_price'],
                 'go_points' => $request['go_points'],
                 'round_trip_points' => $request['round_trip_points'],
-                'semester_go_points' => $request['semester_go_points'],
+                //   'semester_go_points' => $request['semester_go_points'],
                 'semester_round_trip_points' => $request['semester_round_trip_points'],
+                'required_go_points' => $request['go_points'],
+                'required_round_trip_points' => $request['round_trip_points'],
+                // 'required_semester_go_points' => $request['semester_go_points'],
+                'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
             if ($days) {
@@ -66,14 +72,17 @@ class TripService
                 //'day' => $request->day,
                 'go_price' => $request->go_price,
                 'round_trip_price' => $request->round_trip_price,
-                'semester_go_price' => $request->semester_go_price,
+                // 'semester_go_price' => $request->semester_go_price,
                 'semester_round_trip_price' => $request->semester_round_trip_price,
                 'go_points' => $request->go_points,
                 'round_trip_points' => $request->round_trip_points,
-                'semester_go_points' => $request->semester_go_points,
+                // 'semester_go_points' => $request->semester_go_points,
+                'required_go_points' => $request['go_points'],
+                'required_round_trip_points' => $request['round_trip_points'],
+                // 'required_semester_go_points' => $request['semester_go_points'],
+                'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
-
             if ($days) {
                 $trip->days()->detach();
                 $trip->days()->attach($days);
@@ -116,7 +125,7 @@ class TripService
             'stations',
             'days:id,name',
             'trips' => function ($query) {
-                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
+                $query->whereDate('date', Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
         ])->whereHas('subscriptions', function ($query) {
@@ -131,12 +140,13 @@ class TripService
 
     public function bookDailyCollageTrip($request)
     {
-        return DailyCollageReservation::create([
-            'trip_id' => $request->trip_id,
-            'user_id' => auth('sanctum')->id(),
-            'day_id' => $request->day_id,
-            'type' => $request->type
-        ]);
+        return DB::transaction(function () use ($request) {
+            $reservation  ['trip_id'] = $request->trip_id;
+            $reservation  ['user_id'] = auth('sanctum')->id();
+            $reservation  ['day_id'] = $request->day_id;
+            $reservation  ['type'] = $request->type;
+            return DailyCollageReservation::create($reservation);
+        });
     }
 
     public function tripsCountDestinationPeriod($request)
@@ -212,5 +222,75 @@ class TripService
         }, 'day:id,name'])
             ->get();
 
+    }
+
+    public function pointsDiscountDaily($userPoints, $trip, $type, $status)
+    {
+        switch ($type) {
+            case 'Go' | 'Back'://???
+                //
+                $tripPoints = $trip->go_points;
+                $tripPrice = $trip->go_price;
+                break;
+            case 'Round Trip':
+                //
+                //dd(2);
+                $tripPoints = $status ? $trip->round_trip_points : $trip->required_semester_round_trip_points;
+                $tripPrice = $status ? $trip->round_trip_price : $trip->semester_round_trip_price;
+                break;
+            default:
+                //
+                $tripPoints = 0;
+                $tripPrice = 0;
+                break;
+        }
+        $result = [];
+        return $this->calculate($userPoints, $tripPoints, $tripPrice, $result);
+    }
+
+    public function pointsDiscountSemster($userPoints, $trip)//not used
+    {
+        $result = [];
+        $tripPoints = $trip->required_semester_round_trip_points;
+        $tripPrice = $trip->semester_round_trip_price;
+        return $this->calculate($userPoints, $tripPoints, $tripPrice, $result);
+    }
+
+    /**
+     * @param $userPoints
+     * @param mixed $tripPoints
+     * @param mixed $tripPrice
+     * @param array $result
+     * @return array
+     */
+    public function calculate($userPoints, mixed $tripPoints, mixed $tripPrice, array $result): array
+    {
+        if ($userPoints < $tripPoints) {
+            //
+            $cost = round(($userPoints * $tripPrice) / $tripPoints);
+            $result['cost'] = $cost;
+            $result['required_points'] = $userPoints;
+            $result['remaining_points'] = 0;
+        } else {
+            $result['cost'] = 0;
+            $result['required_points'] = $tripPoints;
+            $result['remaining_points'] = $userPoints - $tripPoints;
+        }
+        return $result;
+    }
+
+    public function payReservation($user, $reservation)
+    {
+        //pay daily reservation
+        return DB::transaction(function () use ($user, $reservation) {
+            $trip = $reservation->trip()->first()->collageTrip()->first();
+            $result = $this->pointsDiscountDaily($user->points, $trip, $reservation->type, true);
+            $reservation->update([
+                'cost' => $result['cost'],
+                'used_points' => $result['required_points']
+            ]);
+            $user->points = $result['remaining_points'];
+            $user->save();
+        });
     }
 }
