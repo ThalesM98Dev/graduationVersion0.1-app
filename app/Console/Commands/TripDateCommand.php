@@ -46,13 +46,13 @@ class TripDateCommand extends Command
                         // Calculate next week's date for the specific day
                         $nextWeekTripDate = Carbon::now()->next($day->name);
                         Log::info('Calculated next week trip date', ['nextWeekTripDate' => $nextWeekTripDate->format('Y-m-d')]);
-
                         // Create a new trip
                         Trip::create([
                             'trip_number' => ++$latestTripNumber,
                             'collage_trip_id' => $collageTrip->id,
                             'date' => $nextWeekTripDate->format('Y-m-d'),
                             'trip_type' => 'Universities',
+                            'available_seats' => 30
                         ]);
                         Log::info('Created trip', ['trip_number' => $latestTripNumber, 'collage_trip_id' => $collageTrip->id, 'date' => $nextWeekTripDate->format('Y-m-d')]);
                     }

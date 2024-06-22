@@ -7,11 +7,9 @@ use App\Models\DailyCollageReservation;
 use App\Models\Reservation;
 use App\Models\Station;
 use App\Models\Trip;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use function Symfony\Component\String\u;
 
 class TripService
 {
@@ -54,6 +52,7 @@ class TripService
                     'collage_trip_id' => $trip->id,
                     'date' => $nextWeekTripDate->format('Y-m-d'),
                     'trip_type' => 'Universities',
+                    'available_seats' => 30
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -138,6 +137,9 @@ class TripService
             $reservation  ['user_id'] = auth('sanctum')->id();
             $reservation  ['day_id'] = $request->day_id;
             $reservation  ['type'] = $request->type;
+            $trip = Trip::findOrFail($request->trip_id);
+            $trip->available_seats = $trip->available_seats - 1;
+            $trip->save();
             return DailyCollageReservation::create($reservation);
         });
     }

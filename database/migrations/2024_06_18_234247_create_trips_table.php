@@ -21,9 +21,6 @@ return new class extends Migration
             $table->enum('trip_type', ['External', 'Universities']);
             $table->string('starting_place')->nullable();
             $table->integer('price')->nullable();
-            $table->bigInteger('semester_price')->nullable();
-            $table->bigInteger('daily_points')->nullable();
-            $table->bigInteger('semester_points')->nullable();
             $table->string('status')->default('pending');
             $table->foreignId('destination_id')->nullable()->constrained('destinations')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('bus_id')->nullable()->constrained('buses')->cascadeOnDelete()->cascadeOnUpdate();
