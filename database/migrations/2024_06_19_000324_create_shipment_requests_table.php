@@ -16,12 +16,18 @@ return new class extends Migration
             $table->foreignId('shipment_trip_id')->constrained('shipment_trips')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('weight');
+            $table->integer('price')->nullable();
             $table->string('status')->default('pending');
-            $table->string('image_of_ID');
-            $table->string('image_of_commercial_register');
-            $table->string('image_of_industrial_register');
-            $table->string('image_of_customs_declaration');
-            $table->string('image_of_pledge');
+            $table->string('name')->nullable();
+            $table->string('address')->nullable();
+            $table->string('nationality')->nullable();
+            $table->integer('phone_number')->nullable();
+            $table->bigInteger('id_number')->nullable();
+            $table->string('image_of_ID')->nullable();
+            $table->string('image_of_commercial_register')->nullable();
+            $table->string('image_of_industrial_register')->nullable();
+            $table->string('image_of_customs_declaration')->nullable();
+            $table->string('image_of_pledge')->nullable();
             $table->timestamps();
         });
     }

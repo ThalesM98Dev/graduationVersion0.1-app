@@ -144,8 +144,10 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
-    Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
-    Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
+     Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);
+     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+     Route::post('/filterByType', [ShipmentTripController::class, 'filterByType']);
 });
 
 Route::prefix('shipmentRequest')->group(function () {

@@ -15,9 +15,17 @@ use Illuminate\Http\Response;
 use App\Models\Order;
 use App\Helpers\ImageUploadHelper;
 use Illuminate\Support\Facades\DB;
+use App\Services\FcmService;
 
 class ReservationController extends Controller
 {
+
+    protected $fcmService;
+
+    public function __construct(FcmService $fcmService)
+     {
+        $this->fcmService = $fcmService;
+     }
 public function creatReservation(Request $request , $userId)
 {
     $validator = Validator::make($request->all(), [

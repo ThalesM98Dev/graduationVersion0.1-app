@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('truck_id')->nullable()->constrained('trucks')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('status')->default('pending');
             $table->integer('available_weight');
+            $table->string('type');
             $table->timestamps();
         });
     }

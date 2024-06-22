@@ -45,7 +45,7 @@ class TripController extends Controller
             'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
             'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
-            'destination_id' => 'required|exists:destinations,id',
+            'destination' => 'required|string',
             'bus_id' => 'required|exists:buses,id',
             'driver_id' => 'required|exists:users,id'
         ]);
@@ -87,6 +87,10 @@ class TripController extends Controller
         if ($existingTripDriver) {
         return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
         }
+         // Create a new destination instance
+    $destination = new Destination();
+    $destination->name = $request->destination;
+    $destination->save();
         // Create a new trip instance
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
@@ -96,8 +100,8 @@ class TripController extends Controller
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
-        $trip->destination_id = $request->destination_id;
         $trip->bus_id = $request->bus_id;
+        $trip->destination_id = $destination->id;
         $trip->driver_id = $request->driver_id;
         $bus = Bus::find($request->bus_id);
         $trip->available_seats = $bus->number_of_seats;

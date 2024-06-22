@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Truck;
 use App\Models\ShipmentTrip;
+use App\Models\ShipmentRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 
@@ -21,6 +22,16 @@ class ShipmentTripController extends Controller
         ];
         return ResponseHelper::success($response);
     } 
+    public function allPublicShipmentTrips(){
+
+        $allTrips = ShipmentTrip::all()
+        ->where('status','pending')
+        ->where('type','Public');
+           $response = [
+               'allTrips' => $allTrips
+           ];
+           return ResponseHelper::success($response);
+       } 
 
     public function showArchive(){
 
@@ -73,6 +84,7 @@ class ShipmentTripController extends Controller
             'destination_id' => 'required|exists:destinations,id',
             'truck_id' => 'required|exists:trucks,id',
             'date' => 'required|date',
+            'type' => 'required|string|in:Public,Private',
         ]);
 
         if ($validator->fails()) {
@@ -92,6 +104,7 @@ class ShipmentTripController extends Controller
         $shipmentTrip->destination_id = $request->destination_id;
         $shipmentTrip->truck_id = $request->truck_id;
         $shipmentTrip->date = $request->date;
+        $shipmentTrip->type = $request->type;
         $truck = Truck::find($request->truck_id);
         $shipmentTrip->available_weight = $truck->carrying_capacity;
         $shipmentTrip->save();
@@ -139,4 +152,21 @@ class ShipmentTripController extends Controller
 
     return ResponseHelper::success($response);
    }
+   public function filterByType(Request $request)
+    {
+        $type = $request->input('type');
+
+        $shipmentTrips = ShipmentTrip::where('type', $type)
+        ->where('status', 'pending')
+        ->get();
+
+        $response = [
+            'shipmentTrips' => $shipmentTrips,
+        ];
+    
+        return ResponseHelper::success($response);
+    }
+
+
 }
+
