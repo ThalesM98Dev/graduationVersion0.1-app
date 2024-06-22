@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Bus;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Reservation;
@@ -45,6 +46,7 @@ class TripService
             }
             $latestTrip = Trip::latest()->first();
             $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
+            $bus = Bus::findOrFial($request->bus_id);
             foreach ($trip->days as $day) {
                 $nextWeekTripDate = Carbon::now()->next($day->name);
                 Trip::create([
@@ -52,7 +54,8 @@ class TripService
                     'collage_trip_id' => $trip->id,
                     'date' => $nextWeekTripDate->format('Y-m-d'),
                     'trip_type' => 'Universities',
-                    'available_seats' => 30
+                    'available_seats' => $bus->number_of_seats,
+                    'bus_id' => $request->bus_id
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -100,7 +103,7 @@ class TripService
         $result = CollageTrip::with(['stations', 'days:id,name']);
         if ('archived' == $request->type) {
             $result->whereHas('trips', function ($query) {
-                $query->whereDate('date', '<=', Carbon::now());
+                $query->whereDate('date', '<', Carbon::now());
             });
         }
         if ('upcoming' == $request->type) {
@@ -111,7 +114,7 @@ class TripService
         return $result->with('trips')->get();
     }
 
-    public function collageTripDetails($trip_id,$operator)
+    public function collageTripDetails($trip_id, $operator)
     {
         return CollageTrip::with([
             'stations',
