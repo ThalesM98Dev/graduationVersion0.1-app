@@ -9,6 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Schedule::command('app:trip-date-command')->daily()->withoutOverlapping();
+//Schedule::command('app:trip-date-command')->daily()->withoutOverlapping();
 //Schedule::command('app:trip-date-command')->everyFiveSeconds();
 
