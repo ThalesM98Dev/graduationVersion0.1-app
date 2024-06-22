@@ -113,14 +113,14 @@ class TripService
         return $result->with('trips')->get();
     }
 
-    public function collageTripDetails($trip_id, $operator)
+    public function collageTripDetails($trip_id)
     {
         return CollageTrip::with([
             'stations',
             'days:id,name',
-        ])->with('trips', function ($query) use ($operator) {
+        ])->with('trips', function ($query)  {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
-                ->with('dailyCollageReservation');
+                ->with('dailyCollageReservation')->get();
         })
             ->with('subscriptions', function ($query) {
                 $query->where('status', 'accepted');
