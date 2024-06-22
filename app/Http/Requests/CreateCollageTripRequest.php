@@ -41,11 +41,11 @@ class CreateCollageTripRequest extends FormRequest
             'required_round_trip_points' => ['numeric'],
             'required_semester_round_trip_points' => ['numeric'],
             //
-            'stations' => ['required', 'array'],
-            'stations.*name' => ['required', 'string'],
-            'stations.*in_time' => ['required', 'string'],
+            'stations' => [ 'array'],
+            'stations.*name' => [ 'string'],
+            'stations.*in_time' => [ 'string'],
             'stations.*out_time' => ['string'],
-            'stations.*type' => ['required', 'in:Go,Back'],
+            'stations.*type' => ['in:Go,Back'],
 
             'total_seats' => ['required', 'integer'],
         ];
