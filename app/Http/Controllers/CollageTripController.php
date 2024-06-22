@@ -78,7 +78,7 @@ class CollageTripController extends Controller
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $trip = CollageTrip::findOrFail($request->trip_id);
-        $result = $this->tripService->pointsDiscount($user->points, $trip, $request->type);
+        $result = $this->tripService->pointsDiscountDaily($user->points, $trip, $request->type, true);
         return ResponseHelper::success($result);
     }
 
