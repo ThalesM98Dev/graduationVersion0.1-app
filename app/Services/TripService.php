@@ -120,7 +120,7 @@ class TripService
                 $query->whereDate('date', Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
-        ])->whereHas('subscriptions', function ($query) {
+        ])->with('subscriptions', function ($query) {
             $query->where('status', 'accepted');
         })->with('subscriptions.user')->findOrFail($trip_id);
     }
