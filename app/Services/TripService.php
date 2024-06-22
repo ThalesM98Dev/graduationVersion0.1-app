@@ -286,6 +286,7 @@ class TripService
             $trip = $reservation->trip()->first()->collageTrip()->first();
             $result = $this->pointsDiscountDaily($user->points, $trip, $reservation->type, true);
             $reservation->update([
+                'status' => 'paid',
                 'cost' => $result['cost'],
                 'used_points' => $result['required_points']
             ]);
