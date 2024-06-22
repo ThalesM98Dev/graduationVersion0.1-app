@@ -46,7 +46,6 @@ class TripService
             }
             $latestTrip = Trip::latest()->first();
             $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
-            $bus = Bus::findOrFial($request->bus_id);
             foreach ($trip->days as $day) {
                 $nextWeekTripDate = Carbon::now()->next($day->name);
                 Trip::create([
@@ -54,8 +53,8 @@ class TripService
                     'collage_trip_id' => $trip->id,
                     'date' => $nextWeekTripDate->format('Y-m-d'),
                     'trip_type' => 'Universities',
-                    'available_seats' => $bus->number_of_seats,
-                    'bus_id' => $request->bus_id
+                    'total_seats' => $request->total_seats,
+                    'available_seats' => $request->total_seats,
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -141,9 +140,12 @@ class TripService
             $reservation  ['day_id'] = $request->day_id;
             $reservation  ['type'] = $request->type;
             $trip = Trip::findOrFail($request->trip_id);
-            $trip->available_seats = $trip->available_seats - 1;
-            $trip->save();
-            return DailyCollageReservation::create($reservation);
+            if ($trip->available_seats > 0) {
+                $trip->available_seats = $trip->available_seats - 1;
+                $trip->save();
+                return DailyCollageReservation::create($reservation);
+            }
+            return false;
         });
     }
 

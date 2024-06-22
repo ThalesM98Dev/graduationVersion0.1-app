@@ -47,7 +47,7 @@ class CreateCollageTripRequest extends FormRequest
             'stations.*out_time' => ['string'],
             'stations.*type' => ['required', 'in:Go,Back'],
 
-            'bus_id' => ['required', 'integer', 'exists:buses,id'],
+            'total_seats' => ['required', 'integer'],
         ];
     }
 

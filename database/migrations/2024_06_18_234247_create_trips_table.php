@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,6 +15,7 @@ return new class extends Migration
             $table->integer('trip_number');
             $table->date('date');
             $table->integer('available_seats')->nullable();
+            $table->integer('total_seats')->nullable();
             $table->time('depature_hour')->nullable();
             $table->time('arrival_hour')->nullable();
             $table->enum('trip_type', ['External', 'Universities']);
