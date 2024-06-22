@@ -27,9 +27,14 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function show($trip_id)
+    public function show($trip_id, Request $request)
     {
-        $result = $this->tripService->collageTripDetails($trip_id);
+        if ('mobile' == $request->type) {
+            $operator = '>=';
+        } else {
+            $operator = '=';
+        }
+        $result = $this->tripService->collageTripDetails($trip_id, $operator);
         return ResponseHelper::success($result);
     }
 
