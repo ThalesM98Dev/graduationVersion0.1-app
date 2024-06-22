@@ -19,18 +19,14 @@ class TripService
     {
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::query()->create([
-                //'day' => $request['day'],
                 'go_price' => $request['go_price'],
                 'round_trip_price' => $request['round_trip_price'],
-                //'semester_go_price' => $request['semester_go_price'],
                 'semester_round_trip_price' => $request['semester_round_trip_price'],
                 'go_points' => $request['go_points'],
                 'round_trip_points' => $request['round_trip_points'],
-                //   'semester_go_points' => $request['semester_go_points'],
                 'semester_round_trip_points' => $request['semester_round_trip_points'],
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
-                // 'required_semester_go_points' => $request['semester_go_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
@@ -45,7 +41,7 @@ class TripService
                         'collage_trip_id' => $trip->id,
                         'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                         'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
-                        //'isSource' => $station['isSource'],
+                        'type' => $station['type'],
                     ]);
                 }
             }
@@ -69,17 +65,13 @@ class TripService
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::findOrFail($request->trip_id);
             $trip->update([
-                //'day' => $request->day,
                 'go_price' => $request->go_price,
                 'round_trip_price' => $request->round_trip_price,
-                // 'semester_go_price' => $request->semester_go_price,
                 'semester_round_trip_price' => $request->semester_round_trip_price,
                 'go_points' => $request->go_points,
                 'round_trip_points' => $request->round_trip_points,
-                // 'semester_go_points' => $request->semester_go_points,
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
-                // 'required_semester_go_points' => $request['semester_go_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
@@ -96,6 +88,7 @@ class TripService
                         'collage_trip_id' => $trip->id,
                         'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                         'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                        'type' => $station['type'],
                     ]);
                 }
             }

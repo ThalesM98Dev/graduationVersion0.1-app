@@ -57,7 +57,6 @@ class SubscriptionService
             //points
             $user = User::findOrFail($subscription->user_id);
             $result = app(TripService::class)->pointsDiscountDaily($user->points, $subscription->collageTrip()->first(), 'Round Trip', false);
-           // dd($result);
             $subscription->update([
                 'status' => $request->status,
                 'amount' => $result['cost'],

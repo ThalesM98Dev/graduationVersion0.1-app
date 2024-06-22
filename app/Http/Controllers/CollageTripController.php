@@ -45,7 +45,7 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Updated successfully');
     }
 
-    public function destroy($trip_id)//TODO
+    public function destroy($trip_id)
     {
         $result = $this->tripService->deleteCollageTrip($trip_id);
         return ResponseHelper::success($result, 'Deleted successfully');

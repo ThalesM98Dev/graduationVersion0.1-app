@@ -26,28 +26,23 @@ class UpdateCollageTripRequest extends FormRequest
         return [
             //collage Trip
             'trip_id' => ['required', 'exists:collage_trips,id'],
-            //'day' => ['string'],
             'days' => ['array'],
             'days.*' => ['integer', 'exists:days,id'],
-//            'departure_time' => ['string'],
-//            'arrival_time' => ['string'],
             'go_price' => ['numeric'],
             'round_trip_price' => ['numeric'],
-           // 'semester_go_price' => ['numeric'],
             'semester_round_trip_price' => ['numeric'],
             'go_points' => ['numeric'],
             'round_trip_points' => ['numeric'],
-            //'semester_go_points' => ['numeric'],
             'semester_round_trip_points' => ['numeric'],
             'required_go_points' => ['numeric'],
             'required_round_trip_points' => ['numeric'],
-            //'required_semester_go_points' => ['numeric'],
             'required_semester_round_trip_points' => ['numeric'],
             //
             'stations' => ['array'],
             'stations.*name' => ['string'],
             'stations.*in_time' => ['string'],
             'stations.*out_time' => ['string'],
+            'stations.*type' => ['in:Go,Back'],
         ];
     }
 
