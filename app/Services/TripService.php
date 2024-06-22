@@ -7,11 +7,9 @@ use App\Models\DailyCollageReservation;
 use App\Models\Reservation;
 use App\Models\Station;
 use App\Models\Trip;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use function Symfony\Component\String\u;
 
 class TripService
 {
@@ -19,18 +17,14 @@ class TripService
     {
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::query()->create([
-                //'day' => $request['day'],
                 'go_price' => $request['go_price'],
                 'round_trip_price' => $request['round_trip_price'],
-                //'semester_go_price' => $request['semester_go_price'],
                 'semester_round_trip_price' => $request['semester_round_trip_price'],
                 'go_points' => $request['go_points'],
                 'round_trip_points' => $request['round_trip_points'],
-                //   'semester_go_points' => $request['semester_go_points'],
                 'semester_round_trip_points' => $request['semester_round_trip_points'],
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
-                // 'required_semester_go_points' => $request['semester_go_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
@@ -45,7 +39,7 @@ class TripService
                         'collage_trip_id' => $trip->id,
                         'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                         'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
-                        //'isSource' => $station['isSource'],
+                        'type' => $station['type'],
                     ]);
                 }
             }
@@ -58,6 +52,7 @@ class TripService
                     'collage_trip_id' => $trip->id,
                     'date' => $nextWeekTripDate->format('Y-m-d'),
                     'trip_type' => 'Universities',
+                    'available_seats' => 30
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -69,17 +64,13 @@ class TripService
         return DB::transaction(function () use ($request) {
             $trip = CollageTrip::findOrFail($request->trip_id);
             $trip->update([
-                //'day' => $request->day,
                 'go_price' => $request->go_price,
                 'round_trip_price' => $request->round_trip_price,
-                // 'semester_go_price' => $request->semester_go_price,
                 'semester_round_trip_price' => $request->semester_round_trip_price,
                 'go_points' => $request->go_points,
                 'round_trip_points' => $request->round_trip_points,
-                // 'semester_go_points' => $request->semester_go_points,
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
-                // 'required_semester_go_points' => $request['semester_go_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
             ]);
             $days = $request['days'];
@@ -96,6 +87,7 @@ class TripService
                         'collage_trip_id' => $trip->id,
                         'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
                         'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                        'type' => $station['type'],
                     ]);
                 }
             }
@@ -119,16 +111,16 @@ class TripService
         return $result->with('trips')->get();
     }
 
-    public function collageTripDetails($trip_id)
+    public function collageTripDetails($trip_id,$operator)
     {
         return CollageTrip::with([
             'stations',
             'days:id,name',
-            'trips' => function ($query) {
-                $query->whereDate('date', Carbon::now()->format('Y-m-d'))
+            'trips' => function ($query) use ($operator) {
+                $query->whereDate('date', $operator, Carbon::now()->format('Y-m-d'))
                     ->with('dailyCollageReservation');
             }
-        ])->whereHas('subscriptions', function ($query) {
+        ])->with('subscriptions', function ($query) {
             $query->where('status', 'accepted');
         })->with('subscriptions.user')->findOrFail($trip_id);
     }
@@ -145,6 +137,9 @@ class TripService
             $reservation  ['user_id'] = auth('sanctum')->id();
             $reservation  ['day_id'] = $request->day_id;
             $reservation  ['type'] = $request->type;
+            $trip = Trip::findOrFail($request->trip_id);
+            $trip->available_seats = $trip->available_seats - 1;
+            $trip->save();
             return DailyCollageReservation::create($reservation);
         });
     }
