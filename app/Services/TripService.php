@@ -118,13 +118,13 @@ class TripService
         return CollageTrip::with([
             'stations',
             'days:id,name',
-            'trips' => function ($query) use ($operator) {
-                $query->whereDate('date', $operator, Carbon::now()->format('Y-m-d'))
-                    ->with('dailyCollageReservation');
-            }
-        ])->with('subscriptions', function ($query) {
-            $query->where('status', 'accepted');
-        })->with('subscriptions.user')->findOrFail($trip_id);
+        ])->with('trips', function ($query) use ($operator) {
+            $query->whereDate('date', $operator, Carbon::now()->format('Y-m-d'))
+                ->with('dailyCollageReservation');
+        })
+            ->with('subscriptions', function ($query) {
+                $query->where('status', 'accepted');
+            })->with('subscriptions.user')->findOrFail($trip_id);
     }
 
     public function deleteCollageTrip($trip_id)
@@ -135,10 +135,10 @@ class TripService
     public function bookDailyCollageTrip($request)
     {
         return DB::transaction(function () use ($request) {
-            $reservation  ['trip_id'] = $request->trip_id;
-            $reservation  ['user_id'] = auth('sanctum')->id();
-            $reservation  ['day_id'] = $request->day_id;
-            $reservation  ['type'] = $request->type;
+            $reservation['trip_id'] = $request->trip_id;
+            $reservation['user_id'] = auth('sanctum')->id();
+            $reservation['day_id'] = $request->day_id;
+            $reservation['type'] = $request->type;
             $trip = Trip::findOrFail($request->trip_id);
             if ($trip->available_seats > 0) {
                 $trip->available_seats = $trip->available_seats - 1;
@@ -215,19 +215,18 @@ class TripService
             ->get();
     }
 
-    public function dailyReservations()//not used
+    public function dailyReservations() //not used
     {
         return DailyCollageReservation::with(['user', 'trip' => function ($query) {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
         }, 'day:id,name'])
             ->get();
-
     }
 
     public function pointsDiscountDaily($userPoints, $trip, $type, $status)
     {
         switch ($type) {
-            case 'Go' | 'Back'://???
+            case 'Go' | 'Back': //???
                 //
                 $tripPoints = $trip->go_points;
                 $tripPrice = $trip->go_price;
@@ -248,7 +247,7 @@ class TripService
         return $this->calculate($userPoints, $tripPoints, $tripPrice, $result);
     }
 
-    public function pointsDiscountSemster($userPoints, $trip)//not used
+    public function pointsDiscountSemster($userPoints, $trip) //not used
     {
         $result = [];
         $tripPoints = $trip->required_semester_round_trip_points;
