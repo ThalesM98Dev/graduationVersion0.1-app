@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Bus;
+
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Day;
@@ -150,8 +150,11 @@ class TripService
     {
         return DB::transaction(function () use ($request) {
             $day = Day::findOrFail($request->day_id);
-            $date = Carbon::now()->next($day->name);
-            $trip = Trip::where('date', $date)->first();
+            $date = Carbon::now()->next($day->name)->format('Y-m-d');
+            $trip = CollageTrip::findOrFail($request->collage_trip_id)
+                ->trips()
+                ->whereDate('date', $date)
+                ->first();
             if ($trip->available_seats > 0) {
                 $reservation['trip_id'] = $trip->id;
                 $reservation['user_id'] = auth('sanctum')->id();
@@ -243,15 +246,14 @@ class TripService
     {
         return DailyCollageReservation::with(['user', 'trip' => function ($query) {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
-        }, 'day:id,name'])
-            ->get();
+        }, 'day:id,name'])->get();
     }
 
     public function pointsDiscountDaily($points, $userPoints, $trip, $type, $status)
     {
         switch ($type) {
             case 'Go':
-            case  'Back': //???
+            case 'Back':
                 //
                 $earnedPoints = $trip->go_points;
                 $requiredPoints = $trip->required_go_points;
@@ -273,14 +275,6 @@ class TripService
         $result = [];
         return $this->calculate($points, $userPoints, $requiredPoints, $earnedPoints, $tripPrice, $result);
     }
-
-    // public function pointsDiscountSemster($userPoints, $trip) //not used
-    // {
-    //     $result = [];
-    //     $tripPoints = $trip->required_semester_round_trip_points;
-    //     $tripPrice = $trip->semester_round_trip_price;
-    //     return $this->calculate($userPoints, $tripPoints, $tripPrice, $result);
-    // }
 
     /**
      * @param $userPoints
@@ -324,11 +318,10 @@ class TripService
     public function usersCollageReservations($user, $date, $status)
     {
         $date = $date ?? Carbon::now()->format('Y-m-d');
-        //dd($date);
         return $user->dailyCollageReservations()
             ->where('status', $status)
             ->whereHas('trip', function ($query) use ($date) {
-                $query->whereDate('date', $date);
+                $query->whereDate('date', '>=', $date);
             })
             ->with(['trip'])
             ->get();

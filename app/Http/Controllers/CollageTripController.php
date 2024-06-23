@@ -31,7 +31,7 @@ class CollageTripController extends Controller
     {
         if ('mobile' == $request->type) {
             $result = $this->tripService->collageTripDetailsMobile($trip_id);
-        }else{
+        } else {
             $result = $this->tripService->collageTripDetails($trip_id);
         }
         return ResponseHelper::success($result);
