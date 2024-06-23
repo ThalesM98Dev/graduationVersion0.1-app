@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Bus;
+
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
+use App\Models\Day;
 use App\Models\Reservation;
 use App\Models\Station;
 use App\Models\Trip;
@@ -123,14 +124,23 @@ class TripService
             'days:id,name',
             'trips' => function ($query) {
                 $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
-                    ->with('dailyCollageReservation');
+                    ->with('dailyCollageReservation.user');
             }
         ])
             ->with('subscriptions', function ($query) {
                 $query->where('status', 'accepted');
             })->with('subscriptions.user')->findOrFail($trip_id);
     }
-
+    public function collageTripDetailsMobile($trip_id)
+    {
+        return CollageTrip::with([
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) {
+                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
+            }
+        ])->findOrFail($trip_id);
+    }
     public function deleteCollageTrip($trip_id)
     {
         return CollageTrip::findOrFail($trip_id)->delete();
@@ -139,10 +149,14 @@ class TripService
     public function bookDailyCollageTrip($request)
     {
         return DB::transaction(function () use ($request) {
-
-            $trip = Trip::findOrFail($request->trip_id);
+            $day = Day::findOrFail($request->day_id);
+            $date = Carbon::now()->next($day->name)->format('Y-m-d');
+            $trip = CollageTrip::findOrFail($request->collage_trip_id)
+                ->trips()
+                ->whereDate('date', $date)
+                ->first();
             if ($trip->available_seats > 0) {
-                $reservation['trip_id'] = $request->trip_id;
+                $reservation['trip_id'] = $trip->id;
                 $reservation['user_id'] = auth('sanctum')->id();
                 $reservation['day_id'] = $request->day_id;
                 $reservation['type'] = $request->type;
@@ -156,7 +170,6 @@ class TripService
                 }
                 $trip->available_seats = $trip->available_seats - 1;
                 $trip->save();
-                //dd($points);
                 return DailyCollageReservation::create($reservation);
             }
             return false;
@@ -233,15 +246,14 @@ class TripService
     {
         return DailyCollageReservation::with(['user', 'trip' => function ($query) {
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
-        }, 'day:id,name'])
-            ->get();
+        }, 'day:id,name'])->get();
     }
 
     public function pointsDiscountDaily($points, $userPoints, $trip, $type, $status)
     {
         switch ($type) {
             case 'Go':
-            case  'Back': //???
+            case 'Back':
                 //
                 $earnedPoints = $trip->go_points;
                 $requiredPoints = $trip->required_go_points;
@@ -263,14 +275,6 @@ class TripService
         $result = [];
         return $this->calculate($points, $userPoints, $requiredPoints, $earnedPoints, $tripPrice, $result);
     }
-
-    // public function pointsDiscountSemster($userPoints, $trip) //not used
-    // {
-    //     $result = [];
-    //     $tripPoints = $trip->required_semester_round_trip_points;
-    //     $tripPrice = $trip->semester_round_trip_price;
-    //     return $this->calculate($userPoints, $tripPoints, $tripPrice, $result);
-    // }
 
     /**
      * @param $userPoints
@@ -309,5 +313,17 @@ class TripService
             $user->points = ($user->points -  $reservation->used_points) + $reservation->earned_points;
             $user->save();
         });
+    }
+
+    public function usersCollageReservations($user, $date, $status)
+    {
+        $date = $date ?? Carbon::now()->format('Y-m-d');
+        return $user->dailyCollageReservations()
+            ->where('status', $status)
+            ->whereHas('trip', function ($query) use ($date) {
+                $query->whereDate('date', '>=', $date);
+            })
+            ->with(['trip'])
+            ->get();
     }
 }

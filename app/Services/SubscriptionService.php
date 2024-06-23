@@ -11,8 +11,8 @@ class SubscriptionService
 {
     public function getAllSubscriptions($type)
     {
-        return Subscription::with(['user', 'collageTrip'])
-            ->where('status', $type)
+        return Subscription::where('status', '=', $type)
+            ->with(['user', 'collageTrip'])
             ->get();
     }
 
