@@ -78,16 +78,15 @@ class CollageTripController extends Controller
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $trip = CollageTrip::findOrFail($request->trip_id);
-        $result = $this->tripService->pointsDiscountDaily($user->points, $trip, $request->type, true);
+        $result = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
         return ResponseHelper::success($result);
     }
 
-    public function payDailyReservation(Request $request)//TODO
+    public function payDailyReservation(Request $request) //TODO
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $reservation = DailyCollageReservation::findOrFail($request->reservation_id);
-        $result = $this->tripService->payReservation($user, $reservation);
+        $this->tripService->payReservation($user, $reservation);
         return ResponseHelper::success('Paid successfully');
     }
-
 }

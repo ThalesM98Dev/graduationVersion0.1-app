@@ -121,7 +121,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/allSubscription', [SubscriptionController::class, 'index']);
     Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
 
-    Route::get('/checkCost', [CollageTripController::class, 'checkCost']);
+    Route::post('/checkCost', [CollageTripController::class, 'checkCost']);
 });
 
 
