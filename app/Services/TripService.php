@@ -310,4 +310,16 @@ class TripService
             $user->save();
         });
     }
+
+    public function usersCollageReservations($user, $date, $status)
+    {
+        $date = $date ?? Carbon::now()->format('Y-m-d');
+        return $user->dailyCollageReservations()
+            ->where('status', $status)
+            ->whereHas('trip', function ($query) use ($date) {
+                $query->whereDate('date', $date);
+            })
+            ->with(['trip'])
+            ->get();
+    }
 }

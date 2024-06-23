@@ -89,4 +89,10 @@ class CollageTripController extends Controller
         $this->tripService->payReservation($user, $reservation);
         return ResponseHelper::success('Paid successfully');
     }
+    public function userReservations(Request $request)
+    {
+        $user = User::findOrFail(auth('sanctum')->id());
+        $reservations = $this->tripService->usersCollageReservations($user, $request->date,$request->status);
+        return ResponseHelper::success($reservations);
+    }
 }
