@@ -52,6 +52,7 @@ Route::prefix('trip')->group(function () {
     Route::put('/endTrip/{id}', [TripController::class, 'endTrip']);
     Route::get('/showArchive', [ArchiveController::class, 'showArchive']);
     Route::delete('/deleteTrip/{id}', [TripController::class, 'deleteTrip']);
+    Route::get('/downloadTripOrdersPdf/{id}', [TripController::class, 'downloadTripOrdersPdf']);
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);

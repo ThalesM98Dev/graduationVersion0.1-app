@@ -138,18 +138,18 @@ public function searchDriver(Request $request)
 {
     $driverName = $request->input('driverName');
 
-    $drivers = User::where('name',$driverName)
-        ->where('role' ,'Driver')
+    $drivers = User::where('role', 'Driver')
+        ->where('name',$driverName)
         ->get();
 
     if ($drivers->isEmpty()) {
-        return response()->json(['message' => 'No drivers found'], Response::HTTP_NOT_FOUND);
+        return ResponseHelper::error('No Drivers Found');
     }
 
-        $response = [
-            'drivers' => $drivers
-        ];
-        return ResponseHelper::success($response);
+    $response = [
+        'drivers' => $drivers
+    ];
+   return ResponseHelper::success($response);
 }
 
     public function getDrivers()

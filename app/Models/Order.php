@@ -15,13 +15,14 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function trips(){
+   // public function trips(){
 
-        return $this->belongsToMany(Trip::class ,'reservations' , 'order_id' , 'trip_id')->withTimestamps();
+     //   return $this->belongsToMany(Trip::class ,'reservations' , 'order_id' , 'trip_id')->withTimestamps();
+   // }
+
+    public function reservations()
+    {
+        return $this->belongsToMany(Reservation::class, 'reservation_orders', 'order_id', 'reservation_id')->using(ReservationOrder::class)->withTimestamps();
     }
 
-    public function reservations(){
-
-        return $this->belongsToMany(Reservation::class ,'reservations' , 'order_id' , 'reservation_id')->withTimestamps();
-    }
 }
