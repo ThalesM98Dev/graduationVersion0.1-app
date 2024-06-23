@@ -39,13 +39,13 @@ class TripController extends Controller
 
     {
         $validator = Validator::make($request->all(), [
-            'trip_number' => 'required|integer|unique:trips',
+           // 'trip_number' => 'required|integer|unique:trips',
             'price' => 'required|integer',
             'date' => 'required|date',
             'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
             'trip_type' => 'required|in:External,Universities',
             'starting_place' => 'required|string',
-            'destination' => 'required|string',
+            'destination_id' => 'required|exists:destinations,id',
             'bus_id' => 'required|exists:buses,id',
             'driver_id' => 'required|exists:users,id'
         ]);
@@ -57,51 +57,52 @@ class TripController extends Controller
         if (!$driver || $driver->role !== 'Driver') {
             return response()->json(['message' => 'The User must be a driver'], Response::HTTP_NOT_FOUND);
         }
-        $existingTripBus = Trip::where('date',$request->date)
-        ->where('bus_id', $request->bus_id)
-        ->where(function ($query) use ($request) {
-        $query->where(function ($query) use ($request) {
-            $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->arrival_hour);
-        })->orWhere(function ($query) use ($request) {
-            $query->where('arrival_hour', '>=', $request->depature_hour)
-                ->where('arrival_hour', '<=', $request->arrival_hour);
-        });
-    })
-    ->first();
-        if ($existingTripBus) {
-        return response()->json(['message' => 'The Bus You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
-        }
-        $existingTripDriver = Trip::where('date',$request->date)
-        ->where('driver_id', $request->driver_id)
-        ->where(function ($query) use ($request) {
-        $query->where(function ($query) use ($request) {
-            $query->where('depature_hour', '>=', $request->depature_hour)
-                ->where('depature_hour', '<=', $request->arrival_hour);
-        })->orWhere(function ($query) use ($request) {
-            $query->where('arrival_hour', '>=', $request->depature_hour)
-                ->where('arrival_hour', '<=', $request->arrival_hour);
-        });
-    })
-    ->first();
-        if ($existingTripDriver) {
-        return response()->json(['message' => 'The Driver You Enterd Not Available In This Date Or Hour'], Response::HTTP_NOT_FOUND);
-        }
-         // Create a new destination instance
-    $destination = new Destination();
-    $destination->name = $request->destination;
-    $destination->save();
+         $depatureHour = Carbon::createFromFormat('h:i A', $request->depature_hour)->format('H:i:s');
+    $arrivalHour = Carbon::createFromFormat('h:i A', $request->arrival_hour)->format('H:i:s');
+        $existingTripBus = Trip::where('bus_id', $request->bus_id)
+        ->where('date', $request->date)
+        ->where(function ($query) use ($depatureHour, $arrivalHour) {
+            $query->whereBetween('depature_hour', [$depatureHour, $arrivalHour])
+                ->orWhereBetween('arrival_hour', [$depatureHour, $arrivalHour])
+                ->orWhere(function ($query) use ($depatureHour, $arrivalHour) {
+                    $query->where('depature_hour', '<=', $depatureHour)
+                        ->where('arrival_hour', '>=', $arrivalHour);
+                });
+        })
+        ->first();
+
+    if ($existingTripBus) {
+        return response()->json(['message' => 'A trip with the same bus overlaps with the specified departure and arrival hours'], Response::HTTP_BAD_REQUEST);
+    }
+
+    $existingTripDriver = Trip::where('driver_id', $request->driver_id)
+        ->where('date', $request->date)
+        ->where(function ($query) use ($depatureHour, $arrivalHour) {
+            $query->whereBetween('depature_hour', [$depatureHour, $arrivalHour])
+                ->orWhereBetween('arrival_hour', [$depatureHour, $arrivalHour])
+                ->orWhere(function ($query) use ($depatureHour, $arrivalHour) {
+                    $query->where('depature_hour', '<=', $depatureHour)
+                        ->where('arrival_hour', '>=', $arrivalHour);
+                });
+        })
+        ->first();
+
+    if ($existingTripDriver) {
+        return response()->json(['message' => 'A trip with the same driver overlaps with the specified departure and arrival hours'], Response::HTTP_BAD_REQUEST);
+    }
+//dd($existingTrip);
+    
         // Create a new trip instance
         $trip = new Trip();
         $trip->trip_number = $request->trip_number;
         $trip->date = $request->date;
-        $trip->depature_hour = Carbon::createFromFormat('h:i A', $request->depature_hour)->format('H:i:s');
-        $trip->arrival_hour = Carbon::createFromFormat('h:i A', $request->arrival_hour)->format('H:i:s');
+        $trip->depature_hour = $depatureHour;
+        $trip->arrival_hour = $arrivalHour;
         $trip->trip_type = $request->trip_type;
         $trip->starting_place = $request->starting_place;
         $trip->price = $request->price;
         $trip->bus_id = $request->bus_id;
-        $trip->destination_id = $destination->id;
+        $trip->destination_id = $request->destination_id;
         $trip->driver_id = $request->driver_id;
         $bus = Bus::find($request->bus_id);
         $trip->available_seats = $bus->number_of_seats;

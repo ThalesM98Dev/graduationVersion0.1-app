@@ -112,6 +112,7 @@ class ShipmentTripController extends Controller
             'shipmentTrip' => $shipmentTrip
         ];
         return ResponseHelper::success($response);
+        
     }
 
     public function endShipmentTrip(Request $request, $id)
