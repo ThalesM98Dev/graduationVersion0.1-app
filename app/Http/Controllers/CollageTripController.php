@@ -30,11 +30,10 @@ class CollageTripController extends Controller
     public function show($trip_id, Request $request)
     {
         if ('mobile' == $request->type) {
+            $result = $this->tripService->collageTripDetailsMobile($trip_id);
+        }else{
             $result = $this->tripService->collageTripDetails($trip_id);
-        } else {
-            //$operator = '=';
         }
-        $result = $this->tripService->collageTripDetails($trip_id);
         return ResponseHelper::success($result);
     }
 
@@ -92,7 +91,7 @@ class CollageTripController extends Controller
     public function userReservations(Request $request)
     {
         $user = User::findOrFail(auth('sanctum')->id());
-        $reservations = $this->tripService->usersCollageReservations($user, $request->date,$request->status);
+        $reservations = $this->tripService->usersCollageReservations($user, $request->date, $request->status);
         return ResponseHelper::success($reservations);
     }
 }
