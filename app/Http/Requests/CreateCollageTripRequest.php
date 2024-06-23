@@ -28,9 +28,11 @@ class CreateCollageTripRequest extends FormRequest
             //collage Trip
             'days' => ['required', 'array'],
             'days.*' => ['integer', 'exists:days,id'],
+
             'go_price' => ['required', 'numeric'],
             'round_trip_price' => ['required', 'numeric'],
             'semester_round_trip_price' => ['required', 'numeric'],
+
             'go_points' => ['numeric'],
             'round_trip_points' => ['numeric'],
             'semester_round_trip_points' => ['numeric'],
@@ -39,11 +41,13 @@ class CreateCollageTripRequest extends FormRequest
             'required_round_trip_points' => ['numeric'],
             'required_semester_round_trip_points' => ['numeric'],
             //
-            'stations' => ['required', 'array'],
-            'stations.*name' => ['required', 'string'],
-            'stations.*in_time' => ['required', 'string'],
-            'stations.*out_time' => ['required', 'string'],
-            'stations.*type' => ['required', 'in:Go,Back'],
+            'stations' => [ 'array'],
+            'stations.*name' => [ 'string'],
+            'stations.*in_time' => [ 'string'],
+            'stations.*out_time' => ['string'],
+            'stations.*type' => ['in:Go,Back'],
+
+            'total_seats' => ['required', 'integer'],
         ];
     }
 

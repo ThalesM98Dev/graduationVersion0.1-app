@@ -30,44 +30,44 @@ class TripDateCommand extends Command
      */
     public function handle()
     {
-        try {
-            Log::info('Starting TripDateCommand');
+        // try {
+        //     Log::info('Starting TripDateCommand');
 
-            $collageTrips = CollageTrip::with('days')->get();
-            Log::info('Fetched collage trips', ['collageTrips' => $collageTrips]);
+        //     $collageTrips = CollageTrip::with('days')->get();
+        //     Log::info('Fetched collage trips', ['collageTrips' => $collageTrips]);
 
-            $subscriptions = $collageTrips->subscriptions()->get();
+        //     $subscriptions = $collageTrips->subscriptions()->get();
 
-            $latestTrip = Trip::latest()->first();
-            $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
-            Log::info('Latest trip number', ['latestTripNumber' => $latestTripNumber]);
+        //     $latestTrip = Trip::latest()->first();
+        //     $latestTripNumber = $latestTrip ? $latestTrip->trip_number : 0;
+        //     Log::info('Latest trip number', ['latestTripNumber' => $latestTripNumber]);
 
-            DB::transaction(function () use ($subscriptions, $collageTrips, &$latestTripNumber) {
-                foreach ($collageTrips as $collageTrip) {
-                    foreach ($collageTrip->days as $day) {
-                        // Calculate next week's date for the specific day
-                        $nextWeekTripDate = Carbon::now()->next($day->name);
-                        Log::info('Calculated next week trip date', ['nextWeekTripDate' => $nextWeekTripDate->format('Y-m-d')]);
-                        // Create a new trip
-                        $trip = Trip::create([
-                            'trip_number' => ++$latestTripNumber,
-                            'collage_trip_id' => $collageTrip->id,
-                            'date' => $nextWeekTripDate->format('Y-m-d'),
-                            'trip_type' => 'Universities',
-                            'available_seats' => 30
-                        ]);
-                        foreach ($subscriptions as $subscription) {
-                            $trip->update(['available_seats' => $trip->available_seats - 1]);
-                        }
-                        Log::info('Created trip', ['trip_number' => $latestTripNumber, 'collage_trip_id' => $collageTrip->id, 'date' => $nextWeekTripDate->format('Y-m-d')]);
-                    }
-                }
-            });
+        //     DB::transaction(function () use ($subscriptions, $collageTrips, &$latestTripNumber) {
+        //         foreach ($collageTrips as $collageTrip) {
+        //             foreach ($collageTrip->days as $day) {
+        //                 // Calculate next week's date for the specific day
+        //                 $nextWeekTripDate = Carbon::now()->next($day->name);
+        //                 Log::info('Calculated next week trip date', ['nextWeekTripDate' => $nextWeekTripDate->format('Y-m-d')]);
+        //                 // Create a new trip
+        //                 $trip = Trip::create([
+        //                     'trip_number' => ++$latestTripNumber,
+        //                     'collage_trip_id' => $collageTrip->id,
+        //                     'date' => $nextWeekTripDate->format('Y-m-d'),
+        //                     'trip_type' => 'Universities',
+        //                     'available_seats' => 30
+        //                 ]);
+        //                 foreach ($subscriptions as $subscription) {
+        //                     $trip->update(['available_seats' => $trip->available_seats - 1]);
+        //                 }
+        //                 Log::info('Created trip', ['trip_number' => $latestTripNumber, 'collage_trip_id' => $collageTrip->id, 'date' => $nextWeekTripDate->format('Y-m-d')]);
+        //             }
+        //         }
+        //     });
 
-            $this->info('Trips scheduled successfully.');
-        } catch (\Exception $e) {
-            Log::error('Failed to schedule trips: ' . $e->getMessage());
-            $this->error('Failed to schedule trips. Check the logs for more details.');
-        }
+        //     $this->info('Trips scheduled successfully.');
+        // } catch (\Exception $e) {
+        //     Log::error('Failed to schedule trips: ' . $e->getMessage());
+        //     $this->error('Failed to schedule trips. Check the logs for more details.');
+        // }
     }
 }

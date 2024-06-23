@@ -31,9 +31,11 @@ class UpdateCollageTripRequest extends FormRequest
             'go_price' => ['numeric'],
             'round_trip_price' => ['numeric'],
             'semester_round_trip_price' => ['numeric'],
+
             'go_points' => ['numeric'],
             'round_trip_points' => ['numeric'],
             'semester_round_trip_points' => ['numeric'],
+
             'required_go_points' => ['numeric'],
             'required_round_trip_points' => ['numeric'],
             'required_semester_round_trip_points' => ['numeric'],
@@ -43,6 +45,8 @@ class UpdateCollageTripRequest extends FormRequest
             'stations.*in_time' => ['string'],
             'stations.*out_time' => ['string'],
             'stations.*type' => ['in:Go,Back'],
+
+            'bus_id' => [ 'integer', 'exists:buses,id'],
         ];
     }
 

@@ -30,11 +30,11 @@ class CollageTripController extends Controller
     public function show($trip_id, Request $request)
     {
         if ('mobile' == $request->type) {
-            $operator = '>=';
+            $result = $this->tripService->collageTripDetails($trip_id);
         } else {
-            $operator = '=';
+            //$operator = '=';
         }
-        $result = $this->tripService->collageTripDetails($trip_id, $operator);
+        $result = $this->tripService->collageTripDetails($trip_id);
         return ResponseHelper::success($result);
     }
 
@@ -59,7 +59,7 @@ class CollageTripController extends Controller
     public function bookDailyCollageTrip(Request $request)
     {
         $result = $this->tripService->bookDailyCollageTrip($request);
-        return ResponseHelper::success($result, 'Booked successfully');
+        return ResponseHelper::success($result);
     }
 
     public function searchCollageTrips(Request $request)
@@ -78,16 +78,15 @@ class CollageTripController extends Controller
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $trip = CollageTrip::findOrFail($request->trip_id);
-        $result = $this->tripService->pointsDiscount($user->points, $trip, $request->type);
+        $result = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
         return ResponseHelper::success($result);
     }
 
-    public function payDailyReservation(Request $request)//TODO
+    public function payDailyReservation(Request $request) //TODO
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $reservation = DailyCollageReservation::findOrFail($request->reservation_id);
-        $result = $this->tripService->payReservation($user, $reservation);
+        $this->tripService->payReservation($user, $reservation);
         return ResponseHelper::success('Paid successfully');
     }
-
 }
