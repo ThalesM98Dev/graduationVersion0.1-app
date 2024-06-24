@@ -6,6 +6,7 @@ use App\Enum\RulesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -125,6 +126,20 @@ class AuthController extends Controller
     {
         $user = User::findOrFail($userID)->delete();
         return ResponseHelper::success($user, 'User Delete successfuly');
+    }
+    public function updateUser(UpdateUserRequest $request, User $user)
+    {
+        $user->name = $request->input('name', $user->name);
+        $user->email = $request->input('email', $user->email);
+        $user->mobile_number = $request->input('mobile_number', $user->mobile_number);
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->age = $request->input('age', $user->age);
+        $user->address = $request->input('address', $user->address);
+        $user->nationality = $request->input('nationality', $user->nationality);
+        $user->save();
+        return ResponseHelper::success($user->first(), 'User updated successfuly');
     }
 
     public function all_Users()

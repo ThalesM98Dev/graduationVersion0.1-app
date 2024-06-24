@@ -101,6 +101,8 @@ Route::prefix('driver')->group(function () {
 Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users']);
     Route::delete('/delete/{id}', [AuthController::class, 'deleteUser']);
+
+    Route::put('/update/{user}', [AuthController::class, 'updateUser']);
 });
 
 Route::prefix('collage_trips')->group(function () {
