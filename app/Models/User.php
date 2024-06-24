@@ -54,10 +54,10 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function sendVerficationEmail($code)
-    {
-        $this->notify(new VerifyEmailNotification($code));
-    }
+    // public function sendVerficationEmail($code)
+    // {
+    //     $this->notify(new VerifyEmailNotification($code));
+    // }
 
     public function orders()
     {

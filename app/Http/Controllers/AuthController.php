@@ -6,12 +6,11 @@ use App\Enum\RulesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
+use App\Services\VerificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Mail;
 use Nette\Utils\Random;
 
 
@@ -27,20 +26,20 @@ class AuthController extends Controller
                 'name' => $request['name'],
                 'email' => $request['email'],
                 'password' => bcrypt($request['password']),
-                'mobile_number' => $request['mobile_number'],
+                'mobile_number' => '+963' . $request['mobile_number'],
                 'age' => $request['age'],
                 'address' => $request['address'],
                 'nationality' => $request['nationality'],
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
-//            if ($request['role'] == RulesEnum::USER->value) {
-//                $code = Random::generate(4, '0-9');
-//                $user->verification_code = $code;
-//                $user->save();
-//                $user->sendVerficationEmail($code);
-//            }
-            $user->isVerified = true;
+            if ($request['role'] == RulesEnum::USER->value) {
+                $code = Random::generate(4, '0-9');
+                $user->verification_code = $code;
+                $user->save();
+                app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+            }
+            //$user->isVerified = true;
             $response = [
                 'user' => $user,
                 'token' => $token
@@ -52,7 +51,7 @@ class AuthController extends Controller
     /**
      * Verify eMail
      */
-    public function verifyEmail(Request $request)
+    public function verifyAccount(Request $request)
     {
         $user = auth('sanctum')->user();
         if ($user->isVerified) {
@@ -62,7 +61,7 @@ class AuthController extends Controller
             $user->isVerified = true;
             $user->verification_code = null;
             $user->save();
-            return ResponseHelper::success('Your account is verified');
+            return ResponseHelper::success('Verified Successfuly');
         }
         return ResponseHelper::error('Wrong verification code');
     }
@@ -88,7 +87,7 @@ class AuthController extends Controller
             ];
             return ResponseHelper::success($response);
         }
-        return ResponseHelper::error('Your account is not verified');
+        return ResponseHelper::error('Your account is not verified yet');
     }
 
     /**
@@ -123,34 +122,33 @@ class AuthController extends Controller
     }
 
     public function all_Users()
-   {
-    $users = User::where('role' , 'User')->get();
     {
-        $response = [
-            'users' => $users
-        ];
+        $users = User::where('role', 'User')->get(); {
+            $response = [
+                'users' => $users
+            ];
 
+            return ResponseHelper::success($response);
+        }
+    }
+
+    public function searchDriver(Request $request)
+    {
+        $driverName = $request->input('driverName');
+
+        $drivers = User::where('role', 'Driver')
+            ->where('name', $driverName)
+            ->get();
+
+        if ($drivers->isEmpty()) {
+            return ResponseHelper::error('No Drivers Found');
+        }
+
+        $response = [
+            'drivers' => $drivers
+        ];
         return ResponseHelper::success($response);
     }
-   }
-
-public function searchDriver(Request $request)
-{
-    $driverName = $request->input('driverName');
-
-    $drivers = User::where('role', 'Driver')
-        ->where('name',$driverName)
-        ->get();
-
-    if ($drivers->isEmpty()) {
-        return ResponseHelper::error('No Drivers Found');
-    }
-
-    $response = [
-        'drivers' => $drivers
-    ];
-   return ResponseHelper::success($response);
-}
 
     public function getDrivers()
     {
@@ -163,40 +161,40 @@ public function searchDriver(Request $request)
 
 
     public function updateDriver(Request $request, $id)
-{
-    $user = User::find($id);
-    if (!$user) {
-        return response()->json(['message' => 'The User Not Found'], Response::HTTP_NOT_FOUND);
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'The User Not Found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Update the user fields if they are present in the request
+        if ($request->has('name')) {
+            $user->name = $request->input('name');
+        }
+
+        if ($request->has('mobile_number')) {
+            $user->mobile_number = $request->input('mobile_number');
+        }
+
+        if ($request->has('age')) {
+            $user->age = $request->input('age');
+        }
+
+        if ($request->has('address')) {
+            $user->address = $request->input('address');
+        }
+
+        if ($request->has('nationality')) {
+            $user->nationality = $request->input('nationality');
+        }
+
+        // Update other fields as needed
+
+        // Save the changes
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'User updated successfully', 'data' => $user]);
     }
-
-    // Update the user fields if they are present in the request
-    if ($request->has('name')) {
-        $user->name = $request->input('name');
-    }
-
-    if ($request->has('mobile_number')) {
-        $user->mobile_number = $request->input('mobile_number');
-    }
-
-    if ($request->has('age')) {
-        $user->age = $request->input('age');
-    }
-
-    if ($request->has('address')) {
-        $user->address = $request->input('address');
-    }
-
-    if ($request->has('nationality')) {
-        $user->nationality = $request->input('nationality');
-    }
-
-    // Update other fields as needed
-
-    // Save the changes
-    $user->save();
-
-    return response()->json(['success' => true, 'message' => 'User updated successfully', 'data' => $user]);
-}
 
     public function deleteDriver(Request $request, $id)
     {

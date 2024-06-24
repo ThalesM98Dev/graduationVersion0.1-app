@@ -37,7 +37,7 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum');
     Route::post('/refresh', [AuthController::class, 'refresh'])
         ->middleware('auth:sanctum');
-    Route::post('/verifyEmail', [AuthController::class, 'verifyEmail'])
+    Route::post('/verify', [AuthController::class, 'verifyAccount'])
         ->middleware('auth:sanctum');
 });
 Route::prefix('trip')->group(function () {
