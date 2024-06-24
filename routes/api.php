@@ -146,6 +146,7 @@ Route::get('/days', function () {
 Route::prefix('shipmentTrip')->group(function () {
     Route::post('/add_truck', [ShipmentTripController::class, 'add_truck']);
     Route::delete('/delete_truck/{id}', [ShipmentTripController::class, 'delete_truck']);
+    Route::get('/allTruck', [ShipmentTripController::class, 'allTruck']);
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);

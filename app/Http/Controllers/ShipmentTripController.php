@@ -15,8 +15,9 @@ class ShipmentTripController extends Controller
 {
     public function allShipmentTrips(){
 
-     $allTrips = ShipmentTrip::all()
-     ->where('status','pending');
+     $allTrips = ShipmentTrip::where('status','pending')
+     ->with('destination' , 'truck')
+        ->get();
         $response = [
             'allTrips' => $allTrips
         ];
@@ -24,9 +25,10 @@ class ShipmentTripController extends Controller
     } 
     public function allPublicShipmentTrips(){
 
-        $allTrips = ShipmentTrip::all()
-        ->where('status','pending')
-        ->where('type','Public');
+        $allTrips = ShipmentTrip::where('status','pending')
+        ->where('type','Public')
+        ->with('destination' , 'truck')
+        ->get();
            $response = [
                'allTrips' => $allTrips
            ];
@@ -35,13 +37,22 @@ class ShipmentTripController extends Controller
 
     public function showArchive(){
 
-     $allTrips = ShipmentTrip::all()
-     ->where('status','done');
+     $allTrips = ShipmentTrip::where('status','done')
+     ->with('destination' , 'truck')
+     ->get();
         $response = [
             'allTrips' => $allTrips
         ];
         return ResponseHelper::success($response);
-    } 
+    }
+    public function allTruck(){
+
+     $allTruck = Truck::all();
+        $response = [
+            'allTruck' => $allTruck
+        ];
+        return ResponseHelper::success($response);
+    }  
 
 
      public function add_truck(Request $request){
@@ -131,7 +142,7 @@ class ShipmentTripController extends Controller
 
     public function ShowShipmentTripDetails($id)
    {
-    $shipmentTrip = ShipmentTrip::with(['shipmentRequests' => function ($query) {
+    $shipmentTrip = ShipmentTrip::with(['destination','truck','shipmentRequests' => function ($query) {
             $query->where('status', 'accept');
         }])
         ->where('id', $id)
