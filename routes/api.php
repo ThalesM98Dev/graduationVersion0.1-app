@@ -109,6 +109,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/all', [CollageTripController::class, 'index']);
     Route::get('/details/{id}', [CollageTripController::class, 'show']);
     Route::post('/create', [CollageTripController::class, 'create']);
+    Route::post('/assignDriver', [CollageTripController::class, 'assignTripToDriver']);
     Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
     Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations']); //
     Route::get('/myReservations', [CollageTripController::class, 'userReservations']);//
@@ -122,6 +123,8 @@ Route::prefix('collage_trips')->group(function () {
     Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation']);
     Route::get('/allSubscription', [SubscriptionController::class, 'index']);
     Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
+
+    Route::get('/driverTrips', [CollageTripController::class, 'driverTrips']);//
 
     Route::post('/checkCost', [CollageTripController::class, 'checkCost']);
 });

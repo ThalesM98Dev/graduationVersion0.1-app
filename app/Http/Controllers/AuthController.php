@@ -79,7 +79,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Invalid credentials');
         }
-        if ($user->isVerified) {
+        if ($user->isVerified || $user->role != RulesEnum::USER->value) {
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,

@@ -59,6 +59,7 @@ class TripService
                     'trip_type' => 'Universities',
                     'total_seats' => $request->total_seats,
                     'available_seats' => $request->total_seats,
+                    'driver_id' => $request->driver_id
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -327,5 +328,23 @@ class TripService
             })
             ->with(['trip'])
             ->get();
+    }
+
+    public function assignTripToDriver($request)
+    {
+        $trip = Trip::findOrFail($request->trip_id);
+        $trip->update(['driver_id' => $request->driver_id]);
+        return true;
+    }
+    public function getDriverTrips($request)
+    {
+        $date = $request->date ?? Carbon::now()->format('Y-m-d');
+        $trips = Trip::where('driver_id', auth('sanctum')->id())
+            ->where('date', '=', $date)
+            ->with(['collageTrip' => function ($query) {
+                $query->with(['subscriptions', 'stations']);
+            }])
+            ->get();
+        return $trips;
     }
 }
