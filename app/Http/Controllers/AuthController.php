@@ -120,6 +120,11 @@ class AuthController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+    public function deleteUser($userID)
+    {
+        $user = User::findOrFail($userID)->delete();
+        return ResponseHelper::success($user, 'User Delete successfuly');
+    }
 
     public function all_Users()
     {

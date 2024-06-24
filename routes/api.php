@@ -58,7 +58,6 @@ Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination']);
     Route::get('/all_destinations', [DestController::class, 'all_destinations']);
     Route::get('/showWithTrips/{id}', [DestController::class, 'showWithTrips']);
-
 });
 Route::prefix('orders')->group(function () {
     Route::post('/add_order', [OrderController::class, 'add_order']);
@@ -85,14 +84,12 @@ Route::prefix('reserv')->group(function () {
     Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);
     Route::post('/addPersonFromDash', [ReservationController::class, 'addPersonFromDash']);
     Route::put('/updateReservationFromDash/{id}', [ReservationController::class, 'updateReservationFromDash']);
-
 });
 
 Route::prefix('statistic')->group(function () {
     Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation']);
     Route::get('/tripsCountPerDatePeriod', [StatisticsController::class, 'tripsCountPerDatePeriod']);
     Route::get('/tripsCountDestinationPeriod', [StatisticsController::class, 'tripsCountDestinationPeriod']);
-
 });
 
 Route::prefix('driver')->group(function () {
@@ -103,6 +100,7 @@ Route::prefix('driver')->group(function () {
 });
 Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users']);
+    Route::get('/delete', [AuthController::class, 'deleteUser']);
 });
 
 Route::prefix('collage_trips')->group(function () {
@@ -111,7 +109,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::post('/create', [CollageTripController::class, 'create']);
     Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
     Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations']); //
-    Route::get('/myReservations', [CollageTripController::class, 'userReservations']);//
+    Route::get('/myReservations', [CollageTripController::class, 'userReservations']); //
     Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
     Route::post('/update/{id}', [CollageTripController::class, 'update']);
     Route::delete('/delete/{id}', [CollageTripController::class, 'destroy']);
@@ -123,7 +121,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/allSubscription', [SubscriptionController::class, 'index']);
     Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
 
-    Route::get('/driverTrips', [CollageTripController::class, 'driverTrips']);//
+    Route::get('/driverTrips', [CollageTripController::class, 'driverTrips']); //
 
     Route::post('/checkCost', [CollageTripController::class, 'checkCost']);
 });
@@ -149,10 +147,10 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip']);
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip']);
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails']);
-     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
-     Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);
-     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
-     Route::post('/filterByType', [ShipmentTripController::class, 'filterByType']);
+    Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips']);
+    Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);
+    Route::get('/showArchive', [ShipmentTripController::class, 'showArchive']);
+    Route::post('/filterByType', [ShipmentTripController::class, 'filterByType']);
 });
 
 Route::prefix('shipmentRequest')->group(function () {
