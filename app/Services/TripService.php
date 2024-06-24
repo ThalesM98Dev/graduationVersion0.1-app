@@ -128,8 +128,10 @@ class TripService
             }
         ])
             ->with('subscriptions', function ($query) {
-                $query->where('status', 'accepted');
-            })->with('subscriptions.user')->findOrFail($trip_id);
+                $query->where('status', '=', 'accepted')
+                    ->with('user');
+            })
+            ->findOrFail($trip_id);
     }
     public function collageTripDetailsMobile($trip_id)
     {
