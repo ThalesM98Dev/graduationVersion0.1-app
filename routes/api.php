@@ -100,7 +100,7 @@ Route::prefix('driver')->group(function () {
 });
 Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users']);
-    Route::get('/delete', [AuthController::class, 'deleteUser']);
+    Route::delete('/delete/{id}', [AuthController::class, 'deleteUser']);
 });
 
 Route::prefix('collage_trips')->group(function () {
