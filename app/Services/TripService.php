@@ -31,6 +31,7 @@ class TripService
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
+                'driver_id' => $request->driver_id
             ]);
             $days = $request['days'];
             if ($days) {
@@ -59,7 +60,6 @@ class TripService
                     'trip_type' => 'Universities',
                     'total_seats' => $request->total_seats,
                     'available_seats' => $request->total_seats,
-                    'driver_id' => $request->driver_id
                 ]);
             }
             return $trip->with('stations')->findOrFail($trip->id);
@@ -330,22 +330,25 @@ class TripService
             ->get();
     }
 
-    public function assignTripToDriver($request)
-    {
-        $trip = Trip::findOrFail($request->trip_id);
-        $trip->update(['driver_id' => $request->driver_id]);
-        return true;
-    }
+
     public function getDriverTrips($request)
     {
-        $trips = Trip::where('driver_id', auth('sanctum')->id())
-            ->with(['dailyCollageReservation', 'collageTrip' => function ($query) {
-                $query->with(['subscriptions', 'stations']);
-            }]);
+        // $trips = Trip::where('driver_id', auth('sanctum')->id())
+        //     ->with(['dailyCollageReservation', 'collageTrip' => function ($query) {
+        //         $query->with(['subscriptions', 'stations']);
+        //     }]);
+        $driver = User::findOrFail(auth('sanctum')->id());
+        $trips = $driver->collageTrip()->with(['subscriptions', 'stations']);
         if ('upcoming' == $request->status) {
-            return  $trips->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))->get();
+            return   $trips->with(['trips' => function ($query) {
+                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
+            }])->get();
+            //return  $trips->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))->get();
         } elseif ('archived' == $request->status) {
-            return    $trips->whereDate('date', '<', Carbon::now()->format('Y-m-d'))->get();
+            return   $trips->with(['trips' => function ($query) {
+                $query->whereDate('date', '<', Carbon::now()->format('Y-m-d'));
+            }])->get();
+            // return    $trips->whereDate('date', '<', Carbon::now()->format('Y-m-d'))->get();
         }
     }
 }

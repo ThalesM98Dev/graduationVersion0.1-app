@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CollageTrip extends Model
 {
@@ -30,6 +31,10 @@ class CollageTrip extends Model
 
     public function days(): BelongsToMany
     {
-        return $this->belongsToMany(Day::class,'trips_days');
+        return $this->belongsToMany(Day::class, 'trips_days');
+    }
+    public function driver(): HasOne
+    {
+        return $this->hasOne(User::class, 'user_id', 'driver_id');
     }
 }

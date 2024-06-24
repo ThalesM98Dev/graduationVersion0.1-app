@@ -99,12 +99,7 @@ class CollageTripController extends Controller
         $reservations = $this->tripService->usersCollageReservations($user, $request->date, $request->status);
         return ResponseHelper::success($reservations);
     }
-    public function assignTripToDriver(Request $request)
-    {
-        //$user = User::findOrFail(auth('sanctum')->id());
-        $result = $this->tripService->assignTripToDriver($request);
-        return ResponseHelper::success($result, 'Driver assigned successfuly');
-    }
+
     public function driverTrips(Request $request)
     {
         $result = $this->tripService->getDriverTrips($request);

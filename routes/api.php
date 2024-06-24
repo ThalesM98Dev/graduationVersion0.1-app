@@ -109,7 +109,6 @@ Route::prefix('collage_trips')->group(function () {
     Route::get('/all', [CollageTripController::class, 'index']);
     Route::get('/details/{id}', [CollageTripController::class, 'show']);
     Route::post('/create', [CollageTripController::class, 'create']);
-    Route::post('/assignDriver', [CollageTripController::class, 'assignTripToDriver']);
     Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
     Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations']); //
     Route::get('/myReservations', [CollageTripController::class, 'userReservations']);//
