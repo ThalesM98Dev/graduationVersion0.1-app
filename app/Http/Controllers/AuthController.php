@@ -26,7 +26,7 @@ class AuthController extends Controller
                 'name' => $request['name'],
                 'email' => $request['email'],
                 'password' => bcrypt($request['password']),
-                'mobile_number' => '+963' . $request['mobile_number'],
+                'mobile_number' =>  $request['mobile_number'],
                 'age' => $request['age'],
                 'address' => $request['address'],
                 'nationality' => $request['nationality'],
@@ -37,7 +37,8 @@ class AuthController extends Controller
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
                 $user->save();
-                app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+                $mobile_number = '+963' . $user->mobile_number;
+                app(VerificationService::class)->sendVerificationMessage($mobile_number, $code);
             }
             //$user->isVerified = true;
             $response = [
