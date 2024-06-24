@@ -107,7 +107,6 @@ class CollageTripController extends Controller
     }
     public function driverTrips(Request $request)
     {
-        //$driver = User::findOrFail(auth('sanctum')->id());
         $result = $this->tripService->getDriverTrips($request);
         return ResponseHelper::success($result);
     }

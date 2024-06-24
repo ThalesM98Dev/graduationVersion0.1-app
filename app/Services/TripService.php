@@ -338,13 +338,14 @@ class TripService
     }
     public function getDriverTrips($request)
     {
-        $date = $request->date ?? Carbon::now()->format('Y-m-d');
         $trips = Trip::where('driver_id', auth('sanctum')->id())
-            ->where('date', '=', $date)
-            ->with(['collageTrip' => function ($query) {
+            ->with(['dailyCollageReservation', 'collageTrip' => function ($query) {
                 $query->with(['subscriptions', 'stations']);
-            }])
-            ->get();
-        return $trips;
+            }]);
+        if ('upcoming' == $request->status) {
+            return  $trips->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))->get();
+        } elseif ('archived' == $request->status) {
+            return    $trips->whereDate('date', '<', Carbon::now()->format('Y-m-d'))->get();
+        }
     }
 }
