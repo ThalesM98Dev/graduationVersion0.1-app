@@ -23,10 +23,10 @@ class Trip extends Model
         return $this->belongsTo(Destination::class);
     }
 
-    public function orders()
-    {
-        return $this->hasManyThrough(Order::class, Reservation::class, 'trip_id', 'reservation_id');
-    }
+    //public function orders()
+    //{
+    //    return $this->hasManyThrough(Order::class, Reservation::class, 'trip_id', 'reservation_id');
+    //}
     public function reservations()
     {
         return $this->hasMany(Reservation::class);

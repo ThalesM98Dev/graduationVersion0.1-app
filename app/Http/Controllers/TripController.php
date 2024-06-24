@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use ArPHP\I18N\Arabic;
 
 class TripController extends Controller
 {
@@ -424,4 +427,54 @@ class TripController extends Controller
     return response()->json(['message' => 'Invalid trip ID or trip has confirmed reservations'], 422);
   }
 
+  public function downloadTripOrdersPdf($id)
+{
+    $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
+        $query->where('status', 'confirmed');
+    }])->find($id);
+
+    if (!$trip) {
+        return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
+    }
+
+    // Extract seat numbers for each order
+    $orders = $trip->reservations->flatMap(function ($reservation) {
+        return $reservation->orders->map(function ($order) use ($reservation) {
+            $reservationOrder = $reservation->reservationOrders->firstWhere('order_id', $order->id);
+            $order->seat_number = $reservationOrder ? $reservationOrder->seat_number : null;
+            $order->is_seat_assigned = ($reservationOrder !== null); // Check if seat is assigned
+            return $order;
+        });
+    });
+
+    $trip->orders = $orders;
+
+    // Generate the PDF content
+    $pdfOptions = new Options();
+    $pdfOptions->set('defaultFont', 'DejaVu Sans'); // Use a font that supports Arabic, such as DejaVu Sans
+    $pdf = new Dompdf($pdfOptions);
+
+    $html = view('pdf.trip_orders', compact('trip'))->render(); // Create a view for the PDF content
+    $arabic = new Arabic();
+        $p = $arabic->arIdentify($html);
+
+        for ($i = count($p)-1; $i >= 0; $i-=2) {
+            $utf8ar = $arabic->utf8Glyphs(substr($html, $p[$i-1], $p[$i] - $p[$i-1]));
+            $reportHtml = substr_replace($html, $utf8ar, $p[$i-1], $p[$i] - $p[$i-1]);
+        }
+
+    $pdf->loadHtml($html);
+    $pdf->setPaper('A4', 'portrait');
+
+    // Render the PDF content
+    $pdf->render();
+
+    // Generate a unique filename for the PDF
+    $filename = 'trip_orders_' . $trip->id . '.pdf';
+
+    // Store the PDF file in the storage directory
+    $pdf->stream($filename, ['Attachment' => true]);
+
+    return response()->json(['message' => 'PDF generated and downloaded successfully']);
+}
 }

@@ -11,6 +11,7 @@
         "php": "8.2.4",
         "dompdf/dompdf": "^3.0",
         "guzzlehttp/guzzle": "^7.8",
+        "khaled.alshamaa/ar-php": "^6.3",
         "laravel/framework": "^11.0",
         "laravel/reverb": "@beta",
         "laravel/sanctum": "^4.0",
