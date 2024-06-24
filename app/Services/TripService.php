@@ -292,7 +292,7 @@ class TripService
         if ($points < $requiredPoints) {
             //
             $cost = round(($points * $tripPrice) / $requiredPoints);
-            $result['cost'] = $cost;
+            $result['cost'] = $tripPrice -  $cost;
             $result['required_points'] = $points;
             $result['remaining_points'] = $userPoints - $points;
             $result['earned_points'] = $earnedPoints;
