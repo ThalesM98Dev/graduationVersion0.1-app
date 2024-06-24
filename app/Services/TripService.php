@@ -65,10 +65,10 @@ class TripService
         });
     }
 
-    public function updateCollageTrip($request) //TODO
+    public function updateCollageTrip($tripId, $request) //TODO
     {
-        return DB::transaction(function () use ($request) {
-            $trip = CollageTrip::findOrFail($request->trip_id);
+        return DB::transaction(function () use ($tripId, $request) {
+            $trip = CollageTrip::findOrFail($tripId);
             $trip->update([
                 'go_price' => $request->go_price,
                 'round_trip_price' => $request->round_trip_price,
@@ -97,7 +97,7 @@ class TripService
                     ]);
                 }
             }
-            return $trip->with('stations')->get();
+            return $trip->with(['stations', 'days:id,name'])->get();
         });
     }
 

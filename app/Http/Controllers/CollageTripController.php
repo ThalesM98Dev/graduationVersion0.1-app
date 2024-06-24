@@ -43,9 +43,9 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Created successfully.');
     }
 
-    public function update(UpdateCollageTripRequest $request): JsonResponse
+    public function update($tripId,UpdateCollageTripRequest $request): JsonResponse
     {
-        $result = $this->tripService->updateCollageTrip($request);
+        $result = $this->tripService->updateCollageTrip($tripId,$request);
         return ResponseHelper::success($result, 'Updated successfully');
     }
 
