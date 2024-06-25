@@ -18,7 +18,7 @@ class ShipmentRequestController extends Controller
 {
     public function ShowShipmentRequestDetails($id)
 {
-    $shipmentRequest = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+    $shipmentRequest = ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
         ->where('id', $id)
         ->first();
 
@@ -93,11 +93,13 @@ class ShipmentRequestController extends Controller
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
        $weight = $request->weight;
-       $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
+       $shipmentTrip = ShipmentTrip::find($request->shipment_trip_id);
 
           if ($weight > $shipmentTrip->available_weight) {
               return response()->json(['errors' => 'Weight exceeds available weight.'], Response::HTTP_UNPROCESSABLE_ENTITY);
           }
+        $kiloPrice = $shipmentTrip->killoPrice;
+        $price = $weight * $kiloPrice;
 
         $shipmentRequest = new ShipmentRequest();
         $shipmentRequest->weight = $weight;
@@ -113,6 +115,7 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->image_of_commercial_register = ImageUploadHelper::upload($request->image_of_commercial_register);
         $shipmentRequest->image_of_industrial_register = ImageUploadHelper::upload($request->image_of_industrial_register);
         $shipmentRequest->image_of_pledge = ImageUploadHelper::upload($request->image_of_pledge);
+        $shipmentRequest->price = $price;
         $shipmentRequest->save();
 
         $foodstuffs = $request->input('foodstuffs');
@@ -140,10 +143,7 @@ class ShipmentRequestController extends Controller
         if (!$shipmentRequest) {
             return response()->json(['message' => 'Shipment Request not found'], 404);
         }
-     
-        $price = $request->input('price');
         $shipmentRequest->status = 'accept';
-        $shipmentRequest->price = $price;
         $shipmentRequest->save();
 
         $response = [
@@ -169,7 +169,7 @@ class ShipmentRequestController extends Controller
    public function AllMyShipmentRequests($id)
    {
     $user = User::find($id);
-    $shipmentRequests = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+    $shipmentRequests = ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
         ->whereHas('shipmentTrip', function ($query) {
             $query->where('status', 'pending');
         })
@@ -238,7 +238,7 @@ class ShipmentRequestController extends Controller
 
    public function getAllShipmentRequests()
    {
-    $shipmentRequests = ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
+    $shipmentRequests = ShipmentRequest::with('user','shipmentTrip','shipmentFoodstuffs')
         ->where('status', 'pending')
         ->get();
     $response = [

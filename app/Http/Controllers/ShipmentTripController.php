@@ -92,6 +92,7 @@ class ShipmentTripController extends Controller
 
         $validator = Validator::make($request->all(), [
             'trip_number' => 'required|integer|unique:shipment_trips',
+            'killoPrice' => 'required|integer',
             'destination_id' => 'required|exists:destinations,id',
             'truck_id' => 'required|exists:trucks,id',
             'date' => 'required|date',
@@ -114,6 +115,7 @@ class ShipmentTripController extends Controller
         $shipmentTrip->trip_number = $request->trip_number;
         $shipmentTrip->destination_id = $request->destination_id;
         $shipmentTrip->truck_id = $request->truck_id;
+        $shipmentTrip->killoPrice = $request->killoPrice;
         $shipmentTrip->date = $request->date;
         $shipmentTrip->type = $request->type;
         $truck = Truck::find($request->truck_id);
@@ -143,7 +145,8 @@ class ShipmentTripController extends Controller
     public function ShowShipmentTripDetails($id)
    {
     $shipmentTrip = ShipmentTrip::with(['destination','truck','shipmentRequests' => function ($query) {
-            $query->where('status', 'accept');
+            $query->where('status', 'accept')
+            ->with('user');
         }])
         ->where('id', $id)
         ->first();

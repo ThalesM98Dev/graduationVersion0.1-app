@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('shipment_trips', function (Blueprint $table) {
             $table->id();
             $table->integer('trip_number');
+            $table->integer('killoPrice');
             $table->foreignId('destination_id')->nullable()->constrained('destinations')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('date');
             $table->foreignId('truck_id')->nullable()->constrained('trucks')->cascadeOnDelete()->cascadeOnUpdate();
