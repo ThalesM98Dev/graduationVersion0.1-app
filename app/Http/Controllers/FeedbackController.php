@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\CreateFeedbackRequest;
 use App\Models\Feedback;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class FeedbackController extends Controller
@@ -25,7 +25,7 @@ class FeedbackController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function store(Request $request)
+    public function store(CreateFeedbackRequest $request)
     {
         return DB::transaction(function () use ($request) {
             $result = Feedback::query()

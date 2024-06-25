@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\CheckCostRequest;
 use App\Http\Requests\CreateCollageTripRequest;
+use App\Http\Requests\CreateDailyReservationRequest;
+use App\Http\Requests\PayRequest;
 use App\Http\Requests\UpdateCollageTripRequest;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
@@ -55,7 +58,7 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Deleted successfully');
     }
 
-    public function bookDailyCollageTrip(Request $request)
+    public function bookDailyCollageTrip(CreateDailyReservationRequest $request)
     {
         $result = $this->tripService->bookDailyCollageTrip($request);
         return ResponseHelper::success($result);
@@ -73,7 +76,7 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function checkCost(Request $request)
+    public function checkCost(CheckCostRequest $request)
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $trip = CollageTrip::findOrFail($request->trip_id);
@@ -86,7 +89,7 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function payDailyReservation(Request $request) //TODO
+    public function payDailyReservation(PayRequest $request) //TODO
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $reservation = DailyCollageReservation::findOrFail($request->reservation_id);
