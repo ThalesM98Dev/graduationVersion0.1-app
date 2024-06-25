@@ -163,4 +163,5 @@ Route::prefix('shipmentRequest')->group(function () {
     Route::get('/AllMyShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyShipmentRequests']);
     Route::get('/AllMyDoneShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyDoneShipmentRequests']);
     Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails']);
+    Route::get('/allFoodstuffs', [ShipmentRequestController::class, 'allFoodstuffs']);
 });

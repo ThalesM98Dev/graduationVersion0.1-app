@@ -69,6 +69,15 @@ class ShipmentRequestController extends Controller
         return ResponseHelper::success($response);
     }
 
+    public function allFoodstuffs(){
+     $allFood = Foodstuff::all();
+     
+        $response = [
+            'allFood' => $allFood
+        ];
+        return ResponseHelper::success($response);
+    }
+
 
     public function add_shipment_request(Request $request){
 
