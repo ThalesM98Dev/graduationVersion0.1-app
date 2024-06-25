@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -27,6 +28,8 @@ return new class extends Migration {
             $table->foreignId('driver_id')->nullable()->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('collage_trip_id')->nullable()->constrained('collage_trips')->cascadeOnUpdate()->cascadeOnDelete();
             $table->json('seats')->nullable();
+            //
+            $table->index(['collage_trip_id', 'driver_id']);
             $table->timestamps();
         });
     }

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->enum('status', ['pending', 'accepted'])->default('pending');
+            $table->index(['user_id', 'collage_trip_id']);
             $table->timestamps();
         });
     }
