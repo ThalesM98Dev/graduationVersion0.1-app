@@ -14,6 +14,8 @@ use App\Http\Controllers\ShipmentRequestController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\UserMiddleware;
 use App\Models\Day;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -132,7 +134,7 @@ Route::prefix('collage_trips')->group(function () {
 Route::prefix('feedback')->group(function () {
     Route::get('/all', [FeedbackController::class, 'index']);
     Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
-    Route::get('/show/{id}', [FeedbackController::class, 'show']);
+    Route::get('/show/{id}', [FeedbackController::class, 'show'])->middleware('role:Admin,User'); //Role:Admin,User,Driver,Shipment Employee,Travel Trips Employee,University trips Employee
     Route::post('/create', [FeedbackController::class, 'store']);
     Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });

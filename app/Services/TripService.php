@@ -240,9 +240,8 @@ class TripService
 
     public function userReservations($request)
     {
-        return DailyCollageReservation::with(['trip', 'days:id,name'])
-            ->where('user_id', auth('sanctum')->id())
-            ->get();
+        $user = User::findOrFail(auth('sanctum')->id());
+        return $user->dailyCollageReservations()->with(['trip', 'days:id,name'])->get();
     }
 
     public function dailyReservations() //not used
