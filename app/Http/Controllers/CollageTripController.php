@@ -106,10 +106,10 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function dailyReservationInfo(Request $request)
-    {
+    // public function dailyReservationInfo(Request $request)
+    // {
 
-        $result = [];
-        return ResponseHelper::success($result);
-    }
+    //     $result = [];
+    //     return ResponseHelper::success($result);
+    // }
 }

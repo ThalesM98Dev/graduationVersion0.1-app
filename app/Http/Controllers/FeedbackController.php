@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Models\Feedback;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,9 +19,8 @@ class FeedbackController extends Controller
 
     public function userFeedbacks()
     {
-        $user = auth('sanctum')->user();
-        $result = Feedback::query()
-            ->where('user_id', $user->id)
+        $user = User::findOrFail(auth('sanctum')->id());
+        $result = $user->feedbacks()
             ->get()->sortByDesc('date');
         return ResponseHelper::success($result);
     }
@@ -30,7 +30,7 @@ class FeedbackController extends Controller
         return DB::transaction(function () use ($request) {
             $result = Feedback::query()
                 ->create([
-                    'user_id' => auth('sanctum')->id() ? : $request->user_id,
+                    'user_id' => auth('sanctum')->id() ?: $request->user_id,
                     'date' => Carbon::now()->format('Y-m-d'),
                     'content' => $request->get('content'),
                 ]);
@@ -51,5 +51,4 @@ class FeedbackController extends Controller
             return ResponseHelper::success('Feedback deleted');
         });
     }
-
 }
