@@ -132,11 +132,11 @@ Route::prefix('collage_trips')->group(function () {
 
 
 Route::prefix('feedback')->group(function () {
-    Route::get('/all', [FeedbackController::class, 'index'])->middleware('role:admin');
-    Route::get('/user', [FeedbackController::class, 'userFeedbacks'])->middleware('role:user');
+    Route::get('/all', [FeedbackController::class, 'index']);
+    Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
     Route::get('/show/{id}', [FeedbackController::class, 'show'])->middleware('role:Admin,User'); //Role:Admin,User,Driver,Shipment Employee,Travel Trips Employee,University trips Employee
-    Route::post('/create', [FeedbackController::class, 'store'])->middleware('role:user');
-    Route::delete('/delete/{id}', [FeedbackController::class, 'destroy'])->middleware('role:admin');
+    Route::post('/create', [FeedbackController::class, 'store']);
+    Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
 });
 
 Route::get('/days', function () {
