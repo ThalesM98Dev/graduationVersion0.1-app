@@ -37,11 +37,11 @@ class AuthController extends Controller
             if ($request['role'] == RulesEnum::USER->value) {
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
-                $user->save();
-                $mobile_number = '+963' . $user->mobile_number;
-                app(VerificationService::class)->sendVerificationMessage($mobile_number, $code);
+                app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+            } else {
+                $user->isVerified = true;
             }
-            //$user->isVerified = true;
+            $user->save();
             $response = [
                 'user' => $user,
                 'token' => $token
