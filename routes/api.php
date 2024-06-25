@@ -14,8 +14,6 @@ use App\Http\Controllers\ShipmentRequestController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
-use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\UserMiddleware;
 use App\Models\Day;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
