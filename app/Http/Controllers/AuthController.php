@@ -7,6 +7,7 @@ use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Jobs\SendMessageJob;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,7 @@ class AuthController extends Controller
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
                 app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+                //dispatch(new SendMessageJob($user->mobile_number, $code));
             } else {
                 $user->isVerified = true;
             }
