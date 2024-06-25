@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class UpdateUserRequest extends FormRequest
+class CreateFeedbackRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,13 +25,8 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['string'],
-            'email' => ['unique:users,email'],
-            'mobile_number' => ['numeric', 'unique:users,mobile_number'],
-            'password' => ['string'],
-            'age' => ['numeric'],
-            'address' => ['string'],
-            'nationality' => ['string'],
+            'user_id' => ['nullable', 'exists:users,id'],
+            'content' => ['required', 'string'],
         ];
     }
 

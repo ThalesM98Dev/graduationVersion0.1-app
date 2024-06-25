@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class UpdateUserRequest extends FormRequest
+class CreateDailyReservationRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,13 +25,10 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['string'],
-            'email' => ['unique:users,email'],
-            'mobile_number' => ['numeric', 'unique:users,mobile_number'],
-            'password' => ['string'],
-            'age' => ['numeric'],
-            'address' => ['string'],
-            'nationality' => ['string'],
+            'collage_trip_id' => ['required', 'exists:collage_trips,id'],
+            'day_id' => ['required', 'exists:days,id'],
+            'type' => ['required', 'in:Go,Back,Round Trip'],
+            'points' => ['nullable', 'integer'],
         ];
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum RulesEnum: string
+enum RolesEnum: string
 {
     case ADMIN = 'Admin';
     case USER = 'User';
@@ -10,5 +10,4 @@ enum RulesEnum: string
     case SHIPMENT = 'Shipment Employee';
     case TRAVEL = 'Travel Trips Employee';
     case UNIVERSITY = 'University trips Employee';
-
 }

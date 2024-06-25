@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\AcceptSubscriptionRequest;
+use App\Http\Requests\CreateCollageTripRequest;
+use App\Http\Requests\CreateSubscriptionRequest;
+use App\Http\Requests\RenewSubscriptionRequest;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 
@@ -27,13 +31,13 @@ class SubscriptionController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function createNewSubscription(Request $request)
+    public function createNewSubscription(CreateSubscriptionRequest $request)
     {
         $result = $this->subscriptionService->subscribe($request);
         return ResponseHelper::success($result);
     }
 
-    public function renewSubscription(Request $request)
+    public function renewSubscription(RenewSubscriptionRequest $request)
     {
         $result = $this->subscriptionService->renew($request);
         return ResponseHelper::success('Subscription ' . $result);
@@ -45,7 +49,7 @@ class SubscriptionController extends Controller
         return ResponseHelper::success('Subscription cancelled successfully.');
     }
 
-    public function update(Request $request) //admin
+    public function update(AcceptSubscriptionRequest $request) //admin
     {
         $result = $this->subscriptionService->updateStatus($request);
         return ResponseHelper::success('Subscription ' . $result . ' successfully.');

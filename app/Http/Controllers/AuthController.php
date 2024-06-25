@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\RulesEnum;
+use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
@@ -35,7 +35,7 @@ class AuthController extends Controller
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
-            if ($request['role'] == RulesEnum::USER->value) {
+            if ($request['role'] == RolesEnum::USER->value) {
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
                 app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
@@ -83,7 +83,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Invalid credentials');
         }
-        if ($user->isVerified || $user->role != RulesEnum::USER->value) {
+        if ($user->isVerified || $user->role != RolesEnum::USER->value) {
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
