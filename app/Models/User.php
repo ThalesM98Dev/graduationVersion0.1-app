@@ -70,6 +70,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Trip::class);
     }
 
+    public function shipmentRequests()
+    {
+        return $this->hasMany(ShipmentRequest::class);
+    }
+
     public function subscription()
     {
         return $this->hasOne(Subscription::class);

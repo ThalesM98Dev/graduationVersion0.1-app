@@ -461,6 +461,7 @@ public function getAllReservation()
         'nationality' => 'required|string',
         'seat_number' => 'required|integer',
         'user_id' => 'required|exists:users,id',
+        'trip_id' => 'required|exists:trips,id',
     ];
 
     // Validate the request data
