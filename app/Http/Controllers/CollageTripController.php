@@ -43,9 +43,9 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result, 'Created successfully.');
     }
 
-    public function update($tripId,UpdateCollageTripRequest $request): JsonResponse
+    public function update($tripId, UpdateCollageTripRequest $request): JsonResponse
     {
-        $result = $this->tripService->updateCollageTrip($tripId,$request);
+        $result = $this->tripService->updateCollageTrip($tripId, $request);
         return ResponseHelper::success($result, 'Updated successfully');
     }
 
@@ -77,7 +77,12 @@ class CollageTripController extends Controller
     {
         $user = User::findOrFail(auth('sanctum')->id());
         $trip = CollageTrip::findOrFail($request->trip_id);
-        $result = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
+        $result = [];
+        if ('daily' == $request->type) {
+            $result  = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
+        } else {
+            $result = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, false);
+        }
         return ResponseHelper::success($result);
     }
 
@@ -93,5 +98,18 @@ class CollageTripController extends Controller
         $user = User::findOrFail(auth('sanctum')->id());
         $reservations = $this->tripService->usersCollageReservations($user, $request->date, $request->status);
         return ResponseHelper::success($reservations);
+    }
+
+    public function driverTrips(Request $request)
+    {
+        $result = $this->tripService->getDriverTrips($request);
+        return ResponseHelper::success($result);
+    }
+
+    public function dailyReservationInfo(Request $request)
+    {
+
+        $result = [];
+        return ResponseHelper::success($result);
     }
 }

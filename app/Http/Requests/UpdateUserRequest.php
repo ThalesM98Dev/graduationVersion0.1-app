@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -11,7 +14,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +25,28 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['string'],
+            'email' => ['unique:users,email'],
+            'mobile_number' => ['numeric', 'unique:users,mobile_number'],
+            'password' => ['string'],
+            'age' => ['numeric'],
+            'address' => ['string'],
+            'nationality' => ['string'],
+            //'role' => ['required', Rule::in(['User', 'Driver', 'Shipment Employee', 'Travel Trips Employee', 'University trips Employee', 'Admin'])],
         ];
+    }
+
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        $transformedErrors = [];
+        foreach ($errors->all() as $errorMessage) {
+            $transformedErrors[] = $errorMessage;
+        }
+        throw new HttpResponseException(response()->json([
+            'message' => 'Validation Error',
+            'errors' => $transformedErrors,
+        ], 422));
     }
 }

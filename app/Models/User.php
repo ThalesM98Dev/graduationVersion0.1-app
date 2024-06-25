@@ -6,6 +6,7 @@ use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -82,5 +83,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function dailyCollageReservations()
     {
         return $this->hasMany(DailyCollageReservation::class);
+    }
+    public function collageTrip()
+    {
+        return $this->hasMany(CollageTrip::class, 'driver_id');
     }
 }

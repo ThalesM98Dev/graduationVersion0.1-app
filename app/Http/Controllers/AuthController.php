@@ -6,6 +6,8 @@ use App\Enum\RulesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Jobs\SendMessageJob;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +28,7 @@ class AuthController extends Controller
                 'name' => $request['name'],
                 'email' => $request['email'],
                 'password' => bcrypt($request['password']),
-                'mobile_number' => '+963' . $request['mobile_number'],
+                'mobile_number' =>  $request['mobile_number'],
                 'age' => $request['age'],
                 'address' => $request['address'],
                 'nationality' => $request['nationality'],
@@ -36,10 +38,12 @@ class AuthController extends Controller
             if ($request['role'] == RulesEnum::USER->value) {
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
-                $user->save();
                 app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+                //dispatch(new SendMessageJob($user->mobile_number, $code));
+            } else {
+                $user->isVerified = true;
             }
-            //$user->isVerified = true;
+            $user->save();
             $response = [
                 'user' => $user,
                 'token' => $token
@@ -72,14 +76,14 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $fields = $request->validate([
-            'email' => 'required|exists:users,email',
+            'mobile_number' => 'required|exists:users,mobile_number',
             'password' => 'required|string'
         ]);
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('mobile_number', $fields['mobile_number'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Invalid credentials');
         }
-        if ($user->isVerified) {
+        if ($user->isVerified || $user->role != RulesEnum::USER->value) {
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
@@ -119,6 +123,25 @@ class AuthController extends Controller
             'token' => $token->plainTextToken
         ];
         return ResponseHelper::success($response);
+    }
+    public function deleteUser($userID)
+    {
+        $user = User::findOrFail($userID)->delete();
+        return ResponseHelper::success($user, 'User Delete successfuly');
+    }
+    public function updateUser(UpdateUserRequest $request, User $user)
+    {
+        $user->name = $request->input('name', $user->name);
+        $user->email = $request->input('email', $user->email);
+        $user->mobile_number = $request->input('mobile_number', $user->mobile_number);
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->age = $request->input('age', $user->age);
+        $user->address = $request->input('address', $user->address);
+        $user->nationality = $request->input('nationality', $user->nationality);
+        $user->save();
+        return ResponseHelper::success($user->first(), 'User updated successfuly');
     }
 
     public function all_Users()

@@ -7,10 +7,11 @@ class VerificationService
 
     public function sendVerificationMessage($reciverNumber, $code)
     {
+        $mobile_number = '+963' . $reciverNumber;
         $params = array(
             'token' => '7pl8qqcx0ugr0lrp',
-            'to' => $reciverNumber,
-            'body' => 'إن رمز تفعيل حسابك هو : ' . $code . 'الرجاء عدم ارساله لأحد '
+            'to' => $mobile_number,
+            'body' => ' إن رمز تفعيل حسابك هو : ' . $code . ' الرجاء عدم ارساله لأحد '
         );
         $curl = curl_init();
         curl_setopt_array($curl, array(
