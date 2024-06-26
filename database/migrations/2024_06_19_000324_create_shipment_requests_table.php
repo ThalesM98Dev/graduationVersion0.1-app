@@ -21,8 +21,9 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('address')->nullable();
             $table->string('nationality')->nullable();
-            $table->integer('phone_number')->nullable();
+            $table->integer('mobile_number')->nullable();
             $table->bigInteger('id_number')->nullable();
+            $table->integer('age')->nullable();
             $table->string('image_of_ID')->nullable();
             $table->string('image_of_commercial_register')->nullable();
             $table->string('image_of_industrial_register')->nullable();

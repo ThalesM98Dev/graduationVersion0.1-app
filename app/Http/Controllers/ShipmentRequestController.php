@@ -110,7 +110,6 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->weight = $weight;
         $shipmentRequest->user_id = $request->user_id;
         $shipmentRequest->shipment_trip_id = $request->shipment_trip_id;
-        $shipmentRequest->id_number = $request->id_number;
         $shipmentRequest->image_of_ID = ImageUploadHelper::upload($request->image_of_ID);
         $shipmentRequest->image_of_customs_declaration = ImageUploadHelper::upload($request->image_of_customs_declaration);
         $shipmentRequest->image_of_commercial_register = ImageUploadHelper::upload($request->image_of_commercial_register);
@@ -144,8 +143,9 @@ class ShipmentRequestController extends Controller
             'name' => 'required|string',
             'address' => 'required|string',
             'nationality' => 'required|string',
-            'id_number' => 'required|integer',
-            'phone_number' => 'required|integer',
+            'age' => 'required|numeric',
+            'id_number' => 'required|numeric|digits:11',
+            'mobile_number' => 'required|numeric|digits:10',
             'shipment_trip_id' => 'required|exists:shipment_trips,id',
             'foodstuffs' => 'required|array',
             'foodstuffs.*.foodstuff_id' => 'required|exists:foodstuffs,id',
@@ -170,9 +170,11 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->name = $request->name;
         $shipmentRequest->address = $request->address;
         $shipmentRequest->nationality = $request->nationality;
-        $shipmentRequest->phone_number = $request->phone_number;
+        $shipmentRequest->mobile_number = $request->mobile_number;
         $shipmentRequest->id_number = $request->id_number;
+        $shipmentRequest->age = $request->age;
         $shipmentRequest->price = $price;
+        $shipmentRequest->status = 'accept';
         $shipmentRequest->save();
 
         $foodstuffs = $request->input('foodstuffs');
