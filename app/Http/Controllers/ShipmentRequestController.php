@@ -85,6 +85,11 @@ class ShipmentRequestController extends Controller
             'weight' => 'required|integer|min:1',
             'user_id' => 'required|exists:users,id',
             'shipment_trip_id' => 'required|exists:shipment_trips,id',
+            'image_of_ID' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
+            'image_of_customs_declaration' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
+            'image_of_commercial_register' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
+            'image_of_industrial_register' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
+            'image_of_pledge' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
             'foodstuffs' => 'required|array',
             'foodstuffs.*.foodstuff_id' => 'required|exists:foodstuffs,id',
         ]);
@@ -136,6 +141,11 @@ class ShipmentRequestController extends Controller
         $validator = Validator::make($request->all(), [
             'weight' => 'required|integer|min:1',
             'user_id' => 'required|exists:users,id',
+            'name' => 'required|string',
+            'address' => 'required|string',
+            'nationality' => 'required|string',
+            'id_number' => 'required|integer',
+            'phone_number' => 'required|integer',
             'shipment_trip_id' => 'required|exists:shipment_trips,id',
             'foodstuffs' => 'required|array',
             'foodstuffs.*.foodstuff_id' => 'required|exists:foodstuffs,id',
