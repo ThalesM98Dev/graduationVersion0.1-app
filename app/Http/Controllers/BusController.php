@@ -75,4 +75,12 @@ class BusController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+
+    public function allImageOfBus(Request $request){
+        $imageBus = ImageOfBus::all();
+        $response = [
+            'imageBus' => $imageBus
+        ];
+        return ResponseHelper::success($response);
+    }
 }
