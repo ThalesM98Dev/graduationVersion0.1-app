@@ -7,9 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
-use App\Models\Trip;
 use App\Models\Order;
-use App\Models\Reservation;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsController extends Controller

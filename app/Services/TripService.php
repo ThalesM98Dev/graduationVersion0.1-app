@@ -134,6 +134,7 @@ class TripService
             })
             ->findOrFail($trip_id);
     }
+
     public function collageTripDetailsMobile($trip_id)
     {
         return CollageTrip::with([
@@ -144,6 +145,7 @@ class TripService
             }
         ])->findOrFail($trip_id);
     }
+
     public function deleteCollageTrip($trip_id)
     {
         return CollageTrip::findOrFail($trip_id)->delete();
@@ -213,7 +215,7 @@ class TripService
                 return Carbon::parse($reservation->trip->date)->format('Y');
             })->map(function ($group) {
                 return [
-                    'period' => $group->first()->trip->date->format('Y'),
+                    'period' => Carbon::parse($group->first()->trip->date)->format('Y'),
                     'reservation_count' => $group->count()
                 ];
             })->values();
@@ -222,7 +224,7 @@ class TripService
                 return Carbon::parse($reservation->trip->date)->format('m');
             })->map(function ($group) {
                 return [
-                    'period' => $group->first()->trip->date->format('m'),
+                    'period' => Carbon::parse($group->first()->trip->date)->format('Y-m'),
                     'reservation_count' => $group->count()
                 ];
             })->values();
@@ -251,7 +253,19 @@ class TripService
         }, 'day:id,name'])->get();
     }
 
-    public function pointsDiscountDaily($points, $userPoints, $trip, $type, $status)
+    public function checkCost($request): array
+    {
+        $user = User::findOrFail(auth('sanctum')->id());
+        $trip = CollageTrip::findOrFail($request->trip_id);
+        if ('daily' == $request->type) {
+            $result = $this->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
+        } else {
+            $result = $this->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, false);
+        }
+        return $result;
+    }
+
+    public function pointsDiscountDaily($points, $userPoints, $trip, $type, $status): array
     {
         switch ($type) {
             case 'Go':
@@ -292,7 +306,7 @@ class TripService
         if ($points < $requiredPoints) {
             //
             $cost = round(($points * $tripPrice) / $requiredPoints);
-            $result['cost'] = $tripPrice -  $cost;
+            $result['cost'] = $tripPrice - $cost;
             $result['required_points'] = $points;
             $result['remaining_points'] = $userPoints - $points;
             $result['earned_points'] = $earnedPoints;
@@ -312,7 +326,7 @@ class TripService
             $reservation->update([
                 'status' => 'paid',
             ]);
-            $user->points = ($user->points -  $reservation->used_points) + $reservation->earned_points;
+            $user->points = ($user->points - $reservation->used_points) + $reservation->earned_points;
             $user->save();
         });
     }
@@ -339,12 +353,12 @@ class TripService
         $driver = User::findOrFail(auth('sanctum')->id());
         $trips = $driver->collageTrip()->with(['subscriptions', 'stations']);
         if ('upcoming' == $request->status) {
-            return   $trips->with(['trips' => function ($query) {
+            return $trips->with(['trips' => function ($query) {
                 $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
             }])->get();
             //return  $trips->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))->get();
         } elseif ('archived' == $request->status) {
-            return   $trips->with(['trips' => function ($query) {
+            return $trips->with(['trips' => function ($query) {
                 $query->whereDate('date', '<', Carbon::now()->format('Y-m-d'));
             }])->get();
             // return    $trips->whereDate('date', '<', Carbon::now()->format('Y-m-d'))->get();
