@@ -34,18 +34,4 @@ class DestController extends Controller
         ];
         return ResponseHelper::success($response);
     }
-
-    public function showWithTrips($id)
-    {
-    $destination = Destination::with('trips')->find($id);
-
-    if (!$destination) {
-        return response()->json(['error' => 'Destination not found'], 404);
-    }
-
-    $response = [
-            'destination' => $destination
-        ];
-        return ResponseHelper::success($response);
-    }
 }

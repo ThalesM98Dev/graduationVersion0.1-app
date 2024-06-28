@@ -42,7 +42,7 @@ class TripController extends Controller
 
     {
         $validator = Validator::make($request->all(), [
-           // 'trip_number' => 'required|integer|unique:trips',
+            'trip_number' => 'required|integer|unique:trips',
             'price' => 'required|integer',
             'date' => 'required|date',
             'depature_hour' => 'required|regex:/^\d{1,2}:\d{2}\s?[AP]M$/',
@@ -185,49 +185,6 @@ class TripController extends Controller
         }
         return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
-
-      public function getTripsByDestinationInArchive(Request $request)
-{
-    $destinationName = $request->input('destination');
-    
-    $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
-            $query->where('name', 'LIKE', "%{$destinationName}%");
-        })
-        ->where('status', 'done')
-        ->with('destination', 'bus', 'driver')
-        ->get();
-    
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trips found'], 404);
-    }
-
-    $response = [
-        'trips' => $trips
-    ];
-    
-    return ResponseHelper::success($response);
-}
- public function getTripsByDestinationInAllTrips(Request $request)
-{
-    $destinationName = $request->input('destination');
-    
-    $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
-            $query->where('name', 'LIKE', "%{$destinationName}%");
-        })
-        ->where('status', 'pending')
-        ->with('destination', 'bus', 'driver')
-        ->get();
-    
-    if ($trips->isEmpty()) {
-        return response()->json(['message' => 'No trips found'], 404);
-    }
-
-    $response = [
-        'trips' => $trips
-    ];
-    
-    return ResponseHelper::success($response);
-}
 
    public function getPendingTripsByUser($userId)
 {
@@ -386,6 +343,22 @@ class TripController extends Controller
 
         $trips = Trip::where('driver_id', $driverId)
         ->where('status', 'pending')
+        ->with('destination','bus','driver')
+        ->get();
+        if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trip found'], 404);
+        }
+
+        $response = [
+            'trips' => $trips
+        ];
+        return ResponseHelper::success($response);
+    }
+
+    public function getEndingTripsForDriver($driverId) {
+
+        $trips = Trip::where('driver_id', $driverId)
+        ->where('status', 'done')
         ->with('destination','bus','driver')
         ->get();
         if ($trips->isEmpty()) {
