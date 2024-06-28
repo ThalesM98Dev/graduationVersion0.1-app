@@ -186,6 +186,29 @@ class TripController extends Controller
         return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
 
+      public function getTripsByDestinationInArchive(Request $request)
+{
+    $destinationName = $request->input('destination');
+    
+    $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
+            $query->where('name', 'LIKE', "%{$destinationName}%");
+        })
+        ->where('status', 'done')
+        ->with('destination', 'bus', 'driver')
+        ->get();
+    
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trips found'], 404);
+    }
+
+    $response = [
+        'trips' => $trips
+    ];
+    
+    return ResponseHelper::success($response);
+}
+
+
    public function getPendingTripsByUser($userId)
 {
     $reservations = Reservation::join('reservation_orders', 'reservations.id', '=', 'reservation_orders.reservation_id')
