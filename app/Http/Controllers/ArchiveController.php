@@ -23,11 +23,6 @@ class ArchiveController extends Controller
         ->with('destination', 'bus', 'driver')
         ->get();
 
-    if ($trips->isEmpty()) {
-        $message = 'No trips found';
-        return response()->json(['message' => $message], 200);
-    }
-
     $response = [
         'trips' => $trips
     ];

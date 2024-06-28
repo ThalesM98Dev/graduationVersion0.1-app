@@ -144,7 +144,7 @@ class ShipmentRequestController extends Controller
             'address' => 'required|string',
             'nationality' => 'required|string',
             'age' => 'required|numeric',
-            'id_number' => 'required|numeric|digits:11',
+            'id_number' => 'required|numeric',
             'mobile_number' => 'required|numeric|digits:10',
             'shipment_trip_id' => 'required|exists:shipment_trips,id',
             'foodstuffs' => 'required|array',
@@ -217,8 +217,12 @@ class ShipmentRequestController extends Controller
 
         if ($shipmentRequest) {
             $shipmentRequest->delete();
+            $shipmentTrip = ShipmentTrip::findOrFail($shipmentRequest->shipment_trip_id);
+            $shipmentTrip->available_weight += $shipmentRequest->weight;
+            $shipmentTrip->save();
 
             return response()->json(['message' => 'Shipment Request rejected successfully'], Response::HTTP_OK);
+
         } else {
 
             return response()->json(['message' => 'Shipment Request not found'], Response::HTTP_NOT_FOUND);

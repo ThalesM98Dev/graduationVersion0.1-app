@@ -22,7 +22,7 @@ class StatisticsController extends Controller
     }
 
 
-    public function byDateAndDestenation(Request $request)
+ public function byDateAndDestenation(Request $request)
 {
     $request->validate([
         'start_date' => 'required|date',
@@ -36,28 +36,58 @@ class StatisticsController extends Controller
     $destinationId = $request->input('destination_id');
     $groupBy = $request->input('group_by'); // 'year' or 'month'
 
-    $query = Order::join('reservation_orders', 'orders.id', '=', 'reservation_orders.order_id')
-        ->join('reservations', 'reservation_orders.reservation_id', '=', 'reservations.id')
-        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
-        ->whereBetween('trips.date', [$startDate, $endDate])
-        ->where('trips.destination_id', $destinationId);
+    $startYear = date('Y', strtotime($startDate));
+    $endYear = date('Y', strtotime($endDate));
+    $startMonth = date('m', strtotime($startDate));
+    $endMonth = date('m', strtotime($endDate));
+
+    $allStatistics = [];
 
     if ($groupBy === 'year') {
-        $query->groupBy(DB::raw('YEAR(trips.date)'))
-            ->select(DB::raw('YEAR(trips.date) as period, COUNT(DISTINCT orders.id) as order_count'))
-            ->orderBy('period', 'asc');
+        for ($year = $startYear; $year <= $endYear; $year++) {
+            $currentStartDate = ($year == $startYear) ? $startDate : $year . '-01-01';
+            $currentEndDate = ($year == $endYear) ? $endDate : $year . '-12-31';
+
+            $orderCount = $this->getOrderCount($destinationId, $currentStartDate, $currentEndDate);
+            $allStatistics[] = (object) [
+                'period' => $year,
+                'order_count' => $orderCount,
+            ];
+        }
     } elseif ($groupBy === 'month') {
-        $query->groupBy(DB::raw('MONTH(trips.date)'))
-            ->select(DB::raw('MONTH(trips.date) as period, COUNT(DISTINCT orders.id) as order_count'))
-            ->orderBy('period', 'asc');
+        for ($year = $startYear; $year <= $endYear; $year++) {
+            $start = ($year == $startYear) ? $startMonth : 1;
+            $end = ($year == $endYear) ? $endMonth : 12;
+
+            for ($month = $start; $month <= $end; $month++) {
+                $currentStartDate = ($year == $startYear && $month == $startMonth) ? $startDate : sprintf('%04d-%02d-01', $year, $month);
+                $currentEndDate = ($year == $endYear && $month == $endMonth) ? $endDate : date('Y-m-t', strtotime($currentStartDate));
+
+                $orderCount = $this->getOrderCount($destinationId, $currentStartDate, $currentEndDate);
+                $allStatistics[] = (object) [
+                    'period' => sprintf('%04d-%02d', $year, $month),
+                    'order_count' => $orderCount,
+                ];
+            }
+        }
     }
 
-    $statistics = $query->get();
-
     $response = [
-        'statistics' => $statistics
+        'statistics' => $allStatistics
     ];
     return ResponseHelper::success($response);
+}
+
+private function getOrderCount($destinationId, $startDate, $endDate)
+{
+    return Order::join('reservation_orders', 'orders.id', '=', 'reservation_orders.order_id')
+        ->join('reservations', 'reservation_orders.reservation_id', '=', 'reservations.id')
+        ->join('trips', 'trips.id', '=', 'reservations.trip_id')
+        ->where('trips.destination_id', $destinationId)
+        ->where('trips.status','done')
+        ->whereBetween('trips.date', [$startDate, $endDate])
+        ->distinct('orders.id')
+        ->count('orders.id');
 }
 
 

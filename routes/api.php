@@ -76,15 +76,15 @@ Route::prefix('bus')->group(function () {
 Route::prefix('reserv')->group(function () {
     Route::post('/creatReservation/{userId}', [ReservationController::class, 'creatReservation']);//->middleware('role:User');
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest']);//->middleware('role:Travel Trips Employee');
-    Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest'])->middleware('role:Travel Trips Employee');
+    Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest']);//->middleware('role:Travel Trips Employee');
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation']);//->middleware('role:Travel Trips Employee');
-    Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation'])->middleware('role:Travel Trips Employee');
-    Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails'])->middleware('role:Travel Trips Employee');
-    Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations'])->middleware('role:Travel Trips Employee');
-    Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation'])->middleware('role:Travel Trips Employee');
-    Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv'])->middleware('role:Travel Trips Employee');
+    Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation']);//->middleware('role:Travel Trips Employee');
+    Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails']);//->middleware('role:Travel Trips Employee');
+    Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations']);//->middleware('role:Travel Trips Employee');
+    Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation']);//->middleware('role:Travel Trips Employee');
+    Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv']);//->middleware('role:Travel Trips Employee');
     Route::post('/addPersonFromDash', [ReservationController::class, 'addPersonFromDash']);//->middleware('role:Travel Trips Employee');
-    Route::put('/updateReservationFromDash/{id}', [ReservationController::class, 'updateReservationFromDash'])->middleware('role:Travel Trips Employee');
+    Route::put('/updateReservationFromDash/{id}', [ReservationController::class, 'updateReservationFromDash']);//->middleware('role:Travel Trips Employee');
 });
 
 Route::prefix('statistic')->group(function () {

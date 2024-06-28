@@ -142,10 +142,10 @@ private function isSeatTaken($trip, $seatNumber)
 
     private function updateSeatAvailability($trip, $seatNumber, $isAvailable)
     {
-        $seatsB = $trip->seats;
-        $seatsB[$seatNumber] = $isAvailable;
-        $trip->seats = $seatsB;
-        $trip->save();
+       $seatsB = $trip->seats;
+       $seatsB[$seatNumber] = $isAvailable;
+       $trip->seats = $seatsB;
+       $trip->save();
     }
 
     public function acceptTripRequest(Request $request, $id)
@@ -164,9 +164,6 @@ private function isSeatTaken($trip, $seatNumber)
 
     public function rejectDeleteTripRequest(Request $request, $id)
 {
-    DB::beginTransaction();
-
-    try {
         $reservation = Reservation::find($id);
 
         if ($reservation) {
@@ -174,34 +171,26 @@ private function isSeatTaken($trip, $seatNumber)
             $trip = Trip::find($tripId);
 
             if ($trip) {
-                $orderSeatNumbers = $reservation->orders->pluck('seat_number');
+                $orderSeatNumbers = $reservation->reservationOrders->pluck('seat_number');
 
                 foreach ($orderSeatNumbers as $seatNumber) {
                     $this->updateSeatAvailability($trip, $seatNumber, true);
                 }
 
                 $trip->available_seats += $reservation->orders->count();
-                $trip->save();
+                $trip->save(); // Update the available_seats value
             }
 
             $reservation->orders()->delete();
             $reservation->delete();
 
-            DB::commit();
 
             return response()->json(['message' => 'Reservation and associated orders deleted successfully'], Response::HTTP_OK);
         } else {
-            DB::rollBack();
 
             return response()->json(['message' => 'Reservation not found'], Response::HTTP_NOT_FOUND);
         }
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        // Handle the exception or log the error
-
-        return response()->json(['message' => 'Failed to delete reservation and associated orders'], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
+    
 }
     public function confirmReservation(Request $request, $id)
     {
