@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,8 +16,7 @@ return new class extends Migration
             $table->string('type');
             $table->string('image');
             $table->unsignedInteger('number_of_seats');
-            $table->unsignedBigInteger('image_of_buse_id');
-            $table->foreign('image_of_buse_id')->references('id')->on('image_of_buses')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignId('image_of_buse_id')->nullable()->constrained('image_of_buses')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }

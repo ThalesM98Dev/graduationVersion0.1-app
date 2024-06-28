@@ -107,26 +107,35 @@ Route::prefix('user')->group(function () {
 });
 
 Route::prefix('collage_trips')->group(function () {
-    Route::get('/all', [CollageTripController::class, 'index']);
-    Route::get('/details/{id}', [CollageTripController::class, 'show']);
-    Route::post('/create', [CollageTripController::class, 'create']);
-    Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip']);
-    Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations']); //
-    Route::get('/myReservations', [CollageTripController::class, 'userReservations']); //
-    Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
-    Route::post('/update/{id}', [CollageTripController::class, 'update']);
-    Route::delete('/delete/{id}', [CollageTripController::class, 'destroy']);
-    Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription']);
-    Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription']);
-    Route::post('/renew', [SubscriptionController::class, 'renewSubscription']);
-    Route::post('/acceptSubscription', [SubscriptionController::class, 'update']);
-    Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation']);
-    Route::get('/allSubscription', [SubscriptionController::class, 'index']);
-    Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending']);
+    Route::middleware('role:Admin,User,University trips Employee')->group(function () {
+        Route::get('/all', [CollageTripController::class, 'index'])->name('collage_trips.index');
+        Route::get('/details/{id}', [CollageTripController::class, 'show'])->name('collage_trips.show');
+        Route::get('/search', [CollageTripController::class, 'searchCollageTrips'])->name('collage_trips.search');
+    });
 
-    Route::get('/driverTrips', [CollageTripController::class, 'driverTrips']); //
+    Route::middleware('role:Admin,University trips Employee')->group(function () {
+        Route::post('/create', [CollageTripController::class, 'create'])->name('collage_trips.create');
+        Route::get('/dailyReservations', [CollageTripController::class, 'dailyReservations'])->name('collage_trips.dailyReservations');
+        Route::post('/update/{id}', [CollageTripController::class, 'update'])->name('collage_trips.update');
+        Route::delete('/delete/{id}', [CollageTripController::class, 'destroy'])->name('collage_trips.destroy');
+        Route::post('/acceptSubscription', [SubscriptionController::class, 'update'])->name('subscription.accept');
+        Route::get('/allSubscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending'])->name('subscription.pending');
+    });
 
-    Route::post('/checkCost', [CollageTripController::class, 'checkCost']);
+    Route::middleware('role:User')->group(function () {
+        Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip'])->name('collage_trips.book');
+        Route::get('/myReservations', [CollageTripController::class, 'userReservations'])->name('collage_trips.myReservations');
+        Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription'])->name('subscription.create');
+        Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription'])->name('subscription.cancel');
+        Route::post('/renew', [SubscriptionController::class, 'renewSubscription'])->name('subscription.renew');
+        Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
+        Route::post('/checkCost', [CollageTripController::class, 'checkCost'])->name('collage_trips.checkCost');
+    });
+
+    Route::middleware('role:Driver')->group(function () {
+        Route::get('/driverTrips', [CollageTripController::class, 'driverTrips'])->name('collage_trips.driverTrips');
+    });
 });
 
 

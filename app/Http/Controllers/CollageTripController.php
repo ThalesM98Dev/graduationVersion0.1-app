@@ -76,16 +76,9 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function checkCost(CheckCostRequest $request)
+    public function checkCost(CheckCostRequest $request): JsonResponse
     {
-        $user = User::findOrFail(auth('sanctum')->id());
-        $trip = CollageTrip::findOrFail($request->trip_id);
-        $result = [];
-        if ('daily' == $request->type) {
-            $result  = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
-        } else {
-            $result = $this->tripService->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, false);
-        }
+        $result = $this->tripService->checkCost($request);
         return ResponseHelper::success($result);
     }
 
@@ -96,6 +89,7 @@ class CollageTripController extends Controller
         $this->tripService->payReservation($user, $reservation);
         return ResponseHelper::success('Paid successfully');
     }
+
     public function userReservations(Request $request)
     {
         $user = User::findOrFail(auth('sanctum')->id());

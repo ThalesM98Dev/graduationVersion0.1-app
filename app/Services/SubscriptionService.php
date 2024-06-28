@@ -38,7 +38,6 @@ class SubscriptionService
         return DB::transaction(function () use ($request) {
             $user = User::findOrFail(auth('sanctum')->id());
             $subscription = $user->subscription()->first();
-            //dd($subscription);
             if (!$subscription) {
                 return 'not exist.';
             }
@@ -49,6 +48,7 @@ class SubscriptionService
             $subscription->used_points = $result['required_points'];
             $subscription->amount = $result['cost'];
             $subscription->earned_points = $result['earned_points'];
+            $subscription->status = 'pending';
             $subscription->save();
             return 'renewed successfully.';
         });
@@ -57,28 +57,28 @@ class SubscriptionService
     public function unSubscribe() //TODO
     {
         $user = User::findOrFail(auth('sanctum')->id());
-        return  $user->subscription()->first()->delete();
+        return $user->subscription()->first()->delete();
     }
 
     public function updateStatus($request)
     {
         return DB::transaction(function () use ($request) {
-                if ('accepted' == $request->status) {
-                    $subscription = Subscription::findOrFail($request->subscription_id);
-                    //points
-                    $user = User::findOrFail($subscription->user_id);
-                    $subscription->update([
-                        'status' => 'accepted',
-                    ]);
-                    $user->points =  ($user->points - $subscription->used_points) + $subscription->earned_points;
-                    $user->save();
-                    return 'accepted';
-                } elseif ('rejected' == $request->status) {
-                    Subscription::findOrFail($request->subscription_id)->delete();
-                    return 'rejected';
-                }
-                return false;
+            if ('accepted' == $request->status) {
+                $subscription = Subscription::findOrFail($request->subscription_id);
+                //points
+                $user = User::findOrFail($subscription->user_id);
+                $subscription->update([
+                    'status' => 'accepted',
+                ]);
+                $user->points = ($user->points - $subscription->used_points) + $subscription->earned_points;
+                $user->save();
+                return 'accepted';
+            } elseif ('rejected' == $request->status) {
+                Subscription::findOrFail($request->subscription_id)->delete();
+                return 'rejected';
             }
+            return false;
+        }
         );
     }
 }
