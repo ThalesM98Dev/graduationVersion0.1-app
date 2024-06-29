@@ -207,7 +207,27 @@ class TripController extends Controller
     
     return ResponseHelper::success($response);
 }
+ public function getTripsByDestinationInAllTrips(Request $request)
+{
+    $destinationName = $request->input('destination');
+    
+    $trips = Trip::whereHas('destination', function ($query) use ($destinationName) {
+            $query->where('name', 'LIKE', "%{$destinationName}%");
+        })
+        ->where('status', 'pending')
+        ->with('destination', 'bus', 'driver')
+        ->get();
+    
+    if ($trips->isEmpty()) {
+        return response()->json(['message' => 'No trips found'], 404);
+    }
 
+    $response = [
+        'trips' => $trips
+    ];
+    
+    return ResponseHelper::success($response);
+}
 
    public function getPendingTripsByUser($userId)
 {
