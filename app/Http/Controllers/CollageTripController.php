@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\TripService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CollageTripController extends Controller
 {
@@ -99,7 +100,9 @@ class CollageTripController extends Controller
 
     public function driverTrips(Request $request)
     {
-        $result = $this->tripService->getDriverTrips($request);
+        $result = Cache::remember('driver_trips' . auth('sanctum')->id(), 5, function () use ($request) {
+            $this->tripService->getDriverTrips($request);
+        });
         return ResponseHelper::success($result);
     }
 
