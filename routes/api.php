@@ -154,7 +154,7 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip'])->middleware('role:Admin,Shipment Employee');
     Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails'])->middleware('role:Admin,Shipment Employee');
     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips'])->middleware('role:Admin,Shipment Employee ,User');
-    Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips']);->middleware('role:Admin,Shipment Employee , User');
+    Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips'])->middleware('role:Admin,Shipment Employee , User');
     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive'])->middleware('role:Admin,Shipment Employee');
     Route::post('/filterByType', [ShipmentTripController::class, 'filterByType'])->middleware('role:Admin,Shipment Employee');
 });
