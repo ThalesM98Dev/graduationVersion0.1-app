@@ -17,8 +17,12 @@ class EnsureUserHasRole
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        $userRole = auth('sanctum')->user()->role;
-        if (!in_array($userRole, $roles)) {
+        $userRole = auth('sanctum')->user();
+        //->role;
+        if (!$userRole) {
+            return ResponseHelper::error('User not exist.');
+        }
+        if (!in_array($userRole->role, $roles)) {
             return ResponseHelper::error('You are not authorized to do this action');
         }
         return $next($request);

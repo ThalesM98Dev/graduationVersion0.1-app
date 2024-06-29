@@ -5,15 +5,18 @@ namespace App\Services;
 use App\Models\CollageTrip;
 use App\Models\Subscription;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
     public function getAllSubscriptions($type)
     {
-        return Subscription::where('status', '=', $type)
-            ->with(['user', 'collageTrip'])
-            ->get();
+        return Cache::remember('subscriptions', 5, function () use ($type) {
+            Subscription::where('status', '=', $type)
+                ->with(['user', 'collageTrip'])
+                ->get();
+        });
     }
 
     public function subscribe($request)
