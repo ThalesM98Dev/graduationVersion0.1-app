@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('image_of_customs_declaration')->nullable();
             $table->string('image_of_pledge')->nullable();
             $table->timestamps();
+            $table->index(['shipment_trip_id', 'user_id']);
         });
     }
 

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('reservation_id')->references('id')->on('reservations')->onUpdate('cascade')->onDelete('cascade');
             $table->integer('seat_number');
             $table->timestamps();
+            $table->index(['order_id', 'reservation_id']);
         });
     }
 

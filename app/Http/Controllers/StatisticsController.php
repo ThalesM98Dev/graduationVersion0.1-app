@@ -9,9 +9,11 @@ use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class StatisticsController extends Controller
 {
+    
     private $tripService;
 
     public function __construct(TripService $tripService)
@@ -20,7 +22,7 @@ class StatisticsController extends Controller
     }
 
 
- public function byDateAndDestenation(Request $request)
+public function byDateAndDestenation(Request $request)
 {
     $request->validate([
         'start_date' => 'required|date',
@@ -39,36 +41,43 @@ class StatisticsController extends Controller
     $startMonth = date('m', strtotime($startDate));
     $endMonth = date('m', strtotime($endDate));
 
-    $allStatistics = [];
+    $cacheKey = 'statistics_' . $startDate . '_' . $endDate . '_' . $destinationId . '_' . $groupBy;
 
-    if ($groupBy === 'year') {
-        for ($year = $startYear; $year <= $endYear; $year++) {
-            $currentStartDate = ($year == $startYear) ? $startDate : $year . '-01-01';
-            $currentEndDate = ($year == $endYear) ? $endDate : $year . '-12-31';
+    // Retrieve cached results if available
+    $allStatistics = Cache::remember($cacheKey, 2, function () use ($startDate, $endDate, $destinationId, $groupBy, $startYear, $endYear, $startMonth, $endMonth) {
+        $statistics = [];
 
-            $orderCount = $this->getOrderCount($destinationId, $currentStartDate, $currentEndDate);
-            $allStatistics[] = (object) [
-                'period' => $year,
-                'order_count' => $orderCount,
-            ];
-        }
-    } elseif ($groupBy === 'month') {
-        for ($year = $startYear; $year <= $endYear; $year++) {
-            $start = ($year == $startYear) ? $startMonth : 1;
-            $end = ($year == $endYear) ? $endMonth : 12;
-
-            for ($month = $start; $month <= $end; $month++) {
-                $currentStartDate = ($year == $startYear && $month == $startMonth) ? $startDate : sprintf('%04d-%02d-01', $year, $month);
-                $currentEndDate = ($year == $endYear && $month == $endMonth) ? $endDate : date('Y-m-t', strtotime($currentStartDate));
+        if ($groupBy === 'year') {
+            for ($year = $startYear; $year <= $endYear; $year++) {
+                $currentStartDate = ($year == $startYear) ? $startDate : $year . '-01-01';
+                $currentEndDate = ($year == $endYear) ? $endDate : $year . '-12-31';
 
                 $orderCount = $this->getOrderCount($destinationId, $currentStartDate, $currentEndDate);
-                $allStatistics[] = (object) [
-                    'period' => sprintf('%04d-%02d', $year, $month),
+                $statistics[] = (object) [
+                    'period' => $year,
                     'order_count' => $orderCount,
                 ];
             }
+        } elseif ($groupBy === 'month') {
+            for ($year = $startYear; $year <= $endYear; $year++) {
+                $start = ($year == $startYear) ? $startMonth : 1;
+                $end = ($year == $endYear) ? $endMonth : 12;
+
+                for ($month = $start; $month <= $end; $month++) {
+                    $currentStartDate = ($year == $startYear && $month == $startMonth) ? $startDate : sprintf('%04d-%02d-01', $year, $month);
+                    $currentEndDate = ($year == $endYear && $month == $endMonth) ? $endDate : date('Y-m-t', strtotime($currentStartDate));
+
+                    $orderCount = $this->getOrderCount($destinationId, $currentStartDate, $currentEndDate);
+                    $statistics[] = (object) [
+                        'period' => sprintf('%04d-%02d', $year, $month),
+                        'order_count' => $orderCount,
+                    ];
+                }
+            }
         }
-    }
+
+        return $statistics;
+    });
 
     $response = [
         'statistics' => $allStatistics

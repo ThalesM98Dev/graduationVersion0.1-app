@@ -19,15 +19,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Carbon\Carbon;
-use Dompdf\Dompdf;
-use Dompdf\Options;
-use ArPHP\I18N\Arabic;
 
 class TripController extends Controller
 {
-
-
-
 
    public function all_trip()
 {

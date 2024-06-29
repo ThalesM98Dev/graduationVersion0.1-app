@@ -13,9 +13,11 @@ use App\Models\ShipmentRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use App\Helpers\ImageUploadHelper;
+use Illuminate\Support\Facades\Cache;
 
 class ShipmentRequestController extends Controller
 {
+
     public function ShowShipmentRequestDetails($id)
 {
     $shipmentRequest = ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
@@ -230,14 +232,21 @@ class ShipmentRequestController extends Controller
    }
 
    public function AllMyShipmentRequests($id)
-   {
+{
     $user = User::find($id);
-    $shipmentRequests = ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
-        ->whereHas('shipmentTrip', function ($query) {
-            $query->where('status', 'pending');
-        })
-        ->where('user_id', $id)
-        ->get();
+
+    // Generate a unique cache key based on the user ID
+    $cacheKey = 'shipment_requests_'.$id;
+
+    // Retrieve cached results if available
+    $shipmentRequests = Cache::remember($cacheKey, 2, function () use ($id) {
+        return ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+            ->whereHas('shipmentTrip', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->where('user_id', $id)
+            ->get();
+    });
 
     $formattedRequests = $shipmentRequests->map(function ($request) {
         $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
@@ -256,17 +265,24 @@ class ShipmentRequestController extends Controller
     ];
 
     return ResponseHelper::success($response);
-   }
+}
 
    public function AllMyDoneShipmentRequests($id)
-   {
+{
     $user = User::find($id);
-    $shipmentRequests = ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
-        ->whereHas('shipmentTrip', function ($query) {
-            $query->where('status', 'done');
-        })
-        ->where('user_id', $id)
-        ->get();
+
+    // Generate a unique cache key based on the user ID
+    $cacheKey = 'done_shipment_requests_'.$id;
+
+    // Retrieve cached results if available
+    $shipmentRequests = Cache::remember($cacheKey, 2, function () use ($id) {
+        return ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
+            ->whereHas('shipmentTrip', function ($query) {
+                $query->where('status', 'done');
+            })
+            ->where('user_id', $id)
+            ->get();
+    });
 
     $formattedRequests = $shipmentRequests->map(function ($request) {
         $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
@@ -285,29 +301,45 @@ class ShipmentRequestController extends Controller
     ];
 
     return ResponseHelper::success($response);
-   }
+}
 
-   public function getAllAcceptedShipmentRequests()
-   {
-    $shipmentRequests = ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
-        ->where('status', 'accept')
-        ->get();
+  use Illuminate\Support\Facades\Cache;
+
+public function getAllAcceptedShipmentRequests()
+{
+    // Generate a unique cache key
+    $cacheKey = 'accepted_shipment_requests';
+
+    // Retrieve cached results if available
+    $shipmentRequests = Cache::remember($cacheKey, 2, function () {
+        return ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
+            ->where('status', 'accept')
+            ->get();
+    });
+
     $response = [
-            'shipmentRequests' => $shipmentRequests
-        ];
+        'shipmentRequests' => $shipmentRequests
+    ];
 
     return ResponseHelper::success($response);
-   }
+}
 
-   public function getAllShipmentRequests()
-   {
-    $shipmentRequests = ShipmentRequest::with('user','shipmentTrip','shipmentFoodstuffs')
-        ->where('status', 'pending')
-        ->get();
+public function getAllShipmentRequests()
+{
+    // Generate a unique cache key
+    $cacheKey = 'pending_shipment_requests';
+
+    // Retrieve cached results if available
+    $shipmentRequests = Cache::remember($cacheKey, 2, function () {
+        return ShipmentRequest::with('user','shipmentTrip','shipmentFoodstuffs')
+            ->where('status', 'pending')
+            ->get();
+    });
+
     $response = [
-            'shipmentRequests' => $shipmentRequests
-        ];
+        'shipmentRequests' => $shipmentRequests
+    ];
 
     return ResponseHelper::success($response);
-   }
+}
 }

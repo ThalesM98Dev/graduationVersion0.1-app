@@ -14,6 +14,7 @@ use App\Helpers\ImageUploadHelper;
 
 class BusController extends Controller
 {
+
     public function all_buses(){
      $allBus = Bus::all();
         return response()->json($allBus);

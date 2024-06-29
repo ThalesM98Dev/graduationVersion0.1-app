@@ -21,6 +21,7 @@ return new class extends Migration
             $table->bigInteger('total_price');
             $table->integer('count_of_persons');
             $table->timestamps();
+            $table->index('trip_id');
         });
     }
 

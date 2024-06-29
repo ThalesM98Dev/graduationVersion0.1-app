@@ -10,41 +10,67 @@ use App\Models\ShipmentTrip;
 use App\Models\ShipmentRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 class ShipmentTripController extends Controller
 {
-    public function allShipmentTrips(){
+    
+    public function allShipmentTrips()
+{
+    // Generate a unique cache key
+    $cacheKey = 'shipment_trips';
 
-     $allTrips = ShipmentTrip::where('status','pending')
-     ->with('destination' , 'truck')
-        ->get();
-        $response = [
-            'allTrips' => $allTrips
-        ];
-        return ResponseHelper::success($response);
-    } 
-    public function allPublicShipmentTrips(){
+    // Retrieve cached results if available
+    $allTrips = Cache::remember($cacheKey, 2, function () {
+        return ShipmentTrip::where('status', 'pending')
+            ->with('destination', 'truck')
+            ->get();
+    });
 
-        $allTrips = ShipmentTrip::where('status','pending')
-        ->where('type','Public')
-        ->with('destination' , 'truck')
-        ->get();
-           $response = [
-               'allTrips' => $allTrips
-           ];
-           return ResponseHelper::success($response);
-       } 
+    $response = [
+        'allTrips' => $allTrips
+    ];
 
-    public function showArchive(){
+    return ResponseHelper::success($response);
+}
+    public function allPublicShipmentTrips()
+{
+    // Generate a unique cache key
+    $cacheKey = 'public_shipment_trips';
 
-     $allTrips = ShipmentTrip::where('status','done')
-     ->with('destination' , 'truck')
-     ->get();
-        $response = [
-            'allTrips' => $allTrips
-        ];
-        return ResponseHelper::success($response);
-    }
+    // Retrieve cached results if available
+    $allTrips = Cache::remember($cacheKey, 2, function () {
+        return ShipmentTrip::where('status', 'pending')
+            ->where('type', 'Public')
+            ->with('destination', 'truck')
+            ->get();
+    });
+
+    $response = [
+        'allTrips' => $allTrips
+    ];
+
+    return ResponseHelper::success($response);
+}
+
+    public function showArchive()
+{
+    // Generate a unique cache key
+    $cacheKey = 'archive_shipment_trips';
+
+    // Retrieve cached results if available
+    $allTrips = Cache::remember($cacheKey, 2, function () {
+        return ShipmentTrip::where('status', 'done')
+            ->with('destination', 'truck')
+            ->get();
+    });
+
+    $response = [
+        'allTrips' => $allTrips
+    ];
+
+    return ResponseHelper::success($response);
+}
     public function allTruck(){
 
      $allTruck = Truck::all();
