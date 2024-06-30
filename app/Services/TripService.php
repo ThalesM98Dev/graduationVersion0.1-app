@@ -124,26 +124,26 @@ class TripService
 
     public function collageTripDetails($trip_id)
     {
-        return Cache::remember('collage_trip_details' . $trip_id, 2, function () use ($trip_id) {
-            CollageTrip::with([
-                'stations',
-                'days:id,name',
-                'trips' => function ($query) {
-                    $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
-                        ->with('dailyCollageReservation.user');
-                }
-            ])
-                ->with('subscriptions', function ($query) {
-                    $query->where('status', '=', 'accepted')
-                        ->with('user');
-                })
-                ->findOrFail($trip_id);
-        });
+        //return Cache::remember('collage_trip_details' . $trip_id, 2, function () use ($trip_id) {
+        return CollageTrip::with([
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) {
+                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
+                    ->with('dailyCollageReservation.user');
+            }
+        ])
+            ->with('subscriptions', function ($query) {
+                $query->where('status', '=', 'accepted')
+                    ->with('user');
+            })
+            ->findOrFail($trip_id);
+        // });
     }
 
     public function collageTripDetailsMobile($trip_id): Model|Collection|Builder|array|null
     {
-        return Cache::remember('collage_trip_details_mobile_' . $trip_id, 2, function () use ($trip_id) {
+        return Cache::remember('collage_trip_details_mobile' . $trip_id, 2, function () use ($trip_id) {
             CollageTrip::with([
                 'stations',
                 'days:id,name',
