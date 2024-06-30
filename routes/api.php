@@ -43,7 +43,7 @@ Route::prefix('auth')->group(function () {
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,User');
-    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin,Driver');
+    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin,Driver,User');
     Route::post('/getTripsByDestinationInArchive', [TripController::class, 'getTripsByDestinationInArchive'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/getPendingTripsByUser/{userId}', [TripController::class, 'getPendingTripsByUser'])->middleware('role:User');
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser'])->middleware('role:User');
