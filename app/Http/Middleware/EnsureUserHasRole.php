@@ -18,7 +18,6 @@ class EnsureUserHasRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $userRole = auth('sanctum')->user();
-        //->role;
         if (!$userRole) {
             return ResponseHelper::error('User not exist.');
         }
