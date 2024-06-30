@@ -141,17 +141,19 @@ class TripService
         // });
     }
 
-    public function collageTripDetailsMobile($trip_id): Model|Collection|Builder|array|null
+    public function collageTripDetailsMobile($trip_id)
     {
         //return Cache::remember('collage_trip_details_mobile' . $trip_id, 2, function () use ($trip_id) {
-        return CollageTrip::with([
+        $result = CollageTrip::with([
             'stations',
             'days:id,name',
             'trips' => function ($query) {
                 $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
             }
         ])->findOrFail($trip_id);
-        //});
+        return Cache::remember('collage_trip_details_mobile' . $trip_id, 5, function () use ($result) {
+            return $result;
+        });
     }
 
     public function deleteCollageTrip($trip_id)
