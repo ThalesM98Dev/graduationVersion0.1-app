@@ -46,7 +46,7 @@ class UpdateCollageTripRequest extends FormRequest
             'stations.*out_time' => ['string'],
             'stations.*type' => ['in:Go,Back'],
 
-            'bus_id' => [ 'integer', 'exists:buses,id'],
+            'driver_id' => ['exists:users,id']
         ];
     }
 
