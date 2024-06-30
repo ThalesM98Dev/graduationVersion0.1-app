@@ -42,8 +42,8 @@ Route::prefix('auth')->group(function () {
 });
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
-    Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin ,Use');
-    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin , Driver');
+    Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,Use');
+    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin,Driver');
     Route::post('/getTripsByDestinationInArchive', [TripController::class, 'getTripsByDestinationInArchive'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/getPendingTripsByUser/{userId}', [TripController::class, 'getPendingTripsByUser'])->middleware('role:User');
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser'])->middleware('role:User');
@@ -64,7 +64,7 @@ Route::prefix('bus')->group(function () {
     Route::get('/all_buses', [BusController::class, 'all_buses'])->middleware('role:Travel Trips Employee,Admin,University trips Employee,Shipment Employee');
     Route::delete('/deleteBus/{id}', [BusController::class, 'deleteBus'])->middleware('role:Admin');
     Route::post('/add_imageOfBus', [BusController::class, 'add_imageOfBus'])->middleware('role:Admin');
-    Route::get('/allImageOfBus', [BusController::class, 'allImageOfBus'])->middleware('role:Travel Trips Employee,Admin,University trips Employee , Shipment Employee,User');
+    Route::get('/allImageOfBus', [BusController::class, 'allImageOfBus'])->middleware('role:Travel Trips Employee,Admin,University trips Employee ,Shipment Employee,User');
 });
 
 Route::prefix('reserv')->group(function () {
