@@ -56,7 +56,7 @@ Route::prefix('trip')->group(function () {
 });
 Route::prefix('destination')->group(function () {
     Route::post('/add_destination', [DestController::class, 'add_destination'])->middleware('role:Travel Trips Employee,Admin');
-    Route::get('/all_destinations', [DestController::class, 'all_destinations'])->middleware('role:Travel Trips Employee,Admin,University trips Employee,Shipment Employee');
+    Route::get('/all_destinations', [DestController::class, 'all_destinations'])->middleware('role:User,Travel Trips Employee,Admin,University trips Employee,Shipment Employee');
 });
 
 Route::prefix('bus')->group(function () {
