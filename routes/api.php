@@ -151,7 +151,7 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::get('/allTruck', [ShipmentTripController::class, 'allTruck'])->middleware('role:Admin,Shipment Employee');
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip'])->middleware('role:Admin,Shipment Employee');
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip'])->middleware('role:Admin,Shipment Employee');
-    Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails'])->middleware('role:Admin,Shipment Employee');
+    Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive'])->middleware('role:Admin,Shipment Employee');
