@@ -342,15 +342,15 @@ class TripService
     public function usersCollageReservations($user, $date, $status)
     {
         $date = $date ?? Carbon::now()->format('Y-m-d');
-        return Cache::remember('user_collage_reservations' . $user->id, 2, function () use ($user, $date, $status) {
-            $user->dailyCollageReservations()
+        //return Cache::remember('user_collage_reservations' . $user->id, 2, function () use ($user, $date, $status) {
+           return $user->dailyCollageReservations()
                 ->where('status', $status)
                 ->whereHas('trip', function ($query) use ($date) {
                     $query->whereDate('date', '>=', $date);
                 })
                 ->with(['trip'])
                 ->get();
-        });
+            // });
     }
 
 
