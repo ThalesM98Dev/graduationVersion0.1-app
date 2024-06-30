@@ -12,11 +12,11 @@ class SubscriptionService
 {
     public function getAllSubscriptions($type)
     {
-        return Cache::remember('subscriptions', 5, function () use ($type) {
-            Subscription::where('status', '=', $type)
-                ->with(['user', 'collageTrip'])
-                ->get();
-        });
+        //return Cache::remember('subscriptions', 5, function () use ($type) {
+        return Subscription::where('status', '=', $type)
+            ->with(['user', 'collageTrip'])
+            ->get();
+        //});
     }
 
     public function subscribe($request)
@@ -65,23 +65,24 @@ class SubscriptionService
 
     public function updateStatus($request)
     {
-        return DB::transaction(function () use ($request) {
-            if ('accepted' == $request->status) {
-                $subscription = Subscription::findOrFail($request->subscription_id);
-                //points
-                $user = User::findOrFail($subscription->user_id);
-                $subscription->update([
-                    'status' => 'accepted',
-                ]);
-                $user->points = ($user->points - $subscription->used_points) + $subscription->earned_points;
-                $user->save();
-                return 'accepted';
-            } elseif ('rejected' == $request->status) {
-                Subscription::findOrFail($request->subscription_id)->delete();
-                return 'rejected';
+        return DB::transaction(
+            function () use ($request) {
+                if ('accepted' == $request->status) {
+                    $subscription = Subscription::findOrFail($request->subscription_id);
+                    //points
+                    $user = User::findOrFail($subscription->user_id);
+                    $subscription->update([
+                        'status' => 'accepted',
+                    ]);
+                    $user->points = ($user->points - $subscription->used_points) + $subscription->earned_points;
+                    $user->save();
+                    return 'accepted';
+                } elseif ('rejected' == $request->status) {
+                    Subscription::findOrFail($request->subscription_id)->delete();
+                    return 'rejected';
+                }
+                return false;
             }
-            return false;
-        }
         );
     }
 }
