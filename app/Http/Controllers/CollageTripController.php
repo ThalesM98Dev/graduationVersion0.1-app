@@ -100,7 +100,7 @@ class CollageTripController extends Controller
 
     public function driverTrips(Request $request)
     {
-        $result = Cache::remember('driver_trips' . auth('sanctum')->id(), 5, function () use ($request) {
+        $result = Cache::remember('driver_trips' . auth('sanctum')->id(), 2, function () use ($request) {
             $this->tripService->getDriverTrips($request);
         });
         return ResponseHelper::success($result);

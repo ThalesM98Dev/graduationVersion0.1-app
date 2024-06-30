@@ -125,7 +125,6 @@ Route::prefix('collage_trips')->group(function () {
         Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
         Route::post('/checkCost', [CollageTripController::class, 'checkCost'])->name('collage_trips.checkCost');
     });
-
     Route::middleware('role:Driver')->group(function () {
         Route::get('/driverTrips', [CollageTripController::class, 'driverTrips'])->name('collage_trips.driverTrips');
     });

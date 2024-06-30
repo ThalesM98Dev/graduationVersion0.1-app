@@ -116,14 +116,14 @@ class TripService
                 $query->whereDate('date', '>=', Carbon::now());
             });
         }
-        return Cache::remember('collage_trips', 10, function () use ($result) {
+        return Cache::remember('collage_trips', 1, function () use ($result) {
             return $result->with('trips')->get();
         });
     }
 
     public function collageTripDetails($trip_id)
     {
-        return Cache::remember('collage_trip_details' . $trip_id, 5, function () use ($trip_id) {
+        return Cache::remember('collage_trip_details' . $trip_id, 2, function () use ($trip_id) {
             CollageTrip::with([
                 'stations',
                 'days:id,name',
@@ -142,7 +142,7 @@ class TripService
 
     public function collageTripDetailsMobile($trip_id): Model|Collection|Builder|array|null
     {
-        return Cache::remember('collage_trip_details_mobile_' . $trip_id, 5, function () use ($trip_id) {
+        return Cache::remember('collage_trip_details_mobile_' . $trip_id, 2, function () use ($trip_id) {
             CollageTrip::with([
                 'stations',
                 'days:id,name',
@@ -341,7 +341,7 @@ class TripService
     public function usersCollageReservations($user, $date, $status)
     {
         $date = $date ?? Carbon::now()->format('Y-m-d');
-        return Cache::remember('user_collage_reservations' . $user->id, 5, function () use ($user, $date, $status) {
+        return Cache::remember('user_collage_reservations' . $user->id, 2, function () use ($user, $date, $status) {
             $user->dailyCollageReservations()
                 ->where('status', $status)
                 ->whereHas('trip', function ($query) use ($date) {

@@ -140,6 +140,7 @@ class AuthController extends Controller
         $user->age = $request->input('age', $user->age);
         $user->address = $request->input('address', $user->address);
         $user->nationality = $request->input('nationality', $user->nationality);
+        $user->isVerified = $request->input('isVerified', $user->isVerified);
         $user->save();
         return ResponseHelper::success($user->first(), 'User updated successfuly');
     }
