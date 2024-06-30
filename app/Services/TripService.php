@@ -32,7 +32,7 @@ class TripService
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
-                'driver_id' => $request->driver_id
+                'driver_id' => $request['driver_id']
             ]);
             $days = $request['days'];
             if ($days) {
@@ -80,6 +80,7 @@ class TripService
                 'required_go_points' => $request['go_points'],
                 'required_round_trip_points' => $request['round_trip_points'],
                 'required_semester_round_trip_points' => $request['semester_round_trip_points'],
+                'driver_id' => $request['driver_id']
             ]);
             $days = $request['days'];
             if ($days) {
