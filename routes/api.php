@@ -42,8 +42,8 @@ Route::prefix('auth')->group(function () {
 });
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
-    Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,Use');
-    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin,Driver');
+    Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,User');
+    Route::get('/show_trip_details/{id}', [TripController::class, 'show_trip_details'])->middleware('role:Travel Trips Employee,Admin,Driver,User');
     Route::post('/getTripsByDestinationInArchive', [TripController::class, 'getTripsByDestinationInArchive'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/getPendingTripsByUser/{userId}', [TripController::class, 'getPendingTripsByUser'])->middleware('role:User');
     Route::get('/getEndingTripsByUser/{userId}', [TripController::class, 'getEndingTripsByUser'])->middleware('role:User');
@@ -73,7 +73,7 @@ Route::prefix('reserv')->group(function () {
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest'])->middleware('role:Travel Trips Employee,Admin');
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/getAllReservation', [ReservationController::class, 'getAllReservation'])->middleware('role:Travel Trips Employee,Admin');
-    Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails'])->middleware('role:Travel Trips Employee,Admin');
+    Route::get('/showReservationDetails/{id}', [ReservationController::class, 'showReservationDetails'])->middleware('role:Travel Trips Employee,Admin,User');
     Route::get('/allAcceptedReservations', [ReservationController::class, 'allAcceptedReservations'])->middleware('role:Travel Trips Employee,Admin');
     Route::post('/searchInAllReservation', [ReservationController::class, 'searchInAllReservation'])->middleware('role:Travel Trips Employee,Admin');
     Route::post('/searchInAllAcceptReserv', [ReservationController::class, 'searchInAllAcceptReserv'])->middleware('role:Travel Trips Employee,Admin');
@@ -151,7 +151,7 @@ Route::prefix('shipmentTrip')->group(function () {
     Route::get('/allTruck', [ShipmentTripController::class, 'allTruck'])->middleware('role:Admin,Shipment Employee');
     Route::post('/add_shipment_trip', [ShipmentTripController::class, 'add_shipment_trip'])->middleware('role:Admin,Shipment Employee');
     Route::put('/endShipmentTrip/{id}', [ShipmentTripController::class, 'endShipmentTrip'])->middleware('role:Admin,Shipment Employee');
-    Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails'])->middleware('role:Admin,Shipment Employee');
+    Route::get('/ShowShipmentTripDetails/{id}', [ShipmentTripController::class, 'ShowShipmentTripDetails'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allShipmentTrips', [ShipmentTripController::class, 'allShipmentTrips'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allPublicShipmentTrips', [ShipmentTripController::class, 'allPublicShipmentTrips'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/showArchive', [ShipmentTripController::class, 'showArchive'])->middleware('role:Admin,Shipment Employee');
