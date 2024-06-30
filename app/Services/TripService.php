@@ -117,15 +117,15 @@ class TripService
                 $query->whereDate('date', '>=', Carbon::now());
             });
         }
-        return Cache::remember('collage_trips', 1, function () use ($result) {
-            return $result->with('trips')->get();
-        });
+        // return Cache::remember('collage_trips', 1, function () use ($result) {
+        return $result->with('trips')->get();
+        // });
     }
 
     public function collageTripDetails($trip_id)
     {
-        //return Cache::remember('collage_trip_details' . $trip_id, 2, function () use ($trip_id) {
         return CollageTrip::with([
+            'driver',
             'stations',
             'days:id,name',
             'trips' => function ($query) {
@@ -138,12 +138,10 @@ class TripService
                     ->with('user');
             })
             ->findOrFail($trip_id);
-        // });
     }
 
     public function collageTripDetailsMobile($trip_id)
     {
-        //return Cache::remember('collage_trip_details_mobile' . $trip_id, 2, function () use ($trip_id) {
         $result = CollageTrip::with([
             'stations',
             'days:id,name',
