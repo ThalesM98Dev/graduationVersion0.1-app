@@ -35,6 +35,6 @@ class CollageTrip extends Model
     }
     public function driver(): HasOne
     {
-        return $this->hasOne(User::class, 'driver_id');
+        return $this->hasOne(User::class, 'id', 'driver_id');
     }
 }
