@@ -116,7 +116,7 @@ Route::prefix('collage_trips')->group(function () {
         Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending'])->name('subscription.pending');
     });
 
-    Route::middleware('role:Admin,User')->group(function () {
+    Route::middleware('role:User')->group(function () {
         Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip'])->name('collage_trips.book');
         Route::get('/myReservations', [CollageTripController::class, 'userReservations'])->name('collage_trips.myReservations');
         Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription'])->name('subscription.create');
@@ -125,7 +125,7 @@ Route::prefix('collage_trips')->group(function () {
         Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
         Route::post('/checkCost', [CollageTripController::class, 'checkCost'])->name('collage_trips.checkCost');
     });
-    Route::middleware('role:Admin,Driver')->group(function () {
+    Route::middleware('role:Driver')->group(function () {
         Route::get('/driverTrips', [CollageTripController::class, 'driverTrips'])->name('collage_trips.driverTrips');
     });
 });
