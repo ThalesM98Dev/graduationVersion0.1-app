@@ -43,15 +43,31 @@ class CreateCollageTripRequest extends FormRequest
             //
             'stations' => ['array'],
             'stations.*name' => ['string'],
-            'stations.*in_time' => ['string'],
-            'stations.*out_time' => ['string'],
+            'stations.*in_time' => ['date_format:g:i A'],
+            'stations.*.out_time' => ['date_format:g:i A'],
             'stations.*type' => ['in:Go,Back'],
-
             'total_seats' => ['required', 'integer'],
             'driver_id' => ['exists:users,id']
         ];
     }
-
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $stations = $this->input('stations', []);
+            foreach ($stations as $index => $station) {
+                if (isset($station['in_time'], $station['out_time']) && $station['in_time'] >= $station['out_time']) {
+                    $validator->errors()->add("stations.$index.out_time", 'The out_time must be after the in_time.');
+                }
+            }
+        });
+    }
+    public function messages()
+    {
+        return [
+            'stations.*.in_time.date_format' => 'The :attribute field must match the format H:i (e.g., 11:11).',
+            'stations.*.out_time.date_format' => 'The :attribute field must match the format H:i (e.g., 11:11).',
+        ];
+    }
     protected function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
