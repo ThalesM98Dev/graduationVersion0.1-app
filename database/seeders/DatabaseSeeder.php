@@ -17,13 +17,13 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call(DaysSeeder::class);
-        $this->call(BusSeeder::class);
-        $this->call(DestinationSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(TripsTableSeeder::class);
-        $this->call(OrderSeeder::class);
-        $this->call(ReservationSeeder::class);
-        $this->call(ReservationOrderSeeder::class);
+        // $this->call(BusSeeder::class);
+        // $this->call(DestinationSeeder::class);
+        // $this->call(UserSeeder::class);
+        // $this->call(TripsTableSeeder::class);
+        // $this->call(OrderSeeder::class);
+        // $this->call(ReservationSeeder::class);
+        // $this->call(ReservationOrderSeeder::class);
 //        User::factory()->create([
 //            'name' => 'Test User',
 //            'email' => 'test@example.com',
