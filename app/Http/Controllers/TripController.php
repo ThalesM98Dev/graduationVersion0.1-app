@@ -163,26 +163,36 @@ class TripController extends Controller
 }
 
     public function endTrip(Request $request, $id)
-   {
+{
     $trip = Trip::find($id);
 
-    // Check if the reservation exists and is not already confirmed
+    // Check if the trip exists and is not already confirmed
     if ($trip && $trip->status != 'done') {
-        $trip->status = 'done';
-        $trip->save();
-        $archive = new Archive();
-        $archive->fill($trip->toArray());
-        $archive->save();
-        
-        // Return a response indicating success
-        $response = [
-      'message'=> 'Trip is done'
-    ];
 
-     return ResponseHelper::success($response);
+        // Check if all reservations in the trip are confirmed
+        $allReservationsConfirmed = $trip->reservations()->where('status', 'confirmed')->count() === $trip->reservations()->count();
+
+        if ($allReservationsConfirmed) {
+            $trip->status = 'done';
+            $trip->save();
+            
+            $archive = new Archive();
+            $archive->fill($trip->toArray());
+            $archive->save();
+            
+            // Return a response indicating success
+            $response = [
+                'message'=> 'Trip is done'
+            ];
+
+            return ResponseHelper::success($response);
+        } else {
+            return response()->json(['message' => 'Not all reservations are confirmed'], 422);
+        }
     }
+
     return response()->json(['message' => 'Invalid trip ID or trip already done'], 422);
-    } 
+}
 
       public function getTripsByDestinationInArchive(Request $request)
   {
