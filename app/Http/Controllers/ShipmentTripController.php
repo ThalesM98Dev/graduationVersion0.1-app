@@ -155,18 +155,28 @@ class ShipmentTripController extends Controller
     }
 
     public function endShipmentTrip(Request $request, $id)
-    {
-        $shipmentTrip = ShipmentTrip::find($id);
+{
+    $shipmentTrip = ShipmentTrip::find($id);
 
-        // Check if the trip exists and is not already confirmed
-        if ($shipmentTrip && $shipmentTrip->status != 'done') {
+    // Check if the trip exists and is not already confirmed
+    if ($shipmentTrip && $shipmentTrip->status != 'done') {
+
+        // Check if all shipment requests in the trip are accepted
+        $allRequestsAccepted = $shipmentTrip->shipmentRequests()->where('status', 'accepted')->count() === $shipmentTrip->shipmentRequests()->count();
+
+        if ($allRequestsAccepted) {
             $shipmentTrip->status = 'done';
             $shipmentTrip->save();
+            
             // Return a response indicating success
             return response()->json(['message' => 'Shipment Trip is done'], 200);
+        } else {
+            return response()->json(['message' => 'Not all shipment requests are accepted'], 422);
         }
-        return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
     }
+
+    return response()->json(['message' => 'Invalid trip ID or trip already confirmed'], 422);
+}
 
     public function ShowShipmentTripDetails($id)
    {
