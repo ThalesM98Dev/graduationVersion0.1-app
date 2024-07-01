@@ -149,8 +149,6 @@ class ShipmentRequestController extends Controller
             'id_number' => 'required|numeric',
             'mobile_number' => 'required|numeric|digits:10',
             'shipment_trip_id' => 'required|exists:shipment_trips,id',
-            'foodstuffs' => 'required|array',
-            'foodstuffs.*.foodstuff_id' => 'required|exists:foodstuffs,id',
         ]);
 
         if ($validator->fails()) {
@@ -178,14 +176,6 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->price = $price;
         $shipmentRequest->status = 'accept';
         $shipmentRequest->save();
-
-        $foodstuffs = $request->input('foodstuffs');
-    foreach ($foodstuffs as $foodstuff) {
-        $shipmentFoodstuff = new ShipmentFoodstuff();
-        $shipmentFoodstuff->foodstuff_id = $foodstuff['foodstuff_id'];
-        $shipmentFoodstuff->shipment_request_id = $shipmentRequest->id;
-        $shipmentFoodstuff->save();
-    }
 
     $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
     $shipmentTrip->available_weight -= $request->weight;
