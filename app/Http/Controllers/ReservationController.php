@@ -217,6 +217,9 @@ public function getAllReservation()
 
     $response = Cache::remember('All-Reservation',2, function () {
         $reservations = Reservation::with('trip.destination')
+            ->whereHas('trip', function ($query) {
+                $query->where('status', 'pending');
+            })
             ->where('status', 'pending')
             ->get();
 
@@ -326,6 +329,9 @@ public function allAcceptedReservations()
 
     $response = Cache::remember('All-Accepted-Reservations',2, function () {
         $reservations = Reservation::with('trip.destination')
+            ->whereHas('trip', function ($query) {
+                $query->where('status', 'pending');
+            })
             ->where('status', 'accept')
             ->get();
 
@@ -384,6 +390,7 @@ public function allAcceptedReservations()
                 'destinations.name as destination_name'
             )
             ->where('reservations.status', 'pending')
+            ->where('trips.status', 'pending')
             ->whereHas('orders.user', function ($query) use ($userName) {
                 $query->where('name', 'LIKE', "%{$userName}%");
             })
@@ -432,6 +439,7 @@ public function allAcceptedReservations()
                 'destinations.name as destination_name'
             )
             ->where('reservations.status', 'accept')
+            ->where('trips.status', 'pending')
             ->whereHas('orders.user', function ($query) use ($userName) {
                 $query->where('name', 'LIKE', "%{$userName}%");
             })

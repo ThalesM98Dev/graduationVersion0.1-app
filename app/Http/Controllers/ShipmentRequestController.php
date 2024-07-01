@@ -303,8 +303,6 @@ class ShipmentRequestController extends Controller
     return ResponseHelper::success($response);
 }
 
-  use Illuminate\Support\Facades\Cache;
-
 public function getAllAcceptedShipmentRequests()
 {
     // Generate a unique cache key

@@ -55,7 +55,7 @@ Route::prefix('trip')->group(function () {
     Route::get('/getEndingTripsForDriver/{driverId}', [TripController::class, 'getEndingTripsForDriver'])->middleware('role:Driver,Admin');
 });
 Route::prefix('destination')->group(function () {
-    Route::post('/add_destination', [DestController::class, 'add_destination'])->middleware('role:Travel Trips Employee,Admin');
+    Route::post('/add_destination', [DestController::class, 'add_destination'])->middleware('role:Travel Trips Employee,Admin,Shipment Employee');
     Route::get('/all_destinations', [DestController::class, 'all_destinations'])->middleware('role:User,Travel Trips Employee,Admin,University trips Employee,Shipment Employee');
 });
 
@@ -96,7 +96,7 @@ Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users'])->middleware('role:Admin');
     Route::delete('/delete/{id}', [AuthController::class, 'deleteUser'])->middleware('role:Admin');
 
-    Route::put('/update/{user}', [AuthController::class, 'updateUser'])->middleware('role:Admin');
+    Route::put('/update/{user}', [AuthController::class, 'updateUser'])->middleware('role:Admin,User');
 });
 
 Route::prefix('collage_trips')->group(function () {
@@ -168,6 +168,6 @@ Route::prefix('shipmentRequest')->group(function () {
     Route::get('/getAllAcceptedShipmentRequests', [ShipmentRequestController::class, 'getAllAcceptedShipmentRequests'])->middleware('role:Admin,Shipment Employee');
     Route::get('/AllMyShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyShipmentRequests'])->middleware('role:User');
     Route::get('/AllMyDoneShipmentRequests/{id}', [ShipmentRequestController::class, 'AllMyDoneShipmentRequests'])->middleware('role:User');
-    Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails'])->middleware('role:Admin,Shipment Employee');
+    Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allFoodstuffs', [ShipmentRequestController::class, 'allFoodstuffs'])->middleware('role:Admin,Shipment Employee,User');
 });
