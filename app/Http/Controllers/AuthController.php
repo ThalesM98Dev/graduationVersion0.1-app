@@ -38,8 +38,8 @@ class AuthController extends Controller
             if ($request['role'] == RolesEnum::USER->value) {
                 $code = Random::generate(4, '0-9');
                 $user->verification_code = $code;
-                app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
-                //dispatch(new SendMessageJob($user->mobile_number, $code));
+                //app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+                dispatch(new SendMessageJob($user->mobile_number, $code));
             } else {
                 $user->isVerified = true;
             }
