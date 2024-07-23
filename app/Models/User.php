@@ -84,14 +84,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(DailyCollageReservation::class);
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
     public function collageTrip()
     {
         return $this->hasMany(CollageTrip::class, 'driver_id');
     }
+<<<<<<< HEAD
 
     public function envelops(): HasMany
     {
         return $this->hasMany(Envelope::class);
     }
+=======
+>>>>>>> origin/main
 }

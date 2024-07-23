@@ -3,17 +3,26 @@
 namespace App\Services;
 
 
+<<<<<<< HEAD
 use App\Helpers\ImageUploadHelper;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Day;
 use App\Models\Envelope;
+=======
+use App\Models\CollageTrip;
+use App\Models\DailyCollageReservation;
+use App\Models\Day;
+>>>>>>> origin/main
 use App\Models\Reservation;
 use App\Models\Station;
 use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
+<<<<<<< HEAD
 use http\Env;
+=======
+>>>>>>> origin/main
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -372,6 +381,7 @@ class TripService
         }
         return 'empty';
     }
+<<<<<<< HEAD
 
     public function createEnvelopOrder($request)//user
     {
@@ -399,4 +409,6 @@ class TripService
         //
     }
 
+=======
+>>>>>>> origin/main
 }

@@ -12,8 +12,13 @@ class EnsureUserHasRole
     /**
      * Handle an incoming request.
      *
+<<<<<<< HEAD
      * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      * @param string ...$roles
+=======
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  string  ...$roles
+>>>>>>> origin/main
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {

@@ -12,6 +12,7 @@ use App\Helpers\ResponseHelper;
 
 class DestController extends Controller
 {
+<<<<<<< HEAD
     public function all_destinations()
     {
         $allDest = Destination::all();
@@ -20,6 +21,13 @@ class DestController extends Controller
 
     public function add_destination(Request $request)
     {
+=======
+    public function all_destinations(){
+     $allDest = Destination::all();
+        return response()->json($allDest);
+    }
+    public function add_destination(Request $request){
+>>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',

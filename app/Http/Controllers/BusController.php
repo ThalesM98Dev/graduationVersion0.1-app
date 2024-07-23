@@ -15,6 +15,7 @@ use App\Helpers\ImageUploadHelper;
 class BusController extends Controller
 {
 
+<<<<<<< HEAD
     public function all_buses()
     {
         $allBus = Bus::all();
@@ -23,6 +24,14 @@ class BusController extends Controller
 
     public function add_bus(Request $request)
     {
+=======
+    public function all_buses(){
+     $allBus = Bus::all();
+        return response()->json($allBus);
+    }
+
+    public function add_bus(Request $request){
+>>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'bus_number' => 'required|integer|digits:6|unique:buses',
@@ -49,6 +58,7 @@ class BusController extends Controller
         return ResponseHelper::success($response);
     }
 
+<<<<<<< HEAD
     public function deleteBus(Request $request, $id)
     {
         $bus = Bus::find($id);
@@ -64,6 +74,20 @@ class BusController extends Controller
 
     public function add_imageOfBus(Request $request)
     {
+=======
+    public function deleteBus(Request $request, $id){
+     $bus = Bus::find($id);
+
+    if (!$bus) {
+        return response()->json(['message' => 'The bus not found'], Response::HTTP_NOT_FOUND);
+    }
+
+    $bus->delete();
+    return response()->json(['message' => 'Bus deleted successfully']);
+
+    }
+    public function add_imageOfBus(Request $request){
+>>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -82,8 +106,12 @@ class BusController extends Controller
         return ResponseHelper::success($response);
     }
 
+<<<<<<< HEAD
     public function allImageOfBus(Request $request)
     {
+=======
+    public function allImageOfBus(Request $request){
+>>>>>>> origin/main
         $imageBus = ImageOfBus::all();
         $response = [
             'imageBus' => $imageBus
