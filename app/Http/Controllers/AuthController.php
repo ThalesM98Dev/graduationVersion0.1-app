@@ -28,11 +28,7 @@ class AuthController extends Controller
                 'name' => $request['name'],
                 'email' => $request['email'],
                 'password' => bcrypt($request['password']),
-<<<<<<< HEAD
                 'mobile_number' => $request['mobile_number'],
-=======
-                'mobile_number' =>  $request['mobile_number'],
->>>>>>> origin/main
                 'age' => $request['age'],
                 'address' => $request['address'],
                 'nationality' => $request['nationality'],
@@ -129,19 +125,11 @@ class AuthController extends Controller
         ];
         return ResponseHelper::success($response);
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
     public function deleteUser($userID)
     {
         $user = User::findOrFail($userID)->delete();
         return ResponseHelper::success($user, 'User Delete successfuly');
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
     public function updateUser(UpdateUserRequest $request, User $user)
     {
         $user->name = $request->input('name', $user->name);
@@ -160,12 +148,8 @@ class AuthController extends Controller
 
     public function all_Users()
     {
-<<<<<<< HEAD
         $users = User::where('role', 'User')->get();
         {
-=======
-        $users = User::where('role', 'User')->get(); {
->>>>>>> origin/main
             $response = [
                 'users' => $users
             ];

@@ -15,19 +15,11 @@ return [
     */
 
     'firebase' => [
-<<<<<<< HEAD
         'credentials' => storage_path('app/firebase/service-account.json'),
     ],
     'aliases' => [
         'Cache' => Illuminate\Support\Facades\Cache::class,
     ],
-=======
-    'credentials' => storage_path('app/firebase/service-account.json'),
-   ],
-   'aliases' => [
-    'Cache' => Illuminate\Support\Facades\Cache::class,
-   ],
->>>>>>> origin/main
 
 
 ];

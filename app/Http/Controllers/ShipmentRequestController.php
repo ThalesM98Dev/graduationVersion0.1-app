@@ -19,7 +19,6 @@ class ShipmentRequestController extends Controller
 {
 
     public function ShowShipmentRequestDetails($id)
-<<<<<<< HEAD
     {
         $shipmentRequest = ShipmentRequest::with(['user', 'shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
             ->where('id', $id)
@@ -55,42 +54,6 @@ class ShipmentRequestController extends Controller
 
     public function add_foodstuff(Request $request)
     {
-=======
-{
-    $shipmentRequest = ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
-        ->where('id', $id)
-        ->first();
-
-    if (!$shipmentRequest) {
-        $response = [
-            'success' => false,
-            'message' => 'Shipment Request not found',
-            'data' => [],
-            'status' => 404,
-        ];
-
-        return response()->json($response, $response['status']);
-    }
-
-    $foodstuffs = $shipmentRequest->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
-        return $shipmentFoodstuff->foodstuff->stuff;
-    });
-
-    $formattedRequest = [
-        'id' => $shipmentRequest->id,
-        // Add other shipment request properties if needed
-        'foodstuffs' => $foodstuffs,
-    ];
-
-    $response = [
-        'shipmentRequest' => $shipmentRequest,
-    ];
-
-    return ResponseHelper::success($response);
-}
-
-    public function add_foodstuff(Request $request){
->>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'stuff' => 'required|string',
@@ -109,16 +72,10 @@ class ShipmentRequestController extends Controller
         return ResponseHelper::success($response);
     }
 
-<<<<<<< HEAD
     public function allFoodstuffs()
     {
         $allFood = Foodstuff::all();
 
-=======
-    public function allFoodstuffs(){
-     $allFood = Foodstuff::all();
-     
->>>>>>> origin/main
         $response = [
             'allFood' => $allFood
         ];
@@ -126,12 +83,8 @@ class ShipmentRequestController extends Controller
     }
 
 
-<<<<<<< HEAD
     public function addShipmentRequestFromUser(Request $request)
     {
-=======
-    public function addShipmentRequestFromUser(Request $request){
->>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'weight' => 'required|integer|min:1',
@@ -149,21 +102,12 @@ class ShipmentRequestController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-<<<<<<< HEAD
         $weight = $request->weight;
         $shipmentTrip = ShipmentTrip::find($request->shipment_trip_id);
 
         if ($weight > $shipmentTrip->available_weight) {
             return response()->json(['errors' => 'Weight exceeds available weight.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-=======
-       $weight = $request->weight;
-       $shipmentTrip = ShipmentTrip::find($request->shipment_trip_id);
-
-          if ($weight > $shipmentTrip->available_weight) {
-              return response()->json(['errors' => 'Weight exceeds available weight.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-          }
->>>>>>> origin/main
         $kiloPrice = $shipmentTrip->killoPrice;
         $price = $weight * $kiloPrice;
 
@@ -180,7 +124,6 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->save();
 
         $foodstuffs = $request->input('foodstuffs');
-<<<<<<< HEAD
         foreach ($foodstuffs as $foodstuff) {
             $shipmentFoodstuff = new ShipmentFoodstuff();
             $shipmentFoodstuff->foodstuff_id = $foodstuff['foodstuff_id'];
@@ -191,31 +134,15 @@ class ShipmentRequestController extends Controller
         $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
         $shipmentTrip->available_weight -= $request->weight;
         $shipmentTrip->save();
-=======
-    foreach ($foodstuffs as $foodstuff) {
-        $shipmentFoodstuff = new ShipmentFoodstuff();
-        $shipmentFoodstuff->foodstuff_id = $foodstuff['foodstuff_id'];
-        $shipmentFoodstuff->shipment_request_id = $shipmentRequest->id;
-        $shipmentFoodstuff->save();
-    }
-
-    $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
-    $shipmentTrip->available_weight -= $request->weight;
-    $shipmentTrip->save();
->>>>>>> origin/main
 
         $response = [
             'shipmentRequest' => $shipmentRequest
         ];
         return ResponseHelper::success($response);
     }
-<<<<<<< HEAD
 
     public function addShipmentRequestFromDash(Request $request)
     {
-=======
-     public function addShipmentRequestFromDash(Request $request){
->>>>>>> origin/main
 
         $validator = Validator::make($request->all(), [
             'weight' => 'required|integer|min:1',
@@ -232,21 +159,12 @@ class ShipmentRequestController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-<<<<<<< HEAD
         $weight = $request->weight;
         $shipmentTrip = ShipmentTrip::find($request->shipment_trip_id);
 
         if ($weight > $shipmentTrip->available_weight) {
             return response()->json(['errors' => 'Weight exceeds available weight.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-=======
-       $weight = $request->weight;
-       $shipmentTrip = ShipmentTrip::find($request->shipment_trip_id);
-
-          if ($weight > $shipmentTrip->available_weight) {
-              return response()->json(['errors' => 'Weight exceeds available weight.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-          }
->>>>>>> origin/main
         $kiloPrice = $shipmentTrip->killoPrice;
         $price = $weight * $kiloPrice;
 
@@ -264,15 +182,9 @@ class ShipmentRequestController extends Controller
         $shipmentRequest->status = 'accept';
         $shipmentRequest->save();
 
-<<<<<<< HEAD
         $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
         $shipmentTrip->available_weight -= $request->weight;
         $shipmentTrip->save();
-=======
-    $shipmentTrip = ShipmentTrip::findOrFail($request->shipment_trip_id);
-    $shipmentTrip->available_weight -= $request->weight;
-    $shipmentTrip->save();
->>>>>>> origin/main
 
         $response = [
             'shipmentRequest' => $shipmentRequest
@@ -307,12 +219,10 @@ class ShipmentRequestController extends Controller
             $shipmentTrip->save();
 
             return response()->json(['message' => 'Shipment Request rejected successfully'], Response::HTTP_OK);
-
         } else {
 
             return response()->json(['message' => 'Shipment Request not found'], Response::HTTP_NOT_FOUND);
         }
-<<<<<<< HEAD
     }
 
     public function AllMyShipmentRequests($id)
@@ -424,117 +334,4 @@ class ShipmentRequestController extends Controller
 
         return ResponseHelper::success($response);
     }
-=======
-   }
-
-   public function AllMyShipmentRequests($id)
-{
-    $user = User::find($id);
-
-    // Generate a unique cache key based on the user ID
-    $cacheKey = 'shipment_requests_'.$id;
-
-    // Retrieve cached results if available
-    $shipmentRequests = Cache::remember($cacheKey, 2, function () use ($id) {
-        return ShipmentRequest::with(['user','shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
-            ->whereHas('shipmentTrip', function ($query) {
-                $query->where('status', 'pending');
-            })
-            ->where('user_id', $id)
-            ->get();
-    });
-
-    $formattedRequests = $shipmentRequests->map(function ($request) {
-        $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
-            return $shipmentFoodstuff->foodstuff->stuff;
-        });
-
-        return [
-            'id' => $request->id,
-            // Add other shipment request properties if needed
-            'foodstuffs' => $foodstuffs,
-        ];
-    });
-
-    $response = [
-        'shipmentRequests' => $shipmentRequests,
-    ];
-
-    return ResponseHelper::success($response);
-}
-
-   public function AllMyDoneShipmentRequests($id)
-{
-    $user = User::find($id);
-
-    // Generate a unique cache key based on the user ID
-    $cacheKey = 'done_shipment_requests_'.$id;
-
-    // Retrieve cached results if available
-    $shipmentRequests = Cache::remember($cacheKey, 2, function () use ($id) {
-        return ShipmentRequest::with(['shipmentTrip', 'shipmentFoodstuffs.foodstuff'])
-            ->whereHas('shipmentTrip', function ($query) {
-                $query->where('status', 'done');
-            })
-            ->where('user_id', $id)
-            ->get();
-    });
-
-    $formattedRequests = $shipmentRequests->map(function ($request) {
-        $foodstuffs = $request->shipmentFoodstuffs->map(function ($shipmentFoodstuff) {
-            return $shipmentFoodstuff->foodstuff->stuff;
-        });
-
-        return [
-            'id' => $request->id,
-            // Add other shipment request properties if needed
-            'foodstuffs' => $foodstuffs,
-        ];
-    });
-
-    $response = [
-        'shipmentRequests' => $shipmentRequests,
-    ];
-
-    return ResponseHelper::success($response);
-}
-
-public function getAllAcceptedShipmentRequests()
-{
-    // Generate a unique cache key
-    $cacheKey = 'accepted_shipment_requests';
-
-    // Retrieve cached results if available
-    $shipmentRequests = Cache::remember($cacheKey, 2, function () {
-        return ShipmentRequest::with('shipmentTrip','shipmentFoodstuffs')
-            ->where('status', 'accept')
-            ->get();
-    });
-
-    $response = [
-        'shipmentRequests' => $shipmentRequests
-    ];
-
-    return ResponseHelper::success($response);
-}
-
-public function getAllShipmentRequests()
-{
-    // Generate a unique cache key
-    $cacheKey = 'pending_shipment_requests';
-
-    // Retrieve cached results if available
-    $shipmentRequests = Cache::remember($cacheKey, 2, function () {
-        return ShipmentRequest::with('user','shipmentTrip','shipmentFoodstuffs')
-            ->where('status', 'pending')
-            ->get();
-    });
-
-    $response = [
-        'shipmentRequests' => $shipmentRequests
-    ];
-
-    return ResponseHelper::success($response);
-}
->>>>>>> origin/main
 }

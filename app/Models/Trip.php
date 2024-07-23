@@ -62,12 +62,9 @@ class Trip extends Model
     {
         return $this->hasMany(DailyCollageReservation::class);
     }
-<<<<<<< HEAD
 
     public function envelops(): HasMany
     {
         return $this->hasMany(Envelope::class);
     }
-=======
->>>>>>> origin/main
 }

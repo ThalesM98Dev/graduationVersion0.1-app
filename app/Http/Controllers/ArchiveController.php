@@ -17,7 +17,6 @@ use Illuminate\Http\Response;
 
 class ArchiveController extends Controller
 {
-<<<<<<< HEAD
     public function showArchive()
     {
         $trips = Trip::where('status', 'done')
@@ -29,17 +28,4 @@ class ArchiveController extends Controller
         ];
         return ResponseHelper::success($response);
     }
-=======
-   public function showArchive()
-{
-    $trips = Trip::where('status', 'done')
-        ->with('destination', 'bus', 'driver')
-        ->get();
-
-    $response = [
-        'trips' => $trips
-    ];
-    return ResponseHelper::success($response);
-}
->>>>>>> origin/main
 }
