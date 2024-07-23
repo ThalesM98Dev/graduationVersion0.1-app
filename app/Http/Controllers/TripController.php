@@ -14,11 +14,14 @@ use App\Models\Order;
 use App\Models\Archive;
 use App\Models\Reservation;
 use App\Models\Bus;
+use ArPHP\I18N\Arabic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Response;
 use Carbon\Carbon;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class TripController extends Controller
 {
