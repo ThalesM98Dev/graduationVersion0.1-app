@@ -20,9 +20,10 @@ class EnvelopeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $envelopes = $this->tripService->getEnvelopOrders();
+        return ResponseHelper::success($envelopes);
     }
 
     /**
@@ -64,7 +65,7 @@ class EnvelopeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-       //
+        //
     }
 
     /**

@@ -3,6 +3,7 @@
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CollageTripController;
+use App\Http\Controllers\EnvelopeController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TripController;
@@ -14,21 +15,16 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ArchiveController;
 use App\Models\Day;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
-
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return response()->json('Email verified!');
-})->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
-
-
+/**
+ * Thales
+ * start ↓
+ */
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -39,6 +35,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/verify', [AuthController::class, 'verifyAccount'])
         ->middleware('auth:sanctum');
 });
+/**
+ * Thales
+ * end ↑
+ */
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,User,Driver');
@@ -82,8 +82,8 @@ Route::prefix('reserv')->group(function () {
 
 Route::prefix('statistic')->group(function () {
     Route::post('/byDateAndDestenation', [StatisticsController::class, 'byDateAndDestenation'])->middleware('role:Admin');
-    Route::get('/tripsCountPerDatePeriod', [StatisticsController::class, 'tripsCountPerDatePeriod']);
-    Route::get('/tripsCountDestinationPeriod', [StatisticsController::class, 'tripsCountDestinationPeriod']);
+    Route::get('/tripsCountPerDatePeriod', [StatisticsController::class, 'tripsCountPerDatePeriod'])->middleware('role:Admin');
+    Route::get('/tripsCountDestinationPeriod', [StatisticsController::class, 'tripsCountDestinationPeriod'])->middleware('role:Admin');
 });
 
 Route::prefix('driver')->group(function () {
@@ -91,6 +91,8 @@ Route::prefix('driver')->group(function () {
     Route::put('/updateDriver/{id}', [AuthController::class, 'updateDriver'])->middleware('role:Admin');
     Route::delete('/deleteDriver/{id}', [AuthController::class, 'deleteDriver'])->middleware('role:Admin');
 });
+
+
 Route::prefix('user')->group(function () {
     Route::get('/all_Users', [AuthController::class, 'all_Users'])->middleware('role:Admin');
     Route::delete('/delete/{id}', [AuthController::class, 'deleteUser'])->middleware('role:Admin');
@@ -98,8 +100,12 @@ Route::prefix('user')->group(function () {
     Route::put('/update/{user}', [AuthController::class, 'updateUser'])->middleware('role:Admin,User');
 });
 
+/**
+ * Thales
+ * start ↓
+ */
 Route::prefix('collage_trips')->group(function () {
-    Route::middleware('role:Admin,User,University trips Employee')->group(function () {
+    Route::middleware('role:Admin,User,University trips Employee,Driver')->group(function () {
         Route::get('/all', [CollageTripController::class, 'index'])->name('collage_trips.index');
         Route::get('/details/{id}', [CollageTripController::class, 'show'])->name('collage_trips.show');
         Route::get('/search', [CollageTripController::class, 'searchCollageTrips'])->name('collage_trips.search');
@@ -114,7 +120,6 @@ Route::prefix('collage_trips')->group(function () {
         Route::get('/allSubscription', [SubscriptionController::class, 'index'])->name('subscription.index');
         Route::get('/pendingSubscription', [SubscriptionController::class, 'indexPending'])->name('subscription.pending');
     });
-
     Route::middleware('role:User')->group(function () {
         Route::post('/book', [CollageTripController::class, 'bookDailyCollageTrip'])->name('collage_trips.book');
         Route::get('/myReservations', [CollageTripController::class, 'userReservations'])->name('collage_trips.myReservations');
@@ -128,22 +133,34 @@ Route::prefix('collage_trips')->group(function () {
         Route::get('/driverTrips', [CollageTripController::class, 'driverTrips'])->name('collage_trips.driverTrips');
     });
 });
-
-
 Route::prefix('feedback')->group(function () {
-    Route::get('/all', [FeedbackController::class, 'index']);
-    Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
-    Route::get('/show/{id}', [FeedbackController::class, 'show']);
-    //->middleware('role:Admin,User'); //Role:Admin,User,Driver,Shipment Employee,Travel Trips Employee,University trips Employee
-    Route::post('/create', [FeedbackController::class, 'store']);
-    Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
+    Route::middleware('role:Admin')->group(function () {
+        Route::get('/all', [FeedbackController::class, 'index']);
+        Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
+        Route::get('/show/{id}', [FeedbackController::class, 'show']);
+        Route::post('/create', [FeedbackController::class, 'store']);
+        Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
+    });
 });
-
+Route::prefix('envelop')->group(function () {
+    Route::middleware('role:Admin,User,Driver')->group(function () {
+        Route::get('/all', [EnvelopeController::class, 'index']); //admin , user , driver
+    });
+    Route::middleware('role:Driver')->group(function () {
+        Route::get('/approve', [EnvelopeController::class, 'approve']); //driver
+    });
+    Route::middleware('role:User')->group(function () {
+        Route::post('/create', [EnvelopeController::class, 'store']); //user
+    });
+});
 Route::get('/days', function () {
     $days = Day::all();
     return ResponseHelper::success($days);
 });
-
+/**
+ * Thales
+ * end ↑
+ */
 Route::prefix('shipmentTrip')->group(function () {
     Route::post('/add_truck', [ShipmentTripController::class, 'add_truck'])->middleware('role:Admin,Shipment Employee');
     Route::delete('/delete_truck/{id}', [ShipmentTripController::class, 'delete_truck'])->middleware('role:Admin,Shipment Employee');

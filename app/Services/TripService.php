@@ -3,6 +3,7 @@
 namespace App\Services;
 
 
+use App\Enum\RolesEnum;
 use App\Helpers\ImageUploadHelper;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
@@ -373,6 +374,9 @@ class TripService
         return 'empty';
     }
 
+    /**
+     * Envelop
+     */
     public function createEnvelopOrder($request) //user
     {
         //
@@ -394,8 +398,29 @@ class TripService
         return $envelope->delete();
     }
 
-    public function getEnvelopOrders() //user and driver and admin (by trip)
+    public function getEnvelopOrders(): ?Collection //user and driver and admin (by trip)
     {
-        //
+        $user = auth('sanctum')->user();
+        $result = null;
+        switch ($user->role) {
+            case RolesEnum::ADMIN->value:
+                $result = Trip::with(['envelops', 'driver'])
+                    ->orderBy('date')
+                    ->get();
+                break;
+            case RolesEnum::DRIVER->value://if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
+                $result = Trip::with('envelops')
+                    ->where('driver_id', auth('sanctum')->id())
+                    ->orderBy('date')
+                    ->get();
+                break;
+            case RolesEnum::USER->value://if the role is user, return the envelopes ordered by date from latest to oldest.
+                $result = Envelope::with('trip')
+                    ->where('user_id', auth('sanctum')->id())
+                    ->orderBy('created_at')
+                    ->get();
+                break;
+        }
+        return $result;
     }
 }

@@ -43,7 +43,7 @@ class AuthController extends Controller
             // } else {
             //     $user->isVerified = true;
             // }
-            $user->isVerified = true;
+            $user->isVerified = true; //Temp !!!
             $user->save();
             $response = [
                 'user' => $user,
@@ -54,7 +54,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Verify eMail
+     * Verify Account via WhatsApp Message
      */
     public function verifyAccount(Request $request)
     {
@@ -148,8 +148,7 @@ class AuthController extends Controller
 
     public function all_Users()
     {
-        $users = User::where('role', 'User')->get();
-        {
+        $users = User::where('role', 'User')->get(); {
             $response = [
                 'users' => $users
             ];
