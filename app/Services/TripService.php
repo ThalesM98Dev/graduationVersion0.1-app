@@ -264,7 +264,11 @@ class TripService
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
         }, 'day:id,name'])->get();
     }
-
+    public function dailyReservationsInfo($tripId)
+    {
+        $reservation = DailyCollageReservation::where('trip_id', $tripId)->first();
+        return $reservation->load(['user', 'trip', 'day']);
+    }
     public function checkCost($request): array
     {
         $user = User::findOrFail(auth('sanctum')->id());
@@ -411,13 +415,13 @@ class TripService
                     ->orderBy('date')
                     ->get();
                 break;
-            case RolesEnum::DRIVER->value://if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
+            case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
                 $result = Trip::with('envelops')
                     ->where('driver_id', auth('sanctum')->id())
                     ->orderBy('date')
                     ->get();
                 break;
-            case RolesEnum::USER->value://if the role is user, return the envelopes ordered by date from latest to oldest.
+            case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
                 $result = Envelope::with('trip')
                     ->where('user_id', auth('sanctum')->id())
                     ->orderBy('created_at')
