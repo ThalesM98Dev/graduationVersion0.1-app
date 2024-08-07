@@ -391,9 +391,12 @@ class TripService
     public function approveEnvelopOrder($request) //driver
     {
         $envelope = Envelope::findOrFail($request->envelope_id);
+        if ($envelope->isAccepted) {
+            return 'Already approved envelop';
+        }
         if ('accept' == $request->status) {
             $envelope->update(['isAccepted' => true]);
-            return $envelope->fresh();
+            return $envelope;
         }
         return $envelope->delete();
     }

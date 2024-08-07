@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreEnvelopeRequest extends FormRequest
 {
@@ -23,8 +25,21 @@ class StoreEnvelopeRequest extends FormRequest
     {
         return [
             'description' => ['required', 'string'],
-            'image' => ['file', 'mimetypes:jpeg,png'],
+            'image' => ['file', 'mimetypes:image/jpeg,image/jpg,image/png'],
             'trip_id' => ['required', 'exists:trips,id'],
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        $transformedErrors = [];
+        foreach ($errors->all() as $errorMessage) {
+            $transformedErrors[] = $errorMessage;
+        }
+        throw new HttpResponseException(response()->json([
+            'message' => 'Validation Error',
+            'errors' => $transformedErrors,
+        ], 422));
     }
 }

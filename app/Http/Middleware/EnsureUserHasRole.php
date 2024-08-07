@@ -12,22 +12,22 @@ class EnsureUserHasRole
     /**
      * Handle an incoming request.
      *
-<<<<<<< HEAD
+     * <<<<<<< HEAD
      * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      * @param string ...$roles
-=======
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  ...$roles
->>>>>>> origin/main
+     * =======
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
+     * @param string ...$roles
+     * >>>>>>> origin/main
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $userRole = auth('sanctum')->user();
         if (!$userRole) {
-            return ResponseHelper::error('User not exist.');
+            return ResponseHelper::error(data: 'Invalid Token.');
         }
         if (!in_array($userRole->role, $roles)) {
-            return ResponseHelper::error('You are not authorized to do this action');
+            return ResponseHelper::error(data: 'You are not authorized to do this action.');
         }
         return $next($request);
     }
