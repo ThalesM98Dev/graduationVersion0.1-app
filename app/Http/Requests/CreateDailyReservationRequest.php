@@ -28,7 +28,7 @@ class CreateDailyReservationRequest extends FormRequest
             'collage_trip_id' => ['required', 'exists:collage_trips,id'],
             'day_id' => ['required', 'exists:days,id'],
             'type' => ['required', 'in:Go,Back,Round Trip'],
-            'points' => ['nullable', 'integer'],
+            'points' => ['nullable', 'integer', 'min:0'],
         ];
     }
 

@@ -106,9 +106,9 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function dailyReservationInfo($trip_id)
+    public function dailyReservationInfo($resId)
     {
-        $result = $this->tripService->dailyReservationsInfo($trip_id);
+        $result = $this->tripService->dailyReservationsInfo($resId);
         return ResponseHelper::success($result);
     }
 }

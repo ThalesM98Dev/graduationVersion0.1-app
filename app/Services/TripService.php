@@ -267,9 +267,9 @@ class TripService
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
         }, 'day:id,name'])->get();
     }
-    public function dailyReservationsInfo($tripId)
+    public function dailyReservationsInfo($resId)
     {
-        $reservation = DailyCollageReservation::where('trip_id', $tripId)->first();
+        $reservation = DailyCollageReservation::findOrFail($resId);
         return $reservation->load(['user', 'trip', 'day']);
     }
     public function checkCost($request): array
