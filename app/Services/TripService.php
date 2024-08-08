@@ -14,10 +14,7 @@ use App\Models\Station;
 use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
-use http\Env;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -168,23 +165,29 @@ class TripService
         return DB::transaction(function () use ($request) {
             $day = Day::findOrFail($request->day_id);
             $date = Carbon::now()->next($day->name)->format('Y-m-d');
-            $trip = CollageTrip::findOrFail($request->collage_trip_id)
-                ->trips()
+            
+            // $trip = CollageTrip::findOrFail($request->collage_trip_id)
+            //     ->trips()
+            //     ->whereDate('date', $date)
+            //     ->first();
+            $trip = Trip::where('collage_trip_id', $request->collage_trip_id)
                 ->whereDate('date', $date)
                 ->first();
+                
             if ($trip->available_seats > 0) {
                 $reservation['trip_id'] = $trip->id;
                 $reservation['user_id'] = auth('sanctum')->id();
                 $reservation['day_id'] = $request->day_id;
                 $reservation['type'] = $request->type;
                 $user = User::findOrFail($reservation['user_id']);
-                if ($request->points) {
+                if ($request->points >= 0) {
                     $collage_trip = $trip->collageTrip()->first();
                     $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
                     $reservation['cost'] = $points['cost'];
                     $reservation['used_points'] = $points['required_points'];
                     $reservation['earned_points'] = $points['earned_points'];
                 }
+
                 $trip->available_seats = $trip->available_seats - 1;
                 $trip->save();
                 return DailyCollageReservation::create($reservation);
