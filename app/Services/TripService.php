@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\Enum\RolesEnum;
 use App\Helpers\ImageUploadHelper;
+use App\Helpers\ResponseHelper;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Day;
@@ -165,7 +166,7 @@ class TripService
         return DB::transaction(function () use ($request) {
             $day = Day::findOrFail($request->day_id);
             $date = Carbon::now()->next($day->name)->format('Y-m-d');
-            
+
             // $trip = CollageTrip::findOrFail($request->collage_trip_id)
             //     ->trips()
             //     ->whereDate('date', $date)
@@ -173,7 +174,7 @@ class TripService
             $trip = Trip::where('collage_trip_id', $request->collage_trip_id)
                 ->whereDate('date', $date)
                 ->first();
-                
+
             if ($trip->available_seats > 0) {
                 $reservation['trip_id'] = $trip->id;
                 $reservation['user_id'] = auth('sanctum')->id();
@@ -338,15 +339,21 @@ class TripService
         return $result;
     }
 
-    public function payReservation($user, $reservation)
+    public function payReservation($id)
     {
         //pay daily reservation
+        $reservation = DailyCollageReservation::findOrFail($id);
+        $user = $reservation->user;
+        if ('paid' == $reservation->status) {
+            return ResponseHelper::error('Already Paid');
+        }
         return DB::transaction(function () use ($user, $reservation) {
             $reservation->update([
                 'status' => 'paid',
             ]);
             $user->points = ($user->points - $reservation->used_points) + $reservation->earned_points;
             $user->save();
+            return ResponseHelper::success(message: 'Paid successfully', data: $reservation->load('user'));
         });
     }
 

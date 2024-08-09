@@ -126,12 +126,15 @@ Route::prefix('collage_trips')->group(function () {
         Route::post('/subscribe', [SubscriptionController::class, 'createNewSubscription'])->name('subscription.create');
         Route::get('/unsubscribe', [SubscriptionController::class, 'cancelSubscription'])->name('subscription.cancel');
         Route::post('/renew', [SubscriptionController::class, 'renewSubscription'])->name('subscription.renew');
-        Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
         Route::post('/checkCost', [CollageTripController::class, 'checkCost'])->name('collage_trips.checkCost');
     });
     Route::middleware('role:Admin,Driver,User')->group(function () {
         Route::get('/driverTrips', [CollageTripController::class, 'driverTrips'])->name('collage_trips.driverTrips');
         Route::get('/dailyReservationInfo/{id}', [CollageTripController::class, 'dailyReservationInfo'])->name('collage_trips.driverTrips');
+        Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
+    });
+    Route::middleware('role:Admin,Driver')->group(function () {
+        Route::get('/payDailyReservation/{id}', [CollageTripController::class, 'payDailyReservation'])->name('collage_trips.pay');
     });
 });
 Route::prefix('feedback')->group(function () {
