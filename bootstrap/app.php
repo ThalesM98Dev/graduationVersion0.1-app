@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class, //
         ]);
         $middleware->use([
-            \App\Http\Middleware\JsonMiddleware::class,
+           // \App\Http\Middleware\JsonMiddleware::class,
             \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
