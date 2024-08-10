@@ -25,6 +25,7 @@ class StoreEnvelopeRequest extends FormRequest
     {
         return [
             'description' => ['required', 'string'],
+           // 'receiver_name' => ['required', 'string'],
             'image' => ['file', 'mimetypes:image/jpeg,image/jpg,image/png'],
             'trip_id' => ['required', 'exists:trips,id'],
         ];

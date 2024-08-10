@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('trip_id')->constrained('trips')->cascadeOnDelete()->cascadeOnUpdate();
+            //$table->string('receiver_name');
             $table->string('description')->nullable();
             $table->string('image')->nullable();
             $table->boolean('isAccepted')->default(false);

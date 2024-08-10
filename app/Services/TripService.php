@@ -166,34 +166,28 @@ class TripService
         return DB::transaction(function () use ($request) {
             $day = Day::findOrFail($request->day_id);
             $date = Carbon::now()->next($day->name)->format('Y-m-d');
-
-            // $trip = CollageTrip::findOrFail($request->collage_trip_id)
-            //     ->trips()
-            //     ->whereDate('date', $date)
-            //     ->first();
             $trip = Trip::where('collage_trip_id', $request->collage_trip_id)
                 ->whereDate('date', $date)
                 ->first();
-
-            if ($trip->available_seats > 0) {
-                $reservation['trip_id'] = $trip->id;
-                $reservation['user_id'] = auth('sanctum')->id();
-                $reservation['day_id'] = $request->day_id;
-                $reservation['type'] = $request->type;
-                $user = User::findOrFail($reservation['user_id']);
-                if ($request->points >= 0) {
-                    $collage_trip = $trip->collageTrip()->first();
-                    $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
-                    $reservation['cost'] = $points['cost'];
-                    $reservation['used_points'] = $points['required_points'];
-                    $reservation['earned_points'] = $points['earned_points'];
-                }
-
-                $trip->available_seats = $trip->available_seats - 1;
-                $trip->save();
-                return DailyCollageReservation::create($reservation);
+            if ($trip->available_seats == 0) {
+                return ResponseHelper::error('There is no available seats on this trip.');
             }
-            return false;
+            $reservation['trip_id'] = $trip->id;
+            $reservation['user_id'] = auth('sanctum')->id();
+            $reservation['day_id'] = $request->day_id;
+            $reservation['type'] = $request->type;
+            $user = User::findOrFail($reservation['user_id']);
+            if ($request->points >= 0) {
+                $collage_trip = $trip->collageTrip()->first();
+                $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
+                $reservation['cost'] = $points['cost'];
+                $reservation['used_points'] = $points['required_points'];
+                $reservation['earned_points'] = $points['earned_points'];
+            }
+            $trip->available_seats = $trip->available_seats - 1;
+            $trip->save();
+            $res = DailyCollageReservation::create($reservation);
+            return ResponseHelper::success($res);
         });
     }
 
@@ -268,11 +262,13 @@ class TripService
             $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
         }, 'day:id,name'])->get();
     }
+
     public function dailyReservationsInfo($resId)
     {
         $reservation = DailyCollageReservation::findOrFail($resId);
         return $reservation->load(['user', 'trip', 'day']);
     }
+
     public function checkCost($request): array
     {
         $user = User::findOrFail(auth('sanctum')->id());
@@ -398,7 +394,8 @@ class TripService
             'user_id' => auth('sanctum')->id(),
             'trip_id' => $request->trip_id,
             'image' => ImageUploadHelper::upload($request->image),
-            'description' => $request->description
+            'description' => $request->description,
+            //'receiver_name' => $request->receiver_name,
         ]);
     }
 
@@ -415,29 +412,37 @@ class TripService
         return $envelope->delete();
     }
 
-    public function getEnvelopOrders(): ?Collection //user and driver and admin (by trip)
+    public function getEnvelopOrders() //user and driver and admin (by trip)
     {
         $user = auth('sanctum')->user();
         $result = null;
         switch ($user->role) {
             case RolesEnum::ADMIN->value:
-                $result = Trip::with(['envelops', 'driver'])
+                $result = Trip::with(['envelops.user', 'driver'])
+                    ->whereDate('date', '>=', Carbon::now())
                     ->orderBy('date')
-                    ->get();
+                    ->paginate(10);
                 break;
             case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
                 $result = Trip::with('envelops')
                     ->where('driver_id', auth('sanctum')->id())
+                    ->whereDate('date', '>=', Carbon::now())
                     ->orderBy('date')
-                    ->get();
+                    ->paginate(10);
                 break;
             case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
                 $result = Envelope::with('trip')
                     ->where('user_id', auth('sanctum')->id())
                     ->orderBy('created_at')
-                    ->get();
+                    ->paginate(10);
                 break;
         }
         return $result;
+    }
+
+    public function showEnvelop($id) //all roles
+    {
+        $envelope = Envelope::findOrFail($id);
+        return ResponseHelper::success(data: $envelope->load(['user', 'trip']));
     }
 }

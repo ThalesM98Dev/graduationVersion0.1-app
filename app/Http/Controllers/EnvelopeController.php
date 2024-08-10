@@ -49,7 +49,7 @@ class EnvelopeController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return $this->tripService->showEnvelop($id);
     }
 
     /**

@@ -149,6 +149,7 @@ Route::prefix('feedback')->group(function () {
 Route::prefix('envelop')->group(function () {
     Route::middleware('role:Admin,User,Driver')->group(function () {
         Route::get('/all', [EnvelopeController::class, 'index']); //admin , user , driver
+        Route::get('/show/{id}', [EnvelopeController::class, 'show']); //admin , user , driver
     });
     Route::middleware('role:Driver')->group(function () {
         Route::get('/approve', [EnvelopeController::class, 'approve']); //driver

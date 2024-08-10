@@ -1,11 +1,6 @@
 <?php
 
-use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\DriverMiddleware;
-use App\Http\Middleware\ShipmentEmployeeMiddleware;
-use App\Http\Middleware\TravelTripsEmployeeMiddleware;
-use App\Http\Middleware\UniversityTripsEmployeeMiddleware;
-use App\Http\Middleware\UserMiddleware;
+
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => EnsureUserHasRole::class, //
+        ]);
+        $middleware->use([
+            \App\Http\Middleware\JsonMiddleware::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

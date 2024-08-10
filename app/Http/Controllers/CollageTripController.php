@@ -61,8 +61,7 @@ class CollageTripController extends Controller
 
     public function bookDailyCollageTrip(CreateDailyReservationRequest $request)
     {
-        $result = $this->tripService->bookDailyCollageTrip($request);
-        return ResponseHelper::success($result);
+        return $this->tripService->bookDailyCollageTrip($request);
     }
 
     public function searchCollageTrips(Request $request)
@@ -85,8 +84,7 @@ class CollageTripController extends Controller
 
     public function payDailyReservation($id) //TODO
     {
-       return $this->tripService->payReservation($id);
-        
+        return $this->tripService->payReservation($id);
     }
 
     public function userReservations(Request $request)

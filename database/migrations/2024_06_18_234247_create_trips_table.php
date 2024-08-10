@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
-            $table->integer('trip_number');
+            $table->unsignedInteger('trip_number');
             $table->date('date');
-            $table->integer('available_seats')->nullable();
-            $table->integer('total_seats')->nullable();
+            $table->unsignedInteger('available_seats')->nullable();
+            $table->unsignedInteger('total_seats')->nullable();
             $table->time('depature_hour')->nullable();
             $table->time('arrival_hour')->nullable();
             $table->enum('trip_type', ['External', 'Universities']);
             $table->string('starting_place')->nullable();
-            $table->integer('price')->nullable();
+            $table->unsignedInteger('price')->nullable();
             $table->string('status')->default('pending');
             $table->foreignId('destination_id')->nullable()->constrained('destinations')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('bus_id')->nullable()->constrained('buses')->cascadeOnDelete()->cascadeOnUpdate();
