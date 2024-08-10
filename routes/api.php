@@ -192,3 +192,9 @@ Route::prefix('shipmentRequest')->group(function () {
     Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allFoodstuffs', [ShipmentRequestController::class, 'allFoodstuffs'])->middleware('role:Admin,Shipment Employee,User');
 });
+Route::get('/test-cors', function () {
+    return response()->json(['message' => 'CORS working'])
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
+        ->header('Access-Control-Allow-Headers', 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range');
+});
