@@ -4,7 +4,7 @@ return [
     'paths' => ['api/*'],
     'allowed_methods' => ['*'],
     'allowed_origins' => ['*'],
-    'Access-Control-Allow_Origins' => ['*'],
+    'Access-Control-Allow-Origin' => ['*'],
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['Authorization', '*'],
     'exposed_headers' => [],
