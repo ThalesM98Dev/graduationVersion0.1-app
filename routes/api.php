@@ -131,7 +131,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::middleware('role:Admin,Driver,User')->group(function () {
         Route::get('/driverTrips', [CollageTripController::class, 'driverTrips']);
         Route::get('/dailyReservationInfo/{id}', [CollageTripController::class, 'dailyReservationInfo']);
-        Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation']);
+        // Route::post('/payDailyReservation', [CollageTripController::class, 'payDailyReservation']);
     });
     Route::middleware('role:Admin,Driver')->group(function () {
         Route::get('/payDailyReservation/{id}', [CollageTripController::class, 'payDailyReservation']);
