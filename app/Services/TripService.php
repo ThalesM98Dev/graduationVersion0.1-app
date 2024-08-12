@@ -395,7 +395,9 @@ class TripService
             'trip_id' => $request->trip_id,
             'image' => ImageUploadHelper::upload($request->image),
             'description' => $request->description,
-            //'receiver_name' => $request->receiver_name,
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'receiver_location' => $request->receiver_location,
         ]);
     }
 
@@ -416,7 +418,7 @@ class TripService
     {
         $user = auth('sanctum')->user();
         $result = null;
-        switch ($user->role) {
+        switch ($user->role) {//not used
             case RolesEnum::ADMIN->value:
                 $result = Trip::with(['envelops.user', 'driver'])
                     ->whereDate('date', '>=', Carbon::now())
