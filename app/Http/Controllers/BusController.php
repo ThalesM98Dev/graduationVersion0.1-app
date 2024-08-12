@@ -29,7 +29,6 @@ class BusController extends Controller
             'type' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'number_of_seats' => 'required|integer|min:1',
-            'image_of_buse_id' => 'required|exists:image_of_buses,id',
         ]);
 
         if ($validator->fails()) {
