@@ -151,9 +151,6 @@ class TripService
                 $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'));
             }
         ])->findOrFail($trip_id);
-        // return Cache::remember('collage_trip_details_mobile' . $trip_id, 5, function () use ($result) {
-        //     return $result;
-        // });
     }
 
     public function deleteCollageTrip($trip_id)
@@ -166,28 +163,31 @@ class TripService
         return DB::transaction(function () use ($request) {
             $day = Day::findOrFail($request->day_id);
             $date = Carbon::now()->next($day->name)->format('Y-m-d');
+            $user = User::findOrFail(auth('sanctum')->id());
             $trip = Trip::where('collage_trip_id', $request->collage_trip_id)
                 ->whereDate('date', $date)
                 ->first();
-            if ($trip->available_seats == 0) {
-                return ResponseHelper::error('There is no available seats on this trip.');
+            if ($trip) {
+                if ($trip->available_seats == 0) {
+                    return ResponseHelper::error('There is no available seats on this trip.');
+                }
+                $reservation['trip_id'] = $trip->id;
+                $reservation['user_id'] = $user->id;
+                $reservation['day_id'] = $request->day_id;
+                $reservation['type'] = $request->type;
+                if ($request->points >= 0) {
+                    $collage_trip = $trip->collageTrip()->first();
+                    $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
+                    $reservation['cost'] = $points['cost'];
+                    $reservation['used_points'] = $points['required_points'];
+                    $reservation['earned_points'] = $points['earned_points'];
+                }
+                $trip->available_seats = $trip->available_seats - 1;
+                $trip->save();
+                $res = DailyCollageReservation::create($reservation);
+                return ResponseHelper::success($res);
             }
-            $reservation['trip_id'] = $trip->id;
-            $reservation['user_id'] = auth('sanctum')->id();
-            $reservation['day_id'] = $request->day_id;
-            $reservation['type'] = $request->type;
-            $user = User::findOrFail($reservation['user_id']);
-            if ($request->points >= 0) {
-                $collage_trip = $trip->collageTrip()->first();
-                $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
-                $reservation['cost'] = $points['cost'];
-                $reservation['used_points'] = $points['required_points'];
-                $reservation['earned_points'] = $points['earned_points'];
-            }
-            $trip->available_seats = $trip->available_seats - 1;
-            $trip->save();
-            $res = DailyCollageReservation::create($reservation);
-            return ResponseHelper::success($res);
+            return ResponseHelper::error(message: 'There is no Trip found at this day.');
         });
     }
 
@@ -356,7 +356,6 @@ class TripService
     public function usersCollageReservations($user, $date, $status)
     {
         $date = $date ?? Carbon::now()->format('Y-m-d');
-        //return Cache::remember('user_collage_reservations' . $user->id, 2, function () use ($user, $date, $status) {
         return $user->dailyCollageReservations()
             ->where('status', $status)
             ->whereHas('trip', function ($query) use ($date) {
@@ -364,7 +363,6 @@ class TripService
             })
             ->with(['trip'])
             ->get();
-        // });
     }
 
 

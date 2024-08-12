@@ -30,7 +30,7 @@ class TripController extends Controller
     {
         $trips = Trip::where('status', 'pending')
             ->where('trip_type', 'External')
-            ->with('destination', 'bus', 'driver', 'envelops')
+            ->with('destination', 'bus', 'driver', 'envelops.user')
             ->get();
         return ResponseHelper::success($trips);
     }
