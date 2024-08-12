@@ -82,7 +82,7 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
-    public function payDailyReservation($id) //TODO
+    public function payDailyReservation($id)
     {
         return $this->tripService->payReservation($id);
     }

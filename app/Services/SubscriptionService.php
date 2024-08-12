@@ -15,7 +15,7 @@ class SubscriptionService
         //return Cache::remember('subscriptions', 5, function () use ($type) {
         return Subscription::where('status', '=', $type)
             ->with(['user', 'collageTrip'])
-            ->get();
+            ->paginate(10);
         //});
     }
 
