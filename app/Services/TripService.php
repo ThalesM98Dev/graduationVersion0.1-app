@@ -431,7 +431,9 @@ class TripService
                     ->get();
                 break;
             case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
-                $result = Envelope::with('trip.driver')
+                $result = Envelope::with(['trip' => function ($query) {
+                    $query->with(['driver', 'destination']);
+                }])
                     ->where('user_id', auth('sanctum')->id())
                     ->orderBy('created_at')
                     ->get();
