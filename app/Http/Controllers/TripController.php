@@ -205,7 +205,7 @@ class TripController extends Controller
             $query->where('name', 'LIKE', "%{$destinationName}%");
         })
             ->where('status', 'done')
-            ->with('destination', 'bus', 'driver')
+            ->with('destination', 'bus', 'driver', 'envelops.user')
             ->get();
 
         if ($trips->isEmpty()) {

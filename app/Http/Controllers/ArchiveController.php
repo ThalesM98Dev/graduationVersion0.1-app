@@ -20,7 +20,7 @@ class ArchiveController extends Controller
     public function showArchive()
     {
         $trips = Trip::where('status', 'done')
-            ->with('destination', 'bus', 'driver', 'envelops.user')
+            ->with('destination', 'bus', 'driver')
             ->get();
 
         $response = [
