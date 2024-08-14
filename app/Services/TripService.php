@@ -416,14 +416,9 @@ class TripService
     {
         $user = auth('sanctum')->user();
         $result = null;
-        switch ($user->role) { 
+        switch ($user->role) {
             case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
-                // $result = Trip::where('driver_id', $user->id)
-                //     ->whereDate('date', '>=', Carbon::now())
-                //     ->with('envelops')
-                //     ->orderBy('date')
-                //     ->get();
-                $result = Envelope::with(['trip' => function ($query) use ($user) {
+                $result = Envelope::with(['user', 'trip' => function ($query) use ($user) {
                     $query->where('driver_id', $user->id);
                     $query->with(['destination']);
                     $query->orderBy('date');
@@ -432,7 +427,7 @@ class TripService
                     ->get();
                 break;
             case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
-                $result = Envelope::with(['trip' => function ($query) {
+                $result = Envelope::with(['user', 'trip' => function ($query) {
                     $query->with(['driver', 'destination']);
                 }])
                     ->where('user_id', $user->id)
