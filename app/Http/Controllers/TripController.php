@@ -416,7 +416,7 @@ class TripController extends Controller
 
         $trips = Trip::where('driver_id', $driverId)
             ->where('status', 'done')
-            ->with('destination', 'bus', 'driver')
+            ->with('destination', 'bus', 'driver', 'envelops.user')
             ->get();
         if ($trips->isEmpty()) {
             return response()->json(['message' => 'No trip found'], 404);
