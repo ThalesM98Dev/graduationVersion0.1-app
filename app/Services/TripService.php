@@ -416,13 +416,7 @@ class TripService
     {
         $user = auth('sanctum')->user();
         $result = null;
-        switch ($user->role) { //not used
-            case RolesEnum::ADMIN->value:
-                $result = Trip::with(['envelops.user', 'driver'])
-                    ->whereDate('date', '>=', Carbon::now())
-                    ->orderBy('date')
-                    ->paginate(10);
-                break;
+        switch ($user->role) { 
             case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
                 // $result = Trip::where('driver_id', $user->id)
                 //     ->whereDate('date', '>=', Carbon::now())
