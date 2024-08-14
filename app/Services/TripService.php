@@ -424,10 +424,17 @@ class TripService
                     ->paginate(10);
                 break;
             case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
-                $result = Trip::where('driver_id', $user->id)
-                    ->whereDate('date', '>=', Carbon::now())
-                    ->with('envelops')
-                    ->orderBy('date')
+                // $result = Trip::where('driver_id', $user->id)
+                //     ->whereDate('date', '>=', Carbon::now())
+                //     ->with('envelops')
+                //     ->orderBy('date')
+                //     ->get();
+                $result = Envelope::with(['trip' => function ($query) use ($user) {
+                    $query->where('driver_id', $user->id);
+                    $query->with(['destination']);
+                    $query->orderBy('date');
+                }])
+                    ->orderBy('created_at')
                     ->get();
                 break;
             case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
