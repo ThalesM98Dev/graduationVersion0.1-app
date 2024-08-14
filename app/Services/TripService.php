@@ -425,7 +425,7 @@ class TripService
                 break;
             case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
                 $result = Trip::where('driver_id', auth('sanctum')->id())
-                    ->whereDate('date', '>=', Carbon::now())
+                    //->whereDate('date', '>=', Carbon::now())
                     ->with('envelops')
                     ->orderBy('date')
                     ->get();
