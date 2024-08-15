@@ -17,9 +17,10 @@ return new class extends Migration
             $table->foreign('trip_id')->references('id')->on('trips')->onUpdate('cascade')->onDelete('cascade');
             //$table->string('ticket_type');
             //$table->integer('ticket_number');
-            $table->string('status')->default('pending');
-            $table->bigInteger('total_price');
+            $table->enum('status', ['pending', 'accept']);
+            $table->bigInteger('total_price')->nullable();
             $table->integer('count_of_persons');
+            $table->foreignId('subscription_id')->nullable()->constrained('subscriptions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             $table->index('trip_id');
         });

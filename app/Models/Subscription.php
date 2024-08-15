@@ -20,4 +20,8 @@ class Subscription extends Model
     {
         return $this->belongsTo(CollageTrip::class);
     }
+    public function reservation()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }

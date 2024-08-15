@@ -43,11 +43,16 @@ class TripService
             $stations = $request['stations'];
             if ($stations) {
                 foreach ($stations as $station) {
+                    if ($station['type'] === 'Back') {
+                        $station['out_time'] = null;
+                    } else {
+                        $station['out_time'] = Carbon::parse($station['out_time'])->format('H:i:s');
+                    }
                     Station::create([
                         'name' => $station['name'],
                         'collage_trip_id' => $trip->id,
                         'in_time' => Carbon::parse($station['in_time'])->format('H:i:s'),
-                        'out_time' => Carbon::parse($station['out_time'])->format('H:i:s'),
+                        'out_time' => $station['out_time'],
                         'type' => $station['type'],
                     ]);
                 }
@@ -380,6 +385,29 @@ class TripService
             }])->get();
         }
         return 'empty';
+    }
+
+    public function checkTripExistence($nextWeekTripDate, $collageTripId)
+    {
+        $trip = Trip::where('collage_trip_id', $collageTripId)
+            ->whereDate('date', '=', $nextWeekTripDate->format('Y-m-d'))
+            ->where('trip_type', 'Universities')
+            ->first();
+        if ($trip) {
+            return $trip;
+        }
+        return null;
+    }
+
+    public function checkReservationExistence($subscription, $tripId)
+    {
+        $reservation = $subscription->reservation()
+            ->where('trip_id', $tripId)
+            ->first();
+        if ($reservation) {
+            return $reservation;
+        }
+        return null;
     }
 
     /**
