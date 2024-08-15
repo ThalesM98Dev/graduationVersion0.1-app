@@ -441,6 +441,6 @@ class TripService
     public function showEnvelop($id) //all roles
     {
         $envelope = Envelope::findOrFail($id);
-        return ResponseHelper::success(data: $envelope->load(['user', 'trip']));
+        return ResponseHelper::success(data: $envelope->load(['user', 'trip.destination']));
     }
 }

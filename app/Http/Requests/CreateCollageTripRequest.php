@@ -41,13 +41,13 @@ class CreateCollageTripRequest extends FormRequest
             'required_round_trip_points' => ['numeric'],
             'required_semester_round_trip_points' => ['numeric'],
             //
-            'stations' => ['array'],
+            'stations' => ['required', 'array'],
             'stations.*name' => ['string'],
             'stations.*in_time' => ['string'],
             'stations.*.out_time' => ['string'],
             'stations.*type' => ['in:Go,Back'],
             'total_seats' => ['required', 'integer'],
-            'driver_id' => ['exists:users,id']
+            'driver_id' => ['required', 'exists:users,id']
         ];
     }
     protected function failedValidation(Validator $validator)
