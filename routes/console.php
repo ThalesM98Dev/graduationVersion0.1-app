@@ -10,5 +10,5 @@ Artisan::command('inspire', function () {
 
 
 //Schedule::command('app:trip-date-command')->daily()->withoutOverlapping();
-Schedule::command('app:trip-date-command')->everyFiveSeconds()->withoutOverlapping();//Test only.
+Schedule::command('app:trip-date-command')->everyMinute()->withoutOverlapping();//Test only.
 
