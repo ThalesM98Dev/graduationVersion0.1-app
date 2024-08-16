@@ -5,7 +5,7 @@ namespace App\Enum;
 
 enum MessagesEnum: string
 {
-    case VERIFICATION = 'إن رمز تفعيل حسابك هو : %s الرجاء عدم ارساله لأحد. شركة الاتحاد العربي للنقل البرّي.';
+    case VERIFICATION = 'إن رمز تفعيل حسابك هو : %s الرجاء عدم ارساله لأحد.\nشركة الاتحاد العربي للنقل البرّي.';
     case RECOVER_PASSWORD = 'إن رمز استعادة حسابك هو : %s الرجاء عدم ارساله لأحد.شركة الاتحاد العربي للنقل البرّي.';
 
     public function formatMessage(string $code): string
