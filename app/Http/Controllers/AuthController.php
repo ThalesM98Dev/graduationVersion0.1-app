@@ -84,7 +84,7 @@ class AuthController extends Controller
         ]);
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return ResponseHelper::error('Wrong Password Or Phone Number.');
+            return ResponseHelper::error('Wrong Password.');
         }
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
             $token = $user->createToken('myapptoken')->plainTextToken;
