@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('mobile_number')->unique();
             $table->boolean('isVerified')->default(false);
-            $table->integer('verification_code')->nullable();
+            $table->string('verification_code')->nullable();
             $table->string('password');
             $table->integer('age');
             $table->string('address');

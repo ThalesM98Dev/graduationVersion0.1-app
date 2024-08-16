@@ -5,14 +5,28 @@ namespace App\Services;
 class VerificationService
 {
 
-    public function sendVerificationMessage($reciverNumber, $code)
+    public function sendVerificationMessage($receiverNumber, $body)
     {
-        $mobile_number = '+963' . $reciverNumber;
+        $mobile_number = '+963' . $receiverNumber;
         $params = array(
             'token' => '7pl8qqcx0ugr0lrp',
             'to' => $mobile_number,
-            'body' => ' إن رمز تفعيل حسابك هو : ' . $code . ' الرجاء عدم ارساله لأحد '
+            'body' => $body
         );
+        $err = $this->sendMessage($params);
+        if ($err) {
+            return $err; //error
+        } else {
+            return 'success';
+        }
+    }
+
+    /**
+     * @param array $params
+     * @return string
+     */
+    public function sendMessage(array $params): string
+    {
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => "https://api.ultramsg.com/instance88627/messages/chat",
@@ -29,16 +43,9 @@ class VerificationService
                 "content-type: application/x-www-form-urlencoded"
             ),
         ));
-
-        $response = curl_exec($curl);
+        curl_exec($curl);
         $err = curl_error($curl);
-
         curl_close($curl);
-
-        if ($err) {
-            return $err; //error
-        } else {
-            return 'success';
-        }
+        return $err;
     }
 }

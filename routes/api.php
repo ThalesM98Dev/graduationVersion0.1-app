@@ -34,6 +34,10 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum');
     Route::post('/verify', [AuthController::class, 'verifyAccount'])
         ->middleware('auth:sanctum');
+    Route::get('/request_reset_code', [AuthController::class, 'requestResetPasswordCode'])
+        ->middleware('auth:sanctum');
+    Route::post('/reset_password', [AuthController::class, 'resetPassword'])
+        ->middleware('auth:sanctum');
 });
 /**
  * Thales

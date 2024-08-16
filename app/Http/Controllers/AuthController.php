@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\MessagesEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
 use App\Models\User;
@@ -27,7 +28,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request['name'],
                 'email' => $request['email'],
-                'password' => bcrypt($request['password']),
+                'password' => Hash::make($request['password']),
                 'mobile_number' => $request['mobile_number'],
                 'age' => $request['age'],
                 'address' => $request['address'],
@@ -35,15 +36,16 @@ class AuthController extends Controller
                 'role' => $request['role']
             ]);
             $token = $user->createToken('myapptoken')->plainTextToken;
-            // if ($request['role'] == RolesEnum::USER->value) {
-            //     $code = Random::generate(4, '0-9');
-            //     $user->verification_code = $code;
-            //     //app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
-            //     dispatch(new SendMessageJob($user->mobile_number, $code));
-            // } else {
-            //     $user->isVerified = true;
-            // }
-            $user->isVerified = true; //Temp !!!
+            if ($request['role'] == RolesEnum::USER->value) {
+                $code = Random::generate(4, '0-9');
+                $user->verification_code = $code;
+                $body = MessagesEnum::VERIFICATION->formatMessage($code);
+                //app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $code);
+                dispatch(new SendMessageJob($user->mobile_number, $body));
+            } else {
+                $user->isVerified = true;
+            }
+            // $user->isVerified = true; //Temp !!!
             $user->save();
             $response = [
                 'user' => $user,
@@ -60,15 +62,15 @@ class AuthController extends Controller
     {
         $user = auth('sanctum')->user();
         if ($user->isVerified) {
-            return ResponseHelper::error('Your account is already verified.');
+            return ResponseHelper::error(data: null, message: 'Your account is already verified.');
         }
         if ($request->verification_code == $user->verification_code) {
             $user->isVerified = true;
             $user->verification_code = null;
             $user->save();
-            return ResponseHelper::success('Verified Successfuly');
+            return ResponseHelper::success(data: null, message: 'Verified Successfully.');
         }
-        return ResponseHelper::error('Wrong verification code');
+        return ResponseHelper::error(data: null, message: 'Wrong verification code');
     }
 
     /**
@@ -82,7 +84,7 @@ class AuthController extends Controller
         ]);
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return ResponseHelper::error('Invalid credentials');
+            return ResponseHelper::error('Wrong Password Or Phone Number.');
         }
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
             $token = $user->createToken('myapptoken')->plainTextToken;
@@ -125,11 +127,49 @@ class AuthController extends Controller
         ];
         return ResponseHelper::success($response);
     }
+
+    /**
+     * Request Reset Password Code.
+     */
+    public function requestResetPasswordCode()
+    {
+        $user = auth('sanctum')->user();
+        return DB::transaction(function () use ($user) {
+            //send message to the user contains reset code
+            $code = Random::generate(4, '0-9');
+            $user->verification_code = $code;
+            $user->save();
+            $body = MessagesEnum::RECOVER_PASSWORD->formatMessage($code);
+//            app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $body);
+            dispatch(new SendMessageJob($user->mobile_number, $body));
+            return ResponseHelper::success(data: null, message: 'Recovery Code sent to your Whatsapp account successfully.');
+        });
+    }
+
+    /**
+     * Reset Password.
+     */
+    public function resetPassword(Request $request)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user->verification_code) {
+            return ResponseHelper::error(data: null, message: 'Request Reset Code First.');
+        }
+        if ($request->verification_code == $user->verification_code) {
+            $user->verification_code = null;
+            $user->password = Hash::make($request->password);
+            $user->save();
+            return ResponseHelper::success(data: null, message: 'Your Password has been reset successfully.');
+        }
+        return ResponseHelper::error(data: null, message: 'Wrong verification code');
+    }
+
     public function deleteUser($userID)
     {
         $user = User::findOrFail($userID)->delete();
-        return ResponseHelper::success($user, 'User Delete successfuly');
+        return ResponseHelper::success($user, 'User Delete successfully');
     }
+
     public function updateUser(UpdateUserRequest $request, User $user)
     {
         $user->name = $request->input('name', $user->name);
@@ -148,7 +188,8 @@ class AuthController extends Controller
 
     public function all_Users()
     {
-        $users = User::where('role', 'User')->get(); {
+        $users = User::where('role', 'User')->get();
+        {
             $response = [
                 'users' => $users
             ];
