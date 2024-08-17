@@ -24,9 +24,19 @@ class CheckCostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'trip_id' => ['required', 'exists:trips,id'],
-            'type' => ['required', 'in:Go,Back,Round Trip'],
-            'points' => ['required', 'integer'],
+            'collage_trip_id' => ['required', 'exists:collage_trips,id'],
+            'points' => ['required', 'numeric'],
+            'trip_type' => [
+                'required',
+                'in:Go,Back,Round Trip',
+                function ($attribute, $value, $fail) {
+                    $reservationType = request('reservation_type');
+                    if ($reservationType === 'monthly' && $value !== 'Round Trip') {
+                        $fail('When reservation type is monthly, trip type must be Round Trip.');
+                    }
+                },
+            ],
+            'reservation_type' => ['required', 'in:monthly,daily'],
         ];
     }
 

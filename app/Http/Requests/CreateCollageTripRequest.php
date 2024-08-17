@@ -63,11 +63,9 @@ class CreateCollageTripRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     $index = explode('.', $attribute)[1];
                     $inTime = $this->input("stations.{$index}.in_time");
-
                     if ($inTime && $value) {
                         $inCarbon = Carbon::createFromFormat('h:i A', $inTime);
                         $outCarbon = Carbon::createFromFormat('h:i A', $value);
-
                         if ($inCarbon->eq($outCarbon)) {
                             $fail("The out time must be different from the in time for station {$index}.");
                         }
@@ -75,10 +73,6 @@ class CreateCollageTripRequest extends FormRequest
                 },
             ],
             'stations.*.type' => ['required', Rule::in(['Go', 'Back'])],
-            // 'stations.*.name' => ['required_if:stations.*.type,Go'],
-            // 'stations.*.in_time' => ['required_if:stations.*.type,Go'],
-            // 'stations.*.out_time' => ['required_if:stations.*.type,Go'],
-
 
             'total_seats' => ['required', 'integer'],
             'driver_id' => ['required', 'exists:users,id']

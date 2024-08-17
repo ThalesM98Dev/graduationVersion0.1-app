@@ -277,11 +277,13 @@ class TripService
     public function checkCost($request): array
     {
         $user = User::findOrFail(auth('sanctum')->id());
-        $trip = CollageTrip::findOrFail($request->trip_id);
-        if ('daily' == $request->type) {
-            $result = $this->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, true);
-        } else {
-            $result = $this->pointsDiscountDaily($request->points, $user->points, $trip, $request->type, false);
+        $collageTrip = CollageTrip::findOrFail($request->collage_trip_id);
+        $result = [];
+        if ('daily' == $request->reservation_type) {
+            $result = $this->pointsDiscountDaily($request->points, $user->points, $collageTrip, $request->trip_type, true);
+        }
+        if ('monthly' == $request->reservation_type) {
+            $result = $this->pointsDiscountDaily($request->points, $user->points, $collageTrip, $request->trip_type, false);
         }
         return $result;
     }
@@ -324,16 +326,18 @@ class TripService
     {
         $result = [];
         $points = intval($points);
+        // dd($requiredPoints);
         if ($points < $requiredPoints) {
+            // dd($requiredPoints);
             //
             $cost = round(($points * $tripPrice) / $requiredPoints);
             $result['cost'] = $tripPrice - $cost;
-            $result['required_points'] = $points;
+            $result['entered_points'] = $points;
             $result['remaining_points'] = $userPoints - $points;
             $result['earned_points'] = $earnedPoints;
         } else {
             $result['cost'] = 0;
-            $result['required_points'] = $requiredPoints;
+            $result['entered_points'] = $requiredPoints;
             $result['remaining_points'] = $userPoints - $points;
             $result['earned_points'] = $earnedPoints;
         }
