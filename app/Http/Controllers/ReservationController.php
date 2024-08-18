@@ -26,7 +26,7 @@ class ReservationController extends Controller
             'orders' => 'required|array',
             'orders.*.name' => 'required|string',
             'orders.*.address' => 'required|string',
-            'orders.*.mobile_number' => 'required|numeric|unique:orders,mobile_number|digits:10',
+            'orders.*.mobile_number' => 'required|numeric|digits:10',
             'orders.*.age' => 'required|numeric',
             'orders.*.nationality' => 'required|string',
             //'orders.*.user_id' => 'required|exists:users,id|in:'.$userId,
