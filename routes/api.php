@@ -71,7 +71,7 @@ Route::prefix('bus')->group(function () {
 });
 
 Route::prefix('reserv')->group(function () {
-    Route::post('/creatReservation/{userId}', [ReservationController::class, 'creatReservation'])->middleware('role:User');
+    Route::post('/creatReservation/{userId}', [ReservationController::class, 'creatReservation'])->name('creatReservation')->middleware('role:User');
     Route::put('/acceptTripRequest/{id}', [ReservationController::class, 'acceptTripRequest'])->middleware('role:Travel Trips Employee,Admin');
     Route::delete('/rejectDeleteTripRequest/{id}', [ReservationController::class, 'rejectDeleteTripRequest'])->middleware('role:Travel Trips Employee,Admin');
     Route::put('/confirmReservation/{id}', [ReservationController::class, 'confirmReservation'])->middleware('role:Travel Trips Employee,Admin');

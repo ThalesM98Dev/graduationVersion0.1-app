@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "8.3.9",
+        "php": "8.2.4",
         "dompdf/dompdf": "^3.0",
         "guzzlehttp/guzzle": "^7.8",
         "khaled.alshamaa/ar-php": "^6.3",
@@ -36,7 +36,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "Tests\\": "tests/"
         }
     },
     "scripts": {
