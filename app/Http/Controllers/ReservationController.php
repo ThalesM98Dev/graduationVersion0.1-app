@@ -29,7 +29,7 @@ class ReservationController extends Controller
             'orders.*.mobile_number' => 'required|numeric|digits:10',
             'orders.*.age' => 'required|numeric',
             'orders.*.nationality' => 'required|string',
-            //'orders.*.user_id' => 'required|exists:users,id|in:'.$userId,
+            'orders.*.user_id' => 'required|exists:users,id|in:'.$userId,
             'orders.*.image_of_ID' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
             'orders.*.image_of_passport' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
             'orders.*.image_of_security_clearance' => 'required|file|mimes:jpeg,png,jpg,gif,pdf|max:2048',
