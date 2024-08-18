@@ -59,7 +59,7 @@ class CreateCollageTripRequest extends FormRequest
             'stations.*.out_time' => [
                 'prohibited_if:stations.*.type,Back',
                 'required_if:stations.*.type,Go',
-                'date_format:h:i A',
+                // 'date_format:h:i A',
                 function ($attribute, $value, $fail) {
                     $index = explode('.', $attribute)[1];
                     $inTime = $this->input("stations.{$index}.in_time");
