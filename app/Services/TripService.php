@@ -453,7 +453,7 @@ class TripService
                 $result = Envelope::with(['user', 'trip' => function ($query) use ($user) {
                     $query->where('driver_id', $user->id);
                     $query->with(['destination']);
-                    $query->orderBy('date');
+                    //$query->orderBy('date');
                 }])
                     ->orderBy('created_at')
                     ->get();
