@@ -433,7 +433,12 @@ class TripService
 
     public function approveEnvelopOrder($request) //driver
     {
+        $user = auth('sanctum')->user();
         $envelope = Envelope::findOrFail($request->envelope_id);
+        $trip = $envelope->trip;
+        if ($user->id != $trip->driver_id) {
+            return 'This envelope is not belongs to you!';
+        }
         if ($envelope->isAccepted) {
             return 'Already approved envelop';
         }
@@ -444,32 +449,32 @@ class TripService
         return $envelope->delete();
     }
 
-    public function getEnvelopOrders() //user and driver and admin (by trip)
+    public function getDriverEnvelopOrders($user) //Driver
     {
-        $user = auth('sanctum')->user();
-        $result = null;
-        switch ($user->role) {
-            case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
-                $result = Envelope::with(['user'])
-                    ->with(['trip' => function ($query) use ($user) {
-                        $query->where('driver_id', $user->id);
-                        $query->where('status', ['done', 'pending']);
-                        $query->with(['destination']);
-                        $query->orderBy('date');
-                    }])
-                    ->orderBy('created_at')
-                    ->get();
-                break;
-            case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
-                $result = Envelope::with(['user', 'trip' => function ($query) {
-                    $query->with(['driver', 'destination']);
-                }])
-                    ->where('user_id', $user->id)
-                    ->orderBy('created_at')
-                    ->get();
-                break;
-        }
-        return $result;
+        $result = Envelope::with(['user'])
+            ->whereHas('trip', function ($query) use ($user) {
+                $query->where('driver_id', $user->id);
+            })
+            ->with(['trip' => function ($query) use ($user) {
+                $query
+                    //->where('driver_id', $user->id)
+                    ->orderBy('date')
+                    ->with(['destination']);
+            }])
+            ->orderBy('created_at')
+            ->get();
+        return ResponseHelper::success(data: $result);
+    }
+
+    public function getUserEnvelopes($user)
+    {
+        $result = Envelope::with(['user', 'trip' => function ($query) {
+            $query->with(['driver', 'destination']);
+        }])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at')
+            ->get();
+        return ResponseHelper::success(data: $result);
     }
 
     public function showEnvelop($id) //all roles
@@ -477,4 +482,6 @@ class TripService
         $envelope = Envelope::findOrFail($id);
         return ResponseHelper::success(data: $envelope->load(['user', 'trip.destination']));
     }
+
+
 }
