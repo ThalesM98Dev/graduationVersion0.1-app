@@ -29,7 +29,7 @@ class SubscriptionService
             $user = User::findOrFail($subscription['user_id']);
             $collageTrip = CollageTrip::findOrFail($subscription['collage_trip_id']);
             $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points, $collageTrip, 'Round Trip', false);
-            $subscription['used_points'] = $result['required_points'];
+            $subscription['used_points'] = $result['entered_points'];
             $subscription['amount'] = $result['cost'];
             $subscription['earned_points'] = $result['earned_points'];
             return Subscription::create($subscription);
