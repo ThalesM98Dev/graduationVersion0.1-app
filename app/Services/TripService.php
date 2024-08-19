@@ -184,7 +184,7 @@ class TripService
                     $collage_trip = $trip->collageTrip()->first();
                     $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
                     $reservation['cost'] = $points['cost'];
-                    $reservation['used_points'] = $points['required_points'];
+                    $reservation['used_points'] = $points['entered_points'];
                     $reservation['earned_points'] = $points['earned_points'];
                 }
                 $trip->available_seats = $trip->available_seats - 1;
@@ -482,6 +482,4 @@ class TripService
         $envelope = Envelope::findOrFail($id);
         return ResponseHelper::success(data: $envelope->load(['user', 'trip.destination']));
     }
-
-
 }
