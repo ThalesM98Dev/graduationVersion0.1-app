@@ -3,9 +3,11 @@
 namespace App\Services;
 
 
+use App\Enum\NotificationsEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ImageUploadHelper;
 use App\Helpers\ResponseHelper;
+use App\Jobs\SendNotificationJob;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Day;
@@ -435,6 +437,7 @@ class TripService
     {
         $user = auth('sanctum')->user();
         $envelope = Envelope::findOrFail($request->envelope_id);
+        $status = $request->status;
         $trip = $envelope->trip;
         if ($user->id != $trip->driver_id) {
             return 'This envelope is not belongs to you!';
@@ -442,11 +445,27 @@ class TripService
         if ($envelope->isAccepted) {
             return 'Already approved envelop';
         }
-        if ('accept' == $request->status) {
-            $envelope->update(['isAccepted' => true]);
-            return $envelope;
-        }
-        return $envelope->delete();
+        return DB::transaction(function () use ($user, $envelope, $trip, $status) {
+            $fcmToken = $envelope->user->fcm_token;
+            $driver = $envelope->trip->driver;
+            $variables = ['driverName' => $driver->name];
+            if ('accept' == $status) {
+                $envelope->update(['isAccepted' => true]);
+                $message = NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->formatMessage(NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->value, $variables);
+//                app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+                dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+
+                return $envelope;
+            }
+            $message = NotificationsEnum::ENVELOPE_ORDER_REJECT
+                ->formatMessage(NotificationsEnum::ENVELOPE_ORDER_REJECT->value, $variables);
+//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+
+            return $envelope->delete();
+        });
+
+
     }
 
     public function getDriverEnvelopOrders($user) //Driver

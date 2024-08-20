@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enum\MessagesEnum;
+use App\Enum\NotificationsEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\StoreFcmTokenRequest;
+use App\Jobs\SendNotificationJob;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -94,8 +96,7 @@ class AuthController extends Controller
                 $user->fcm_token = $fields['fcm_token'];
                 $user->save();
                 //test
-                app(NotificationService::class)->sendNotification($user->fcm_token, 'Welcome to AUT', 'from backend');
-                //
+                dispatch(new SendNotificationJob($user->fcm_token, $user, NotificationsEnum::WELCOME->value, true));
             }
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [

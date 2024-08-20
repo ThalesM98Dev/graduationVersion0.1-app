@@ -41,7 +41,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'verification_code'
+        'verification_code',
+        'fcm_token'
     ];
 
     /**
@@ -94,5 +95,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function envelops(): HasMany
     {
         return $this->hasMany(Envelope::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(FcmNotification::class);
     }
 }

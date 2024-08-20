@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enum\NotificationsEnum;
+use App\Jobs\SendNotificationJob;
 use App\Models\CollageTrip;
 use App\Models\Subscription;
 use App\Models\User;
@@ -32,7 +34,13 @@ class SubscriptionService
             $subscription['used_points'] = $result['entered_points'];
             $subscription['amount'] = $result['cost'];
             $subscription['earned_points'] = $result['earned_points'];
-            return Subscription::create($subscription);
+            $subscription = Subscription::create($subscription);
+            $fcmToken = $subscription->user->fcm_token;
+            $variables = ['tripNumber' => $collageTrip->id];
+            $message = NotificationsEnum::SUBSCRIBE_ORDER->formatMessage(NotificationsEnum::SUBSCRIBE_ORDER->value, $variables);
+//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+            return $subscription;
         });
     }
 
