@@ -148,11 +148,12 @@ Route::prefix('feedback')->group(function () {
     });
     Route::middleware('role:User')->group(function () {
         Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
-        Route::get('/show/{id}', [FeedbackController::class, 'show']);
         Route::post('/create', [FeedbackController::class, 'store']);
+    });
+    Route::middleware('role:Admin,User')->group(function () {
+        Route::get('/show/{id}', [FeedbackController::class, 'show']);
         Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
     });
-
 });
 Route::prefix('envelop')->group(function () {
     Route::middleware('role:Admin,User,Driver')->group(function () {
