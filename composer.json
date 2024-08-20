@@ -9,14 +9,15 @@
     "license": "MIT",
     "require": {
         "php": "8.3.9",
+        "ext-curl": "*",
         "dompdf/dompdf": "^3.0",
         "guzzlehttp/guzzle": "^7.8",
         "khaled.alshamaa/ar-php": "^6.3",
+        "kreait/firebase-php": "^7.13",
         "laravel/framework": "^11.0",
         "laravel/reverb": "@beta",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9",
-        "ext-curl": "*"
+        "laravel/tinker": "^2.9"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

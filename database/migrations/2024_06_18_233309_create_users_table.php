@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->boolean('isVerified')->default(false);
             $table->string('verification_code')->nullable();
             $table->string('password');
-            $table->string('fcm_token')->nullable();
             $table->integer('age');
             $table->string('address');
             $table->string('nationality')->nullable();

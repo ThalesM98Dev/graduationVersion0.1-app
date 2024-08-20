@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Jobs\SendMessageJob;
+use App\Services\NotificationService;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +92,9 @@ class AuthController extends Controller
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
             $user->fcm_token = $fields['fcm_token'];
             $user->save();
+            //test
+            app(NotificationService::class)->sendNotification($user->fcm_token,'test','from backend');
+            //
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
