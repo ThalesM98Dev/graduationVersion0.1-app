@@ -173,7 +173,8 @@ class TripController extends Controller
         if ($trip && $trip->status != 'done') {
 
             // Check if all reservations in the trip are confirmed
-            $allReservationsConfirmed = $trip->reservations()->where('status', 'confirmed')->count() === $trip->reservations()->count();
+            $allReservationsConfirmed = $trip->reservations()
+            ->where('status', 'confirmed')->count() === $trip->reservations()->count();
 
             if ($allReservationsConfirmed) {
                 $trip->status = 'done';

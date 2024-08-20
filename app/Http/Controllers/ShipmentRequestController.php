@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\NotificationsEnum;
+use App\Jobs\SendNotificationJob;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
@@ -135,6 +138,11 @@ class ShipmentRequestController extends Controller
         $shipmentTrip->available_weight -= $request->weight;
         $shipmentTrip->save();
 
+        $user = $shipmentRequest->user;
+        $fcmToken = $user->fcm_token;
+//        app(NotificationService::class)
+//            ->sendNotification($fcmToken, NotificationsEnum::TITLE->value, NotificationsEnum::SHIPMENT_ORDER->value);
+        dispatch(new SendNotificationJob($fcmToken, $user, NotificationsEnum::SHIPMENT_ORDER->value, false));
         $response = [
             'shipmentRequest' => $shipmentRequest
         ];
@@ -201,6 +209,11 @@ class ShipmentRequestController extends Controller
         }
         $shipmentRequest->status = 'accept';
         $shipmentRequest->save();
+        $user = $shipmentRequest->user;
+        $fcmToken = $user->fcm_token;
+//        app(NotificationService::class)
+//            ->sendNotification($fcmToken, NotificationsEnum::TITLE->value, NotificationsEnum::SHIPMENT_ACCEPTANCE->value);
+        dispatch(new SendNotificationJob($user->fcm_token, $user, NotificationsEnum::SHIPMENT_ACCEPTANCE->value, false));
 
         $response = [
             'shipmentRequest' => $shipmentRequest

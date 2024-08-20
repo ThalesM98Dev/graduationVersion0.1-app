@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Enum\NotificationsEnum;
+use App\Jobs\SendNotificationJob;
 use App\Models\CollageTrip;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use function PHPUnit\Framework\isEmpty;
 
 class SubscriptionService
 {
@@ -21,18 +24,28 @@ class SubscriptionService
 
     public function subscribe($request)
     {
+        $subscription['user_id'] = auth('sanctum')->id();
+        $user = User::findOrFail($subscription['user_id']);
+        $subscriptionExistence = $user->subscription;
+        if (!isEmpty($subscriptionExistence)) {
+            return 'Already subscribed';
+        }
         return DB::transaction(function () use ($request) {
-            $subscription['user_id'] = auth('sanctum')->id();
             $subscription['collage_trip_id'] = $request->collage_trip_id;
             $subscription['start_date'] = $request->start_date;
             $subscription['end_date'] = $request->end_date;
-            $user = User::findOrFail($subscription['user_id']);
             $collageTrip = CollageTrip::findOrFail($subscription['collage_trip_id']);
             $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points, $collageTrip, 'Round Trip', false);
-            $subscription['used_points'] = $result['required_points'];
+            $subscription['used_points'] = $result['entered_points'];
             $subscription['amount'] = $result['cost'];
             $subscription['earned_points'] = $result['earned_points'];
-            return Subscription::create($subscription);
+            $subscription = Subscription::create($subscription);
+            $fcmToken = $subscription->user->fcm_token;
+            $variables = ['tripNumber' => $collageTrip->id];
+            $message = NotificationsEnum::SUBSCRIBE_ORDER->formatMessage(NotificationsEnum::SUBSCRIBE_ORDER->value, $variables);
+//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+            return $subscription;
         });
     }
 

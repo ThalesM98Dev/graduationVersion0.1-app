@@ -38,11 +38,15 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum');
     Route::post('/reset_password', [AuthController::class, 'resetPassword'])
         ->middleware('auth:sanctum');
+    Route::post('/store_fcm_token', [AuthController::class, 'storeFcmToken'])
+        ->middleware('auth:sanctum');
 });
 /**
  * Thales
  * end ↑
  */
+Route::get('/user/notifications', [\App\Http\Controllers\FcmNotificationController::class, 'index']);
+//->middleware('role:User');
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,User,Driver');
@@ -112,6 +116,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::middleware('role:Admin,User,University trips Employee,Driver')->group(function () {
         Route::get('/all', [CollageTripController::class, 'index']);
         Route::get('/details/{id}', [CollageTripController::class, 'show']);
+        Route::get('/archived/details/{id}', [CollageTripController::class, 'showArchived']);
         Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
     });
 
@@ -143,9 +148,13 @@ Route::prefix('collage_trips')->group(function () {
 Route::prefix('feedback')->group(function () {
     Route::middleware('role:Admin')->group(function () {
         Route::get('/all', [FeedbackController::class, 'index']);
+    });
+    Route::middleware('role:User')->group(function () {
         Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
-        Route::get('/show/{id}', [FeedbackController::class, 'show']);
         Route::post('/create', [FeedbackController::class, 'store']);
+    });
+    Route::middleware('role:Admin,User')->group(function () {
+        Route::get('/show/{id}', [FeedbackController::class, 'show']);
         Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
     });
 });
@@ -195,9 +204,4 @@ Route::prefix('shipmentRequest')->group(function () {
     Route::get('/ShowShipmentRequestDetails/{id}', [ShipmentRequestController::class, 'ShowShipmentRequestDetails'])->middleware('role:Admin,Shipment Employee,User');
     Route::get('/allFoodstuffs', [ShipmentRequestController::class, 'allFoodstuffs'])->middleware('role:Admin,Shipment Employee,User');
 });
-Route::get('/test-cors', function () {
-    return response()->json(['message' => 'CORS working'])
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
-        ->header('Access-Control-Allow-Headers', 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range');
-});
+

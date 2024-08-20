@@ -3,9 +3,11 @@
 namespace App\Services;
 
 
+use App\Enum\NotificationsEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ImageUploadHelper;
 use App\Helpers\ResponseHelper;
+use App\Jobs\SendNotificationJob;
 use App\Models\CollageTrip;
 use App\Models\DailyCollageReservation;
 use App\Models\Day;
@@ -113,38 +115,55 @@ class TripService
 
     public function listCollageTrips($request)
     {
-        $result = CollageTrip::with(['stations', 'days:id,name']);
-        if ('archived' == $request->type) {
-            $result->whereHas('trips', function ($query) {
-                $query->whereDate('date', '<', Carbon::now());
-            });
-        }
-        if ('upcoming' == $request->type) {
-            $result->whereHas('trips', function ($query) {
-                $query->whereDate('date', '>=', Carbon::now());
-            });
-        }
-        return Cache::remember('collage_trips', 1, function () use ($result) {
-            return $result->with('trips')->get();
-        });
+        $result = CollageTrip::with([
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) use ($request) {
+                if ('archived' == $request->type) {
+                    $query->whereDate('date', '<', Carbon::now());
+                }
+                if ('upcoming' == $request->type) {
+                    $query->whereDate('date', '>=', Carbon::now());
+                }
+            }
+        ]);
+        return $result->get();
     }
 
-    public function collageTripDetails($trip_id)
+    public function collageTripDetails($collageTripID)//incoming
     {
         return CollageTrip::with([
             'driver',
             'stations',
             'days:id,name',
             'trips' => function ($query) {
-                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
-                    ->with('dailyCollageReservation.user');
-            }
+                $query->whereDate('date', '>=', Carbon::now());
+            },
+            'trips.dailyCollageReservation.user',
+            'subscriptions' => function ($query) {
+                $query->where('status', 'accepted');
+            },
+            'subscriptions.user'
         ])
-            ->with('subscriptions', function ($query) {
-                $query->where('status', '=', 'accepted')
-                    ->with('user');
-            })
-            ->findOrFail($trip_id);
+            ->findOrFail($collageTripID);
+    }
+
+    public function archivedCollageTripDetails($collageTripID)//archived
+    {
+        return CollageTrip::with([
+            'driver',
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) {
+                $query->whereDate('date', '<', Carbon::now());
+            },
+            'trips.dailyCollageReservation.user',
+            'subscriptions' => function ($query) {
+                $query->where('status', 'accepted');
+            },
+            'subscriptions.user'
+        ])
+            ->findOrFail($collageTripID);
     }
 
     public function collageTripDetailsMobile($trip_id)
@@ -184,7 +203,7 @@ class TripService
                     $collage_trip = $trip->collageTrip()->first();
                     $points = $this->pointsDiscountDaily($request->points, $user->points, $collage_trip, $request->type, true);
                     $reservation['cost'] = $points['cost'];
-                    $reservation['used_points'] = $points['required_points'];
+                    $reservation['used_points'] = $points['entered_points'];
                     $reservation['earned_points'] = $points['earned_points'];
                 }
                 $trip->available_seats = $trip->available_seats - 1;
@@ -433,43 +452,65 @@ class TripService
 
     public function approveEnvelopOrder($request) //driver
     {
+        $user = auth('sanctum')->user();
         $envelope = Envelope::findOrFail($request->envelope_id);
+        $status = $request->status;
+        $trip = $envelope->trip;
+        if ($user->id != $trip->driver_id) {
+            return 'This envelope is not belongs to you!';
+        }
         if ($envelope->isAccepted) {
             return 'Already approved envelop';
         }
-        if ('accept' == $request->status) {
-            $envelope->update(['isAccepted' => true]);
-            return $envelope;
-        }
-        return $envelope->delete();
+        return DB::transaction(function () use ($user, $envelope, $trip, $status) {
+            $fcmToken = $envelope->user->fcm_token;
+            $driver = $envelope->trip->driver;
+            $variables = ['driverName' => $driver->name];
+            if ('accept' == $status) {
+                $envelope->update(['isAccepted' => true]);
+                $message = NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->formatMessage(NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->value, $variables);
+//                app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+                dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+
+                return $envelope;
+            }
+            $message = NotificationsEnum::ENVELOPE_ORDER_REJECT
+                ->formatMessage(NotificationsEnum::ENVELOPE_ORDER_REJECT->value, $variables);
+//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+
+            return $envelope->delete();
+        });
+
+
     }
 
-    public function getEnvelopOrders() //user and driver and admin (by trip)
+    public function getDriverEnvelopOrders($user) //Driver
     {
-        $user = auth('sanctum')->user();
-        $result = null;
-        switch ($user->role) {
-            case RolesEnum::DRIVER->value: //if the role is driver, return the trips (with envelopes) ordered by date from latest to oldest.
-                $result = Envelope::with(['user'])
-                    ->with(['trip' => function ($query) use ($user) {
-                        $query->where('driver_id', $user->id);
-                        $query->where('status', ['done', 'pending']);
-                        $query->with(['destination']);
-                        $query->orderBy('date');
-                    }])
-                    ->orderBy('created_at')
-                    ->get();
-                break;
-            case RolesEnum::USER->value: //if the role is user, return the envelopes ordered by date from latest to oldest.
-                $result = Envelope::with(['user', 'trip' => function ($query) {
-                    $query->with(['driver', 'destination']);
-                }])
-                    ->where('user_id', $user->id)
-                    ->orderBy('created_at')
-                    ->get();
-                break;
-        }
-        return $result;
+        $result = Envelope::with(['user'])
+            ->whereHas('trip', function ($query) use ($user) {
+                $query->where('driver_id', $user->id);
+            })
+            ->with(['trip' => function ($query) use ($user) {
+                $query
+                    //->where('driver_id', $user->id)
+                    ->orderBy('date')
+                    ->with(['destination']);
+            }])
+            ->orderBy('created_at')
+            ->get();
+        return ResponseHelper::success(data: $result);
+    }
+
+    public function getUserEnvelopes($user)
+    {
+        $result = Envelope::with(['user', 'trip' => function ($query) {
+            $query->with(['driver', 'destination']);
+        }])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at')
+            ->get();
+        return ResponseHelper::success(data: $result);
     }
 
     public function showEnvelop($id) //all roles

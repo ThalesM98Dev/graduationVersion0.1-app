@@ -41,6 +41,12 @@ class CollageTripController extends Controller
         return ResponseHelper::success($result);
     }
 
+    public function showArchived($trip_id)
+    {
+        $result = $this->tripService->archivedCollageTripDetails($trip_id);
+        return ResponseHelper::success($result);
+    }
+
     public function create(CreateCollageTripRequest $request): JsonResponse
     {
         $result = $this->tripService->createCollageTrip($request);

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\NotificationsEnum;
+use App\Jobs\SendNotificationJob;
+use App\Services\NotificationService;
 use Illuminate\Routing\Controller;
 use App\Helpers\ResponseHelper;
 use App\Models\Trip;
@@ -16,6 +19,7 @@ use App\Models\Order;
 use App\Helpers\ImageUploadHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ReservationController extends Controller
 {
@@ -151,16 +155,24 @@ class ReservationController extends Controller
 
     public function acceptTripRequest(Request $request, $id)
     {
-        $reserv = Reservation::find($id);
+        return DB::transaction(function () use ($request, $id) {
+            $reserv = Reservation::find($id);
 
-        if (!$reserv) {
-            return response()->json(['message' => 'Reservation not found'], 404);
-        }
+            if (!$reserv) {
+                return response()->json(['message' => 'Reservation not found'], 404);
+            }
+            $reserv->status = 'accept';
+            $reserv->save();
+            $user = $reserv->orders()->first()->user;
+            $fcmToken = $user->fcm_token;
+            $variables = ['tripNumber' => $reserv->trip->trip_number, 'destination' => $reserv->trip->destination->name];
+            $message = NotificationsEnum::TRIP_RESERVATION_ACCEPTANCE->formatMessage(NotificationsEnum::TRIP_RESERVATION_ACCEPTANCE->value, $variables);
+//            app(NotificationService::class)
+//                ->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+            return response()->json($reserv, ResponseAlias::HTTP_OK);
+        });
 
-        $reserv->status = 'accept';
-        $reserv->save();
-
-        return response()->json($reserv, Response::HTTP_OK);
     }
 
     public function rejectDeleteTripRequest(Request $request, $id)
@@ -181,10 +193,16 @@ class ReservationController extends Controller
                 $trip->available_seats += $reservation->orders->count();
                 $trip->save(); // Update the available_seats value
             }
+            $user = $reservation->orders()->first()->user;
+            $fcmToken = $user->fcm_token;
+            $variables = ['tripNumber' => $tripId];
+            $message = NotificationsEnum::TRIP_RESERVATION_REJECT->formatMessage(NotificationsEnum::TRIP_RESERVATION_REJECT->value, $variables);
+//            app(NotificationService::class)
+//                ->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
+            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
 
             $reservation->orders()->delete();
             $reservation->delete();
-
 
             return response()->json(['message' => 'Reservation and associated orders deleted successfully'], Response::HTTP_OK);
         } else {
@@ -326,7 +344,6 @@ class ReservationController extends Controller
 
     public function allAcceptedReservations()
     {
-
         $response = Cache::remember('All-Accepted-Reservations', 2, function () {
              $reservations = Reservation::with('trip.destination')
                 ->whereHas('trip', function ($query) {
@@ -334,9 +351,7 @@ class ReservationController extends Controller
                 })
                 ->where('status', 'accept')
                 ->get();
-
             $formattedReservations = [];
-
             foreach ($reservations as $reservation) {
                 $reservationData = [
                     'reservation_id' => $reservation->id,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\StoreEnvelopeRequest;
 use App\Services\TripService;
@@ -22,8 +23,16 @@ class EnvelopeController extends Controller
      */
     public function index(): JsonResponse
     {
-        $envelopes = $this->tripService->getEnvelopOrders();
-        return ResponseHelper::success($envelopes);
+        $user = auth('sanctum')->user();
+        if ($user->role == RolesEnum::USER->value) {
+
+            return $this->tripService->getUserEnvelopes($user);
+        }
+        if ($user->role == RolesEnum::DRIVER->value) {
+           // dd( RolesEnum::DRIVER->value);
+            return $this->tripService->getDriverEnvelopOrders($user);
+        }
+        return ResponseHelper::error(message: 'Something went wrong', status: 500);
     }
 
     /**

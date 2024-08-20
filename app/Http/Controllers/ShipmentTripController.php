@@ -167,7 +167,6 @@ class ShipmentTripController extends Controller
 
             // Check if all shipment requests in the trip are accepted
             $allRequestsAccepted = $shipmentTrip->shipmentRequests()->where('status', 'accept')->count() === $shipmentTrip->shipmentRequests()->count();
-
             if ($allRequestsAccepted) {
                 $shipmentTrip->status = 'done';
                 $shipmentTrip->save();

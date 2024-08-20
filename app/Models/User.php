@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'mobile_number',
         'password',
+        'fcm_token',
         'age',
         'address',
         'nationality',
@@ -40,7 +41,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'verification_code'
+        'verification_code',
+        'fcm_token'
     ];
 
     /**
@@ -84,6 +86,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(DailyCollageReservation::class);
     }
+
     public function collageTrip()
     {
         return $this->hasMany(CollageTrip::class, 'driver_id');
@@ -92,5 +95,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function envelops(): HasMany
     {
         return $this->hasMany(Envelope::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(FcmNotification::class);
     }
 }

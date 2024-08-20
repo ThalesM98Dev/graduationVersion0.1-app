@@ -71,6 +71,10 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return ResponseHelper::error([], $e->getMessage(), 422);
             }
+        }); $exceptions->render(function (Kreait\Firebase\Exception\Messaging\NotFound $e, Request $request) {
+            if ($request->is('api/*')) {
+                return ResponseHelper::error([], $e->getMessage(), 422);
+            }
         });
         //
     })->create();

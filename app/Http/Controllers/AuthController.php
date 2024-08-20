@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enum\MessagesEnum;
+use App\Enum\NotificationsEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\StoreFcmTokenRequest;
+use App\Jobs\SendNotificationJob;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Jobs\SendMessageJob;
+use App\Services\NotificationService;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,13 +84,20 @@ class AuthController extends Controller
     {
         $fields = $request->validate([
             'mobile_number' => 'required|exists:users,mobile_number',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'fcm_token' => 'nullable'
         ]);
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Wrong Password.');
         }
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
+            if (isset($fields['fcm_token'])) {
+                $user->fcm_token = $fields['fcm_token'];
+                $user->save();
+                //test
+                dispatch(new SendNotificationJob($user->fcm_token, $user, NotificationsEnum::WELCOME->value, true));
+            }
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
@@ -140,7 +151,7 @@ class AuthController extends Controller
             $user->verification_code = $code;
             $user->save();
             $body = MessagesEnum::RECOVER_PASSWORD->formatMessage($code);
-//            app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $body);
+            //            app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $body);
             dispatch(new SendMessageJob($user->mobile_number, $body));
             return ResponseHelper::success(data: null, message: 'Recovery Code sent to your Whatsapp account successfully.');
         });
@@ -162,6 +173,17 @@ class AuthController extends Controller
             return ResponseHelper::success(data: null, message: 'Your Password has been reset successfully.');
         }
         return ResponseHelper::error(data: null, message: 'Wrong verification code');
+    }
+
+    public function storeFcmToken(StoreFcmTokenRequest $request)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return ResponseHelper::error(data: null, message: 'User not found');
+        }
+        $user->fcm_token = $request->fcm_token;
+        $user->save();
+        return ResponseHelper::success(data: null, message: 'Token Stored Successfully.');
     }
 
     public function deleteUser($userID)
