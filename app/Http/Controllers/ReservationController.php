@@ -326,7 +326,6 @@ class ReservationController extends Controller
 
     public function allAcceptedReservations()
     {
-
         $response = Cache::remember('All-Accepted-Reservations', 2, function () {
             $reservations = Reservation::with('trip.destination')
                 ->whereHas('trip', function ($query) {
@@ -334,9 +333,7 @@ class ReservationController extends Controller
                 })
                 ->where('status', 'accept')
                 ->get();
-
             $formattedReservations = [];
-
             foreach ($reservations as $reservation) {
                 $reservationData = [
                     'reservation_id' => $reservation->id,

@@ -38,6 +38,8 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:sanctum');
     Route::post('/reset_password', [AuthController::class, 'resetPassword'])
         ->middleware('auth:sanctum');
+    Route::post('/store_fcm_token', [AuthController::class, 'storeFcmToken'])
+        ->middleware('auth:sanctum');
 });
 /**
  * Thales
@@ -143,11 +145,14 @@ Route::prefix('collage_trips')->group(function () {
 Route::prefix('feedback')->group(function () {
     Route::middleware('role:Admin')->group(function () {
         Route::get('/all', [FeedbackController::class, 'index']);
+    });
+    Route::middleware('role:User')->group(function () {
         Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
         Route::get('/show/{id}', [FeedbackController::class, 'show']);
         Route::post('/create', [FeedbackController::class, 'store']);
         Route::delete('/delete/{id}', [FeedbackController::class, 'destroy']);
     });
+
 });
 Route::prefix('envelop')->group(function () {
     Route::middleware('role:Admin,User,Driver')->group(function () {

@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'mobile_number',
         'password',
+        'fcm_token',
         'age',
         'address',
         'nationality',
@@ -84,6 +85,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(DailyCollageReservation::class);
     }
+
     public function collageTrip()
     {
         return $this->hasMany(CollageTrip::class, 'driver_id');

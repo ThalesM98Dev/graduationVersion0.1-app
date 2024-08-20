@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enum\MessagesEnum;
 use App\Enum\RolesEnum;
 use App\Helpers\ResponseHelper;
+use App\Http\Requests\StoreFcmTokenRequest;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -162,6 +163,17 @@ class AuthController extends Controller
             return ResponseHelper::success(data: null, message: 'Your Password has been reset successfully.');
         }
         return ResponseHelper::error(data: null, message: 'Wrong verification code');
+    }
+
+    public function storeFcmToken(StoreFcmTokenRequest $request)
+    {
+        $user = auth('sanctum')->user();
+        if (!$user) {
+            return ResponseHelper::error(data: null, message: 'User not found');
+        }
+        $user->fcm_token = $request->fcm_token;
+        $user->save();
+        return ResponseHelper::success(data: null, message: 'Token Stored Successfully.');
     }
 
     public function deleteUser($userID)
