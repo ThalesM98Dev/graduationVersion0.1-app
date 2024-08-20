@@ -6,7 +6,7 @@ enum NotificationsEnum: string
 {
     case TITLE = 'شركة الاتحاد العربي للنقل البرّي';
     case WELCOME = 'اهلاً بك في تطبيق شركة الاتحاد العربي..نأمل ان تنال خدماتنا رضاك.';
-    case TRIP_RESERVATION_ACCEPTANCE = 'تم حجز المقاعد المحددة في الرحلة رقم {tripNumber} الرحلة المتجهة الى {destination} . يرجى مراجعة مكتب الشركة لتثبيت الحجز ودفع الرسوم خلال مدة اقصاها يومين.';
+    case TRIP_RESERVATION_ACCEPTANCE = 'تم حجز المقاعد المحددة في الرحلة رقم {tripNumber} المتجهة الى {destination} . يرجى مراجعة مكتب الشركة لتثبيت الحجز ودفع الرسوم خلال مدة اقصاها يومين.';
     case TRIP_RESERVATION_REJECT = 'عذراً.لم لتم الموافقة على حجزك في الرحلة {tripNumber} .';
     case ENVELOPE_ORDER_ACCEPTANCE = 'تمت الموافقة على طلب الامانة من قبل السائق {driverName} يرجى التواصل مع السائق وتسليم الامانة قبل موعد الرحلة بيوم واحد.';
     case ENVELOPE_ORDER_REJECT = 'عذراً.تم رفض طلب الامانة الخاص بك من قبل السائق {driverName} .';

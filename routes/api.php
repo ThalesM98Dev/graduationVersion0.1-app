@@ -46,7 +46,7 @@ Route::prefix('auth')->group(function () {
  * end ↑
  */
 Route::get('/user/notifications', [\App\Http\Controllers\FcmNotificationController::class, 'index']);
-    //->middleware('role:User');
+//->middleware('role:User');
 Route::prefix('trip')->group(function () {
     Route::post('/add_trip', [TripController::class, 'add_trip'])->middleware('role:Travel Trips Employee,Admin');
     Route::get('/all_trip', [TripController::class, 'all_trip'])->middleware('role:Travel Trips Employee,Admin,User,Driver');
@@ -116,6 +116,7 @@ Route::prefix('collage_trips')->group(function () {
     Route::middleware('role:Admin,User,University trips Employee,Driver')->group(function () {
         Route::get('/all', [CollageTripController::class, 'index']);
         Route::get('/details/{id}', [CollageTripController::class, 'show']);
+        Route::get('/archived/details/{id}', [CollageTripController::class, 'showArchived']);
         Route::get('/search', [CollageTripController::class, 'searchCollageTrips']);
     });
 

@@ -27,7 +27,7 @@ class SubscriptionService
         $subscription['user_id'] = auth('sanctum')->id();
         $user = User::findOrFail($subscription['user_id']);
         $subscriptionExistence = $user->subscription;
-        if (isEmpty($subscriptionExistence)) {
+        if (!isEmpty($subscriptionExistence)) {
             return 'Already subscribed';
         }
         return DB::transaction(function () use ($request) {

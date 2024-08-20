@@ -115,38 +115,55 @@ class TripService
 
     public function listCollageTrips($request)
     {
-        $result = CollageTrip::with(['stations', 'days:id,name']);
-        if ('archived' == $request->type) {
-            $result->whereHas('trips', function ($query) {
-                $query->whereDate('date', '<', Carbon::now());
-            });
-        }
-        if ('upcoming' == $request->type) {
-            $result->whereHas('trips', function ($query) {
-                $query->whereDate('date', '>=', Carbon::now());
-            });
-        }
-        return Cache::remember('collage_trips', 1, function () use ($result) {
-            return $result->with('trips')->get();
-        });
+        $result = CollageTrip::with([
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) use ($request) {
+                if ('archived' == $request->type) {
+                    $query->whereDate('date', '<', Carbon::now());
+                }
+                if ('upcoming' == $request->type) {
+                    $query->whereDate('date', '>=', Carbon::now());
+                }
+            }
+        ]);
+        return $result->get();
     }
 
-    public function collageTripDetails($trip_id)
+    public function collageTripDetails($collageTripID)//incoming
     {
         return CollageTrip::with([
             'driver',
             'stations',
             'days:id,name',
             'trips' => function ($query) {
-                $query->whereDate('date', '>=', Carbon::now()->format('Y-m-d'))
-                    ->with('dailyCollageReservation.user');
-            }
+                $query->whereDate('date', '>=', Carbon::now());
+            },
+            'trips.dailyCollageReservation.user',
+            'subscriptions' => function ($query) {
+                $query->where('status', 'accepted');
+            },
+            'subscriptions.user'
         ])
-            ->with('subscriptions', function ($query) {
-                $query->where('status', '=', 'accepted')
-                    ->with('user');
-            })
-            ->findOrFail($trip_id);
+            ->findOrFail($collageTripID);
+    }
+
+    public function archivedCollageTripDetails($collageTripID)//archived
+    {
+        return CollageTrip::with([
+            'driver',
+            'stations',
+            'days:id,name',
+            'trips' => function ($query) {
+                $query->whereDate('date', '<', Carbon::now());
+            },
+            'trips.dailyCollageReservation.user',
+            'subscriptions' => function ($query) {
+                $query->where('status', 'accepted');
+            },
+            'subscriptions.user'
+        ])
+            ->findOrFail($collageTripID);
     }
 
     public function collageTripDetailsMobile($trip_id)
