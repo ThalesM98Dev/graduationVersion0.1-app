@@ -328,7 +328,7 @@ class ReservationController extends Controller
     {
 
         $response = Cache::remember('All-Accepted-Reservations', 2, function () {
-            $reservations = Reservation::with('trip.destination')
+             $reservations = Reservation::with('trip.destination')
                 ->whereHas('trip', function ($query) {
                     $query->where('status', 'pending');
                 })
@@ -360,6 +360,8 @@ class ReservationController extends Controller
                                 'name' => $user->name,
                                 'mobile_number' => $user->mobile_number,
                             ];
+                        }else{
+                            return response()->json(['message' => 'user not found'], 500);
                         }
                     }
                 }
