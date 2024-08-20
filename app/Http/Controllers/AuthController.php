@@ -81,13 +81,16 @@ class AuthController extends Controller
     {
         $fields = $request->validate([
             'mobile_number' => 'required|exists:users,mobile_number',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'fcm_token' => 'nullable'
         ]);
         $user = User::where('mobile_number', $fields['mobile_number'])->first();
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return ResponseHelper::error('Wrong Password.');
         }
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
+            $user->fcm_token = $fields['fcm_token'];
+            $user->save();
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
@@ -141,7 +144,7 @@ class AuthController extends Controller
             $user->verification_code = $code;
             $user->save();
             $body = MessagesEnum::RECOVER_PASSWORD->formatMessage($code);
-//            app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $body);
+            //            app(VerificationService::class)->sendVerificationMessage($user->mobile_number, $body);
             dispatch(new SendMessageJob($user->mobile_number, $body));
             return ResponseHelper::success(data: null, message: 'Recovery Code sent to your Whatsapp account successfully.');
         });
@@ -200,8 +203,7 @@ class AuthController extends Controller
 
     public function all_Users()
     {
-        $users = User::where('role', 'User')->get();
-        {
+        $users = User::where('role', 'User')->get(); {
             $response = [
                 'users' => $users
             ];
