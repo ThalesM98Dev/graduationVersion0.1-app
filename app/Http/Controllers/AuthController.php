@@ -93,11 +93,10 @@ class AuthController extends Controller
             if (isset($fields['fcm_token'])) {
                 $user->fcm_token = $fields['fcm_token'];
                 $user->save();
+                //test
+                app(NotificationService::class)->sendNotification($user->fcm_token, 'Welcome to AUT', 'from backend');
+                //
             }
-
-            //test
-            app(NotificationService::class)->sendNotification($user->fcm_token, 'test', 'from backend');
-            //
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
                 'user' => $user,
