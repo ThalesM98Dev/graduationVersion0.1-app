@@ -9,6 +9,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use function PHPUnit\Framework\isEmpty;
 
 class SubscriptionService
 {
@@ -23,12 +24,16 @@ class SubscriptionService
 
     public function subscribe($request)
     {
+        $subscription['user_id'] = auth('sanctum')->id();
+        $user = User::findOrFail($subscription['user_id']);
+        $subscriptionExistence = $user->subscription;
+        if (isEmpty($subscriptionExistence)) {
+            return 'Already subscribed';
+        }
         return DB::transaction(function () use ($request) {
-            $subscription['user_id'] = auth('sanctum')->id();
             $subscription['collage_trip_id'] = $request->collage_trip_id;
             $subscription['start_date'] = $request->start_date;
             $subscription['end_date'] = $request->end_date;
-            $user = User::findOrFail($subscription['user_id']);
             $collageTrip = CollageTrip::findOrFail($subscription['collage_trip_id']);
             $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points, $collageTrip, 'Round Trip', false);
             $subscription['used_points'] = $result['entered_points'];
