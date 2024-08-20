@@ -90,10 +90,13 @@ class AuthController extends Controller
             return ResponseHelper::error('Wrong Password.');
         }
         if ($user->isVerified || $user->role != RolesEnum::USER->value) {
-            $user->fcm_token = $fields['fcm_token'];
-            $user->save();
+            if (isset($fields['fcm_token'])) {
+                $user->fcm_token = $fields['fcm_token'];
+                $user->save();
+            }
+
             //test
-            app(NotificationService::class)->sendNotification($user->fcm_token,'test','from backend');
+            app(NotificationService::class)->sendNotification($user->fcm_token, 'test', 'from backend');
             //
             $token = $user->createToken('myapptoken')->plainTextToken;
             $response = [
@@ -207,7 +210,8 @@ class AuthController extends Controller
 
     public function all_Users()
     {
-        $users = User::where('role', 'User')->get(); {
+        $users = User::where('role', 'User')->get();
+        {
             $response = [
                 'users' => $users
             ];
