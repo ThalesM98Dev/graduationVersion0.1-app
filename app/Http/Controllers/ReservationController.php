@@ -223,10 +223,6 @@ class ReservationController extends Controller
             // Return a response indicating success
             return response()->json(['message' => 'Reservation confirmed'], 200);
         }
-
-        // Return a response indicating an error if the reservation doesn't exist or is already confirmed
-        return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
-        // Return a response indicating an error if the reservation doesn't exist or is already confirmed
         return response()->json(['message' => 'Invalid reservation ID or reservation already confirmed'], 422);
     }
 

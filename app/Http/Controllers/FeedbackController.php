@@ -13,16 +13,15 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        $result = Feedback::all()->sortByDesc('date');
+        $result = Feedback::with('user')->get()->sortByDesc('date');
         return ResponseHelper::success($result);
     }
 
     public function userFeedbacks()
     {
         $user = User::findOrFail(auth('sanctum')->id());
-        $result = $user->feedbacks()
-            ->get()->sortByDesc('date');
-        return ResponseHelper::success($result);
+        $result = $user->feedbacks;
+        return ResponseHelper::success(data: $result);
     }
 
     public function store(CreateFeedbackRequest $request)

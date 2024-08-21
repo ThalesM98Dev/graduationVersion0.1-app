@@ -130,7 +130,7 @@ class TripService
         return $result->get();
     }
 
-    public function collageTripDetails($collageTripID)//incoming
+    public function collageTripDetails($collageTripID) //incoming
     {
         return CollageTrip::with([
             'driver',
@@ -148,7 +148,7 @@ class TripService
             ->findOrFail($collageTripID);
     }
 
-    public function archivedCollageTripDetails($collageTripID)//archived
+    public function archivedCollageTripDetails($collageTripID) //archived
     {
         return CollageTrip::with([
             'driver',
@@ -377,7 +377,7 @@ class TripService
             ]);
             $user->points = ($user->points - $reservation->used_points) + $reservation->earned_points;
             $user->save();
-            return ResponseHelper::success(message: 'Paid successfully', data: $reservation->load('user'));
+            return ResponseHelper::success(data: $reservation->load('user'), message: 'Paid successfully');
         });
     }
 
@@ -469,20 +469,18 @@ class TripService
             if ('accept' == $status) {
                 $envelope->update(['isAccepted' => true]);
                 $message = NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->formatMessage(NotificationsEnum::ENVELOPE_ORDER_ACCEPTANCE->value, $variables);
-//                app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
-                dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+                //                app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+                dispatch(new SendNotificationJob($fcmToken, $envelope->user, $message, false));
 
                 return $envelope;
             }
             $message = NotificationsEnum::ENVELOPE_ORDER_REJECT
                 ->formatMessage(NotificationsEnum::ENVELOPE_ORDER_REJECT->value, $variables);
-//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
-            dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
+            //            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE, $message);
+            dispatch(new SendNotificationJob($fcmToken, $envelope->user, $message, false));
 
             return $envelope->delete();
         });
-
-
     }
 
     public function getDriverEnvelopOrders($user) //Driver

@@ -25,11 +25,9 @@ class EnvelopeController extends Controller
     {
         $user = auth('sanctum')->user();
         if ($user->role == RolesEnum::USER->value) {
-
             return $this->tripService->getUserEnvelopes($user);
         }
         if ($user->role == RolesEnum::DRIVER->value) {
-           // dd( RolesEnum::DRIVER->value);
             return $this->tripService->getDriverEnvelopOrders($user);
         }
         return ResponseHelper::error(message: 'Something went wrong', status: 500);

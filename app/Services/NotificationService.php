@@ -21,12 +21,13 @@ class NotificationService
 
     public function sendNotification(string $deviceToken, string $title, string $body, User $user, bool $isWelcome)
     {
+        // if (!$isWelcome) {
+        //     $this->storeNotification(user: $user, title: $title, body: $body);
+        // }
         $notification = Notification::create($title, $body);
         $message = CloudMessage::withTarget('token', $deviceToken)
             ->withNotification($notification);
-        if (!$isWelcome) {
-            $this->storeNotification(user: $user, title: $title, body: $body);
-        }
+
         return $this->messaging->send($message);
     }
 
@@ -37,7 +38,7 @@ class NotificationService
         return ResponseHelper::success(data: $user->notifications, message: 'User notifications retrieved successfully');
     }
 
-    private function storeNotification(User $user, string $title, string $body)
+    public function storeNotification(User $user, string $title, string $body)
     {
         FcmNotification::create([
             'user_id' => $user->id,

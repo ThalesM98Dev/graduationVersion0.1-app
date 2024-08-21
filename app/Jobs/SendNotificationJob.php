@@ -38,6 +38,11 @@ class SendNotificationJob implements ShouldQueue
      */
     public function handle(): void
     {
+        if (!$this->isWelcome) {
+            app(NotificationService::class)
+                ->storeNotification(user: $this->user, title: NotificationsEnum::TITLE->value, body: $this->body);
+        }
+        //
         app(NotificationService::class)
             ->sendNotification($this->fcmToken, NotificationsEnum::TITLE->value, $this->body, $this->user, $this->isWelcome);
     }

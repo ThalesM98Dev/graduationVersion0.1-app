@@ -27,15 +27,16 @@ class SubscriptionService
         $subscription['user_id'] = auth('sanctum')->id();
         $user = User::findOrFail($subscription['user_id']);
         $subscriptionExistence = $user->subscription;
-        if (!isEmpty($subscriptionExistence)) {
+        if ($subscriptionExistence) {
             return 'Already subscribed';
         }
-        return DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request, $user, $subscription) {
             $subscription['collage_trip_id'] = $request->collage_trip_id;
             $subscription['start_date'] = $request->start_date;
             $subscription['end_date'] = $request->end_date;
             $collageTrip = CollageTrip::findOrFail($subscription['collage_trip_id']);
-            $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points, $collageTrip, 'Round Trip', false);
+            $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points,
+                $collageTrip, 'Round Trip', false);
             $subscription['used_points'] = $result['entered_points'];
             $subscription['amount'] = $result['cost'];
             $subscription['earned_points'] = $result['earned_points'];
