@@ -375,6 +375,8 @@ class ReservationController extends Controller
                                 'name' => $user->name,
                                 'mobile_number' => $user->mobile_number,
                             ];
+                        }else{
+                            return response()->json(['message' => 'anything'], 422); 
                         }
                     }
                 }
