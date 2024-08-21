@@ -10,6 +10,7 @@ class Destination extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+    //protected $fillable = ['name'];
 
     public function trips()
     {
