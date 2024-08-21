@@ -338,53 +338,59 @@ class ReservationController extends Controller
         return ResponseHelper::success(array_values($response));
     }
 
-    public function allAcceptedReservations()
-    {
-        $response = Cache::remember('All-Accepted-Reservations', 2, function () {
-             $reservations = Reservation::with('trip.destination')
-                ->whereHas('trip', function ($query) {
-                    $query->where('status', 'pending');
-                })
-                ->where('status', 'accept')
-                ->get();
-            $formattedReservations = [];
-            foreach ($reservations as $reservation) {
-                $reservationData = [
-                    'reservation_id' => $reservation->id,
-                    'total_price' => $reservation->total_price,
-                    'trip_id' => $reservation->trip_id,
-                    'destination_name' => $reservation->trip->destination->name,
-                    'user' => null,
-                ];
+   public function allAcceptedReservations()
+{
+    $response = Cache::remember('All-Accepted-Reservations', 2, function () {
+        $reservations = Reservation::with('trip.destination')
+            ->whereHas('trip', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->where('status', 'accept')
+            ->get();
+        
+        $formattedReservations = [];
 
-                $firstReservationOrder = $reservation->reservationOrders()->first();
+        foreach ($reservations as $reservation) {
+            $reservationData = [
+                'reservation_id' => $reservation->id,
+                'total_price' => $reservation->total_price,
+                'trip_id' => $reservation->trip_id,
+                'destination_name' => null,
+                'user' => null,
+            ];
 
-                if ($firstReservationOrder) {
-                    $order = $firstReservationOrder->order;
-
-                    if ($order) {
-                        $user = $order->user;
-
-                        if ($user) {
-                            $reservationData['user'] = [
-                                'user_id' => $user->id,
-                                'name' => $user->name,
-                                'mobile_number' => $user->mobile_number,
-                            ];
-                        }else{
-                            return response()->json(['message' => 'user not found'], 500);
-                        }
-                    }
-                }
-
-                $formattedReservations[] = $reservationData;
+            if ($reservation->trip && $reservation->trip->destination) {
+                $reservationData['destination_name'] = $reservation->trip->destination->name;
             }
 
-            return $formattedReservations;
-        });
+            $firstReservationOrder = $reservation->reservationOrders()->first();
 
-        return ResponseHelper::success($response);
-    }
+            if ($firstReservationOrder) {
+                $order = $firstReservationOrder->order;
+
+                if ($order) {
+                    $user = $order->user;
+
+                    if ($user) {
+                        $reservationData['user'] = [
+                            'user_id' => $user->id,
+                            'name' => $user->name,
+                            'mobile_number' => $user->mobile_number,
+                        ];
+                    } else {
+                        return response()->json(['message' => 'user not found'], 500);
+                    }
+                }
+            }
+
+            $formattedReservations[] = $reservationData;
+        }
+
+        return $formattedReservations;
+    });
+
+    return ResponseHelper::success($response);
+}
 
     public function searchInAllReservation(Request $request)
     {
