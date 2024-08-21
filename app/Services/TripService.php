@@ -377,7 +377,7 @@ class TripService
             ]);
             $user->points = ($user->points - $reservation->used_points) + $reservation->earned_points;
             $user->save();
-            return ResponseHelper::success(message: 'Paid successfully', data: $reservation->load('user'));
+            return ResponseHelper::success(data: $reservation->load('user'), message: 'Paid successfully');
         });
     }
 

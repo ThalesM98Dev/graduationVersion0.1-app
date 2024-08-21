@@ -13,7 +13,7 @@ class FeedbackController extends Controller
 {
     public function index()
     {
-        $result = Feedback::all()->sortByDesc('date');
+        $result = Feedback::with('user')->all()->sortByDesc('date');
         return ResponseHelper::success($result);
     }
 
