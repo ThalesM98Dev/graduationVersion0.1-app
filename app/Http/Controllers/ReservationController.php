@@ -350,6 +350,7 @@ class ReservationController extends Controller
 
             $formattedReservations = [];
             $destinationName = $reservations->trip->destination->name ?? 'None'
+            dd($destinationName);
             foreach ($reservations as $reservation) {
                 $reservationData = [
                     'reservation_id' => $reservation->id,
