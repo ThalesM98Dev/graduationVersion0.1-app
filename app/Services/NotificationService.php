@@ -21,12 +21,13 @@ class NotificationService
 
     public function sendNotification(string $deviceToken, string $title, string $body, User $user, bool $isWelcome)
     {
-        $notification = Notification::create($title, $body);
-        $message = CloudMessage::withTarget('token', $deviceToken)
-            ->withNotification($notification);
         if (!$isWelcome) {
             $this->storeNotification(user: $user, title: $title, body: $body);
         }
+        $notification = Notification::create($title, $body);
+        $message = CloudMessage::withTarget('token', $deviceToken)
+            ->withNotification($notification);
+
         return $this->messaging->send($message);
     }
 
