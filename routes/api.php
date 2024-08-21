@@ -146,9 +146,9 @@ Route::prefix('collage_trips')->group(function () {
     });
 });
 Route::prefix('feedback')->group(function () {
-    Route::middleware('role:Admin')->group(function () {
+    //Route::middleware('role:Admin')->group(function () {
         Route::get('/all', [FeedbackController::class, 'index']);
-    });
+   // });
     Route::middleware('role:User')->group(function () {
         Route::get('/user', [FeedbackController::class, 'userFeedbacks']);
         Route::post('/create', [FeedbackController::class, 'store']);
