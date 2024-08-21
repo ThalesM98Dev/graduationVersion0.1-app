@@ -22,7 +22,7 @@ class FeedbackController extends Controller
         $user = User::findOrFail(auth('sanctum')->id());
         $result = $user->feedbacks()
             ->get()->sortByDesc('date');
-        return ResponseHelper::success($result);
+        return ResponseHelper::success(data: $result);
     }
 
     public function store(CreateFeedbackRequest $request)
