@@ -118,7 +118,8 @@ class TripController extends Controller
     {
         $trip = Trip::with(['bus', 'destination', 'driver', 'reservations' => function ($query) {
             $query->where('status', 'confirmed');
-        }])->find($id);
+        }])->with('envelops')
+            ->find($id);
 
         if (!$trip) {
             return response()->json(['message' => 'Trip not found'], Response::HTTP_NOT_FOUND);
@@ -174,7 +175,7 @@ class TripController extends Controller
 
             // Check if all reservations in the trip are confirmed
             $allReservationsConfirmed = $trip->reservations()
-            ->where('status', 'confirmed')->count() === $trip->reservations()->count();
+                    ->where('status', 'confirmed')->count() === $trip->reservations()->count();
 
             if ($allReservationsConfirmed) {
                 $trip->status = 'done';
