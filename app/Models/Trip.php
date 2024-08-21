@@ -13,6 +13,12 @@ class Trip extends Model
 
     protected $guarded = [];
     protected $primaryKey = 'id';
+    protected $fillable = [
+        'trip_number',
+        'destination_id',
+        'bus_id',
+        'driver_id',
+    ];
     protected $casts = [
         'seats' => 'array',
     ];
