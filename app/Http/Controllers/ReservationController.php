@@ -349,13 +349,13 @@ class ReservationController extends Controller
                 ->get();
 
             $formattedReservations = [];
-
+            $destinationName = $reservations->trip->destination->name ?? 'None'
             foreach ($reservations as $reservation) {
                 $reservationData = [
                     'reservation_id' => $reservation->id,
                     'total_price' => $reservation->total_price,
                     'trip_id' => $reservation->trip_id,
-                    'destination_name' => $reservation->trip->destination->name,
+                    'destination_name' => $destinationName,
                     'user' => null,
                 ];
 
