@@ -28,7 +28,7 @@ class StoreEnvelopeRequest extends FormRequest
             'receiver_name' => ['required', 'string'],
             'receiver_phone' => ['required', 'regex:/^([0-9\s\-\+\(\)]*)$/', 'min:10'],
             'receiver_location' => ['required', 'string'],
-            'image' => ['file', 'mimetypes:image/jpeg,image/jpg,image/png'],
+            'image' => ['file', 'mimetypes:image/jpeg,image/jpg,image/png', 'max:20480'],
             'trip_id' => ['required', 'exists:trips,id'],
         ];
     }
