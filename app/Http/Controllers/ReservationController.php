@@ -345,23 +345,21 @@ class ReservationController extends Controller
                 ->whereHas('trip', function ($query) {
                     $query->where('status', 'pending');
                 })
-                ->where('status', 'pending')
+                ->where('status', 'accept')
                 ->get();
-
             $formattedReservations = [];
-            $destinationName = $reservations->trip->destination->name ?? 'None'
-            dd($destinationName);
+            
             foreach ($reservations as $reservation) {
                 $reservationData = [
                     'reservation_id' => $reservation->id,
                     'total_price' => $reservation->total_price,
                     'trip_id' => $reservation->trip_id,
-                    'destination_name' => $destinationName,
+                    'destination_name' => $reservation->trip->destination->name,
                     'user' => null,
                 ];
 
                 $firstReservationOrder = $reservation->reservationOrders()->first();
-
+               
                 if ($firstReservationOrder) {
                     $order = $firstReservationOrder->order;
 
