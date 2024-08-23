@@ -14,7 +14,8 @@ class Reservation extends Model
         'trip_id',
         'total_price',
         'count_of_persons',
-        'status'
+        'status',
+        'subscription_id'
     ];
 
     public function trip()
