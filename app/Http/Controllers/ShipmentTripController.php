@@ -185,27 +185,27 @@ class ShipmentTripController extends Controller
     {
         $shipmentTrip = ShipmentTrip::with(['destination', 'truck', 'shipmentRequests' => function ($query) {
             $query->where('status', 'accept')
-                ->with('user','shipmentFoodstuffs');
+                ->with('user','foodstuffs');
         }]) 
             ->where('id', $id)
             ->first();
         dd($shipmentTrip);
-        // if (!$shipmentTrip) {
-        //     $response = [
-        //         'success' => false,
-        //         'message' => 'Shipment Request not found',
-        //         'data' => [],
-        //         'status' => 404,
-        //     ];
+        if (!$shipmentTrip) {
+            $response = [
+                'success' => false,
+                'message' => 'Shipment Request not found',
+                'data' => [],
+                'status' => 404,
+            ];
 
-        //     return response()->json($response, $response['status']);
-        // }
+            return response()->json($response, $response['status']);
+        }
 
-        // $response = [
-        //     'shipmentTrip' => $shipmentTrip,
-        // ];
+        $response = [
+            'shipmentTrip' => $shipmentTrip,
+        ];
 
-        // return ResponseHelper::success($response);
+        return ResponseHelper::success($response);
     }
 
     public function filterByType(Request $request)
