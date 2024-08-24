@@ -185,7 +185,7 @@ class ShipmentTripController extends Controller
     {
         $shipmentTrip = ShipmentTrip::with(['destination', 'truck', 'shipmentRequests' => function ($query) {
             $query->where('status', 'accept')
-                ->with('user','foodstuffs');
+                ->with('user');
         }]) 
             ->where('id', $id)
             ->first();
