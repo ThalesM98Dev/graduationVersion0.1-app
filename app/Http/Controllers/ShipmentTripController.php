@@ -189,7 +189,7 @@ class ShipmentTripController extends Controller
         }]) 
             ->where('id', $id)
             ->first();
-            dd($shipmentTrip);
+        dd($shipmentTrip);
         if (!$shipmentTrip) {
             $response = [
                 'success' => false,
