@@ -26,7 +26,8 @@ class SubscriptionService
     {
         $subscription['user_id'] = auth('sanctum')->id();
         $user = User::findOrFail($subscription['user_id']);
-        $subscriptionExistence = $user->subscription()->where('collage_trip_id', $request->collage_trip_id);
+        $subscriptionExistence = $user->subscription()
+        ->where('collage_trip_id', $request->collage_trip_id)->first();
         if ($subscriptionExistence) {
             return 'Already subscribed';
         }
