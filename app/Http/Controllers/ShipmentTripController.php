@@ -185,14 +185,15 @@ class ShipmentTripController extends Controller
     {
         $shipmentTrip = ShipmentTrip::with(['destination', 'truck', 'shipmentRequests' => function ($query) {
             $query->where('status', 'accept')
-                ->with('user');
-        }])
+                ->with('user','shipmentFoodstuffs.foodstuff');
+        }]) 
             ->where('id', $id)
             ->first();
+       // dd($shipmentTrip);
         if (!$shipmentTrip) {
             $response = [
                 'success' => false,
-                'message' => 'Shipment Request not found',
+                'message' => 'Shipment Trip not found',
                 'data' => [],
                 'status' => 404,
             ];
