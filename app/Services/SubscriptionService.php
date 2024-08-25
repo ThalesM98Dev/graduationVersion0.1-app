@@ -26,7 +26,7 @@ class SubscriptionService
     {
         $subscription['user_id'] = auth('sanctum')->id();
         $user = User::findOrFail($subscription['user_id']);
-        $subscriptionExistence = $user->subscription;
+        $subscriptionExistence = $user->subscription()->where('collage_trip_id', $request->collage_trip_id);
         if ($subscriptionExistence) {
             return 'Already subscribed';
         }
@@ -35,8 +35,13 @@ class SubscriptionService
             $subscription['start_date'] = $request->start_date;
             $subscription['end_date'] = $request->end_date;
             $collageTrip = CollageTrip::findOrFail($subscription['collage_trip_id']);
-            $result = app(TripService::class)->pointsDiscountDaily($request->points, $user->points,
-                $collageTrip, 'Round Trip', false);
+            $result = app(TripService::class)->pointsDiscountDaily(
+                $request->points,
+                $user->points,
+                $collageTrip,
+                'Round Trip',
+                false
+            );
             $subscription['used_points'] = $result['entered_points'];
             $subscription['amount'] = $result['cost'];
             $subscription['earned_points'] = $result['earned_points'];
@@ -44,7 +49,7 @@ class SubscriptionService
             $fcmToken = $subscription->user->fcm_token;
             $variables = ['tripNumber' => $collageTrip->id];
             $message = NotificationsEnum::SUBSCRIBE_ORDER->formatMessage(NotificationsEnum::SUBSCRIBE_ORDER->value, $variables);
-//            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
+            //            app(NotificationService::class)->sendNotification($fcmToken, NotificationsEnum::TITLE->value, $message);
             dispatch(new SendNotificationJob($fcmToken, $user, $message, false));
             return $subscription;
         });
