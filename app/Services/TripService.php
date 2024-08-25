@@ -195,7 +195,7 @@ class TripService
                 if ($trip->available_seats == 0) {
                     return ResponseHelper::error('There is no available seats on this trip.');
                 }
-                $existReservation = $user->reservation()->where('trip_id', $trip->id)->first();
+                $existReservation = $user->dailyCollageReservations()->where('trip_id', $trip->id)->first();
                 if ($existReservation) {
                     return ResponseHelper::error('Your allready have a reservation.');
                 }
